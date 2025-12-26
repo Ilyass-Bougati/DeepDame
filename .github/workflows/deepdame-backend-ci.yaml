@@ -1,0 +1,53 @@
+name: DeepDame CI
+
+on:
+  push:
+    branches: [ "main", "master" ]
+    paths:
+      - 'server/**' 
+  pull_request:
+    branches: [ "main", "master" ]
+    paths:
+      - 'server/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: ./server
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: deepdame
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 17 with Caching
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        # This enables caching for Maven dependencies automatically
+        cache: 'maven'
+
+    - name: Build and Test
+      # Since we set the working-directory above, this runs inside ./server
+      run: mvn -B clean verify
+      env:
+        SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/deepdame
+        SPRING_DATASOURCE_USERNAME: postgres
+        SPRING_DATASOURCE_PASSWORD: postgres
