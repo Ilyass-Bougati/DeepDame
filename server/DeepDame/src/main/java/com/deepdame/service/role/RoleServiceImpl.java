@@ -3,6 +3,7 @@ package com.deepdame.service.role;
 import com.deepdame.dto.role.RoleDto;
 import com.deepdame.dto.role.RoleMapper;
 import com.deepdame.entity.Role;
+import com.deepdame.exception.NotFoundException;
 import com.deepdame.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +26,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public RoleDto update(RoleDto roleDto) {
         Role role = roleRepository.findById(roleDto.getId())
-                .orElseThrow(() -> new RuntimeException("Role not found"));
+                .orElseThrow(() -> new NotFoundException("Role not found"));
 
         role.setName(roleDto.getName());
         return roleMapper.toDTO(role);
@@ -41,6 +42,6 @@ public class RoleServiceImpl implements RoleService {
     public RoleDto findById(UUID id) {
         return roleRepository.findById(id)
                 .map(roleMapper::toDTO)
-                .orElseThrow(() -> new RuntimeException("Role not found"));
+                .orElseThrow(() -> new NotFoundException("Role not found"));
     }
 }

@@ -3,6 +3,7 @@ package com.deepdame.service.user;
 import com.deepdame.dto.user.UserDto;
 import com.deepdame.dto.user.UserMapper;
 import com.deepdame.entity.User;
+import com.deepdame.exception.NotFoundException;
 import com.deepdame.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +26,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto update(UserDto userDto) {
         User user = userRepository.findById(userDto.getId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new NotFoundException("User not found"));
 
         user.setUsername(userDto.getUsername());
         user.setEmail(userDto.getEmail());
@@ -47,6 +48,6 @@ public class UserServiceImpl implements UserService {
     public UserDto findById(UUID id) {
         return userRepository.findById(id)
                 .map(userMapper::toDTO)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new NotFoundException("User not found"));
     }
 }
