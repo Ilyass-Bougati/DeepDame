@@ -31,6 +31,17 @@ jobs:
         with:
           channel: 'stable'
           cache: true
+      
+      - name: Cache Pub Dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.pub-cache/hosted
+            ~/.pub-cache/git
+          # Key changes if pubspec.lock changes
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
 
       - name: Get Dependencies
         run: flutter pub get
