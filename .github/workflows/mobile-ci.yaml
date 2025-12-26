@@ -1,11 +1,8 @@
 name: Flutter Build (Debug)
 
 on:
-  push:
-    branches: [ "main" ]
-    paths:
-      - 'client/**'
   pull_request:
+    branches: [ "main" ]
     paths:
       - 'client/**'
 
