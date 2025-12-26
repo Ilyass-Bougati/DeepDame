@@ -1,1 +1,1 @@
-Here goes the client (flutter code)
+Here goes the client
