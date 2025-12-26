@@ -1,10 +1,8 @@
-package com.deepdame.dto;
+package com.deepdame.dto.role;
 
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Builder
@@ -13,13 +11,10 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class GeneralChatMessageDto {
+public class RoleDto {
     @EqualsAndHashCode.Include
     private UUID id;
 
     @NotEmpty
-    private String message;
-
-    @NotNull
-    private LocalDateTime createdAt;
+    private String name;
 }

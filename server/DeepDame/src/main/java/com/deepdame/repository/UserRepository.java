@@ -1,6 +1,6 @@
 package com.deepdame.repository;
 
-import org.apache.catalina.User;
+import com.deepdame.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
