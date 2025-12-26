@@ -1,6 +1,7 @@
 package com.deepdame.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 
 import java.util.HashSet;
@@ -19,8 +20,11 @@ public class Role {
     @GeneratedValue(strategy = GenerationType.UUID)
     @EqualsAndHashCode.Include
     private UUID id;
+
+    @NotEmpty
     private String name;
 
+    @Builder.Default
     @ManyToMany(mappedBy = "roles")
     private Set<User> users = new HashSet<>();
 }

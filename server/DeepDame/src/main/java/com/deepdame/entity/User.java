@@ -2,6 +2,8 @@ package com.deepdame.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -23,17 +25,30 @@ public class User {
     private UUID id;
 
     @Column(unique = true)
+    @NotEmpty
     private String username;
+
+    @NotEmpty
     private String password;
 
     @Email
+    @NotEmpty
     @Column(unique = true)
     private String email;
 
+    @Builder.Default
+    @NotNull
     private Boolean emailValidated = false;
+
+    @Builder.Default
+    @NotNull
     private Boolean bannedFromChat = false;
+
+    @Builder.Default
+    @NotNull
     private Boolean bannedFromApp  = false;
 
+    @Builder.Default
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "user_friends",
@@ -42,9 +57,11 @@ public class User {
     )
     private Set<User> friends = new HashSet<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GeneralChatMessage> messages = new ArrayList<>();
 
+    @Builder.Default
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles",
