@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./mobile 
+        working-directory: ./client 
 
     steps:
       - uses: actions/checkout@v4
@@ -42,5 +42,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: deepdame-debug-apk
-          path: mobile/build/app/outputs/flutter-apk/app-debug.apk
+          path: client/build/app/outputs/flutter-apk/app-debug.apk
           retention-days: 2
