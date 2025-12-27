@@ -1,6 +1,6 @@
-import 'package:deepdame/pages/Connect.dart';
 import 'package:deepdame/pages/Landing.dart';
 import 'package:flutter/material.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Deep Dame',
-      home: Connect(),
+      home: Landing(),
     );
   }
 }
