@@ -2,6 +2,8 @@ package com.deepdame.engine.core.logic;
 
 import com.deepdame.engine.core.model.*;
 
+import java.util.List;
+
 public class GameEngine {
 
     private final MoveValidator validator;
@@ -27,9 +29,32 @@ public class GameEngine {
             board.removePiece(jumpedPos);
         }
 
-        //check piece promotion
-        // check is the game over
-        //switch turns
+        checkPromotion(board, piece, move.to());
+        checkGameOver(state);
+
+        if (!state.isGameOver()){
+            state.switchTurn();
+        }
+
         return state;
+    }
+
+    private void checkPromotion(Board board ,Piece piece, Position position){
+        if (piece.type() == PieceType.BLACK && position.row() == 0){
+            Piece kingPiece = board.getPiece(position).promote();
+            board.setPiece(position, kingPiece);
+        }else if (piece.type() == PieceType.WHITE && position.row() == 7){
+            Piece kingPiece = board.getPiece(position).promote();
+            board.setPiece(position, kingPiece);
+        }
+    }
+
+    private void checkGameOver(GameState state){
+        PieceType nextTurn = (state.getCurrentTurn() == PieceType.BLACK) ? PieceType.WHITE : PieceType.BLACK;
+        List<Move> nextMoves = validator.getLegalMoves(state.getBoard(), nextTurn);
+
+        if (nextMoves.isEmpty()){
+            state.finishGame(state.getCurrentTurn());
+        }
     }
 }
