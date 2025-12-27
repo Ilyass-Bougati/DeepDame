@@ -31,6 +31,26 @@ public class Board {
         }
     }
 
+    private boolean isValidBounds(Position p) {
+        return p.row() >= 0 && p.row() < SIZE && p.col() >= 0 && p.col() < SIZE;
+    }
+
+
+    public Piece getPiece(Position position){
+        if (!isValidBounds(position)) return null;
+        return grid[position.row()][position.col()];
+    }
+
+    public void setPiece(Position position, Piece piece){
+        if (isValidBounds(position)){
+            grid[position.row()][position.col()] = piece;
+        }
+    }
+
+    public void removePiece(Position position){
+        setPiece(position, null);
+    }
+
     // for debug
     public void printBoard(){
         for (int i = 0; i < SIZE; i++){
