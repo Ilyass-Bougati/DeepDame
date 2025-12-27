@@ -11,15 +11,16 @@ class Landing extends StatelessWidget {
     return Scaffold(
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Stack(
               children: [
                 Column(
                   children: [
-                    SizedBox(height: 230.404,),  //Trial and error :') //Also When building , add 70
-                    Column(
-                      spacing: -70, // When building set to -70 !
+                    SizedBox(
+                      height: 233.404,
+                    ),
+                    Stack(
+                      alignment: AlignmentDirectional.center,
                       children: [
                         Divider(
                           height: 20,
@@ -28,13 +29,18 @@ class Landing extends StatelessWidget {
                           endIndent: 20,
                           color: Color.fromARGB(255, 119, 133, 127),
                         ),
-                        Text(
-                          "Deep Dame",
-                          style: GoogleFonts.lora(
-                            fontSize: 50,
-                            fontWeight: FontWeight.bold,
-                            color: Color.fromARGB(255, 170, 188, 180),
-                          ),
+                        Column(
+                          children: [
+                            Text(
+                              "Deep Dame",
+                              style: GoogleFonts.lora(
+                                fontSize: 50,
+                                fontWeight: FontWeight.bold,
+                                color: Color.fromARGB(255, 170, 188, 180),
+                              ),
+                            ),
+                            SizedBox(height: 50),
+                          ],
                         ),
                       ],
                     ),
@@ -56,7 +62,9 @@ class Landing extends StatelessWidget {
                 ),
                 Column(
                   children: [
-                    SizedBox(height: MediaQuery.of(context).size.height - 160.404,),  //Trial and error again :')
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height - 160.404,
+                    ), //Trial and error again :')
                     SvgPicture.asset(
                       "assets/vectors/CrossHatchFade.svg",
                       width: MediaQuery.of(context).size.width,
