@@ -49,9 +49,6 @@ public class UserServiceImpl implements UserService {
                 .username(request.getUsername())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .bannedFromApp(false)
-                .bannedFromChat(false)
-                .emailValidated(false)
                 .build();
 
         User savedUser = userRepository.save(user);

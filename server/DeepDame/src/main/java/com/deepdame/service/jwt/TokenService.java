@@ -42,7 +42,7 @@ public class TokenService {
 
         String accessToken = this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
 
-        // on doit configurer un 2ieme encodage pour le refresh
+        // TODO : on doit configurer un 2ieme encodage pour le refresh
         String refreshToken =  this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
 
         userEntityService.updateRefreshToken(authentication.getName(), refreshToken);

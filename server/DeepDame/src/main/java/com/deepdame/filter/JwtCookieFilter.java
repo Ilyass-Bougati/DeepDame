@@ -1,4 +1,4 @@
-package com.deepdame.config;
+package com.deepdame.filter;
 
 import com.deepdame.service.jwt.JwtAuthConverter;
 import jakarta.servlet.FilterChain;

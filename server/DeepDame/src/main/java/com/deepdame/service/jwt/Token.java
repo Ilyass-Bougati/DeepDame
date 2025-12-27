@@ -13,7 +13,4 @@ public class Token {
     private String refresh_token;
 
     private Instant expires_at;
-
-    @Builder.Default
-    private String token_type = "Bearer";
 }

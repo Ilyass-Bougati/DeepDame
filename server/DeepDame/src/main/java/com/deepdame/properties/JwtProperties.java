@@ -7,7 +7,5 @@ import java.security.interfaces.RSAPublicKey;
 @ConfigurationProperties(prefix = "jwt")
 public record JwtProperties(
         RSAPublicKey accessTokenPublicKey,
-        RSAPrivateKey accessTokenPrivateKey,
-        RSAPublicKey refreshTokenPublicKey,
-        RSAPrivateKey refreshTokenPrivateKey
+        RSAPrivateKey accessTokenPrivateKey
 ) {}

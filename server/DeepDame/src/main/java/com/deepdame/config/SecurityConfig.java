@@ -1,6 +1,7 @@
-package com.deepdame.security;
+package com.deepdame.config;
 
-import com.deepdame.config.JwtCookieFilter;
+import com.deepdame.filter.JwtCookieFilter;
+import com.deepdame.security.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
