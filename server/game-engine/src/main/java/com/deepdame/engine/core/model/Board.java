@@ -31,7 +31,7 @@ public class Board {
         }
     }
 
-    private boolean isValidBounds(Position p) {
+    public boolean isValidBounds(Position p) {
         return p.row() >= 0 && p.row() < SIZE && p.col() >= 0 && p.col() < SIZE;
     }
 
