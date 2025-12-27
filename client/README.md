@@ -22,11 +22,11 @@ lib/
 
 ```
 🧩 Components (Prefabs)
- * SubmitButton.dart: A reusable button widget used for primary actions (e.g., logging in, registering).
- * Input.dart: A standardized text entry field used for capturing user data like usernames and passwords.
+ * ``SubmitButton.dart``: A reusable button widget used for primary actions (e.g., logging in, registering).
+ * ``Input.dart``: A standardized text entry field used for capturing user data like usernames and passwords.
 📄 Pages
- * Landing.dart: The first screen users see when launching the app.
- * Connect.dart: The screen responsible for user authentication (Login/Register).
+ * ``Landing.dart``: The first screen users see when launching the app.
+ * ``Connect.dart``: The screen responsible for user authentication (Login/Register).
 🛠️ Getting Started
 Prerequisites
  * Flutter SDK (Latest stable version recommended)
@@ -34,17 +34,20 @@ Prerequisites
  * Android Studio or VS Code
 Installation
  * Clone the repository:
-   git clone [https://github.com/your-username/deepdame-client.git](https://github.com/your-username/deepdame-client.git)
-cd deepdame-client
+   ```text 
+   git clone [https://github.com/your-username/deepdame-client.git](https://github.com/your-username/deepdame-client.git)```   
+   ```text
+   cd deepdame-client```
 
  * Install dependencies:
-   flutter pub get
+   ```flutter pub get```
 
  * Run the application:
    Select your target device and run:
-   flutter run
+   ```flutter run```
 
 🚀 Supported Platforms
  * iOS (iPhone/iPad)
  * Android
- * macOS (Desktop)
+
+
