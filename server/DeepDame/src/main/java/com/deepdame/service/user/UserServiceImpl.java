@@ -1,21 +1,26 @@
 package com.deepdame.service.user;
 
+import com.deepdame.dto.user.RegisterRequest;
 import com.deepdame.dto.user.UserDto;
 import com.deepdame.dto.user.UserMapper;
 import com.deepdame.entity.User;
 import com.deepdame.exception.NotFoundException;
 import com.deepdame.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+@Service
 @Transactional
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserDto save(UserDto userDto) {
@@ -36,6 +41,22 @@ public class UserServiceImpl implements UserService {
         // TODO : changing password
         userRepository.save(user);
         return userMapper.toDTO(user);
+    }
+
+    @Override
+    public UserDto register(RegisterRequest request) {
+        User user = User.builder()
+                .username(request.getUsername())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .bannedFromApp(false)
+                .bannedFromChat(false)
+                .emailValidated(false)
+                .build();
+
+        User savedUser = userRepository.save(user);
+
+        return userMapper.toDTO(savedUser);
     }
 
     @Override

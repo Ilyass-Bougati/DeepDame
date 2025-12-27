@@ -18,3 +18,7 @@ spring:
     properties:
       hibernate:
         format_sql=true:
+
+jwt:
+    access-token-private-key: classpath:certs/private.pem
+    access-token-public-key: classpath:certs/public.pem
