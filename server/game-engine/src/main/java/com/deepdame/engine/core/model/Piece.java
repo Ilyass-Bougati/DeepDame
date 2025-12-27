@@ -2,7 +2,7 @@ package com.deepdame.engine.core.model;
 
 public record Piece(PieceType type, boolean isKing) {
 
-    public Piece regular(PieceType type){
+    public static Piece regular(PieceType type){
         return new Piece(type, false);
     }
 
