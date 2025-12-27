@@ -33,11 +33,9 @@ Prerequisites
  * Xcode (for iOS/macOS)
  * Android Studio or VS Code
 Installation
- * Clone the repository:
-   ```text 
-   git clone [https://github.com/your-username/deepdame-client.git](https://github.com/your-username/deepdame-client.git)```   
-   ```text
-   cd deepdame-client```
+ * Clone the repository:  
+   ``git clone [https://github.com/Ilyass-Bougati/deepdame-client.git](https://github.com/Ilyass-Bougati/deepdame-client.git)``   
+   ``cd deepdame-client``
 
  * Install dependencies:
    ```flutter pub get```
