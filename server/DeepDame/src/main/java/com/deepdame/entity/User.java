@@ -72,4 +72,7 @@ public class User {
 
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    @Column(length = 1024)
+    private String refreshToken;
 }
