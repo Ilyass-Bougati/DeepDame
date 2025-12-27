@@ -24,13 +24,12 @@ class Input extends StatelessWidget {
 
       decoration: InputDecoration(
         focusColor: Color.fromARGB(255, 170, 188, 180),
-        contentPadding: EdgeInsets.only(left: 20),
 
         hintText: placeholder,
         hintStyle: GoogleFonts.nunito(
           fontWeight: FontWeight.bold,
           fontSize: 17.5,
-          color: Color.fromARGB(127, 123, 152, 166),
+          color: Color.fromARGB(200, 123, 152, 166),
         ),
 
         enabledBorder: UnderlineInputBorder(
