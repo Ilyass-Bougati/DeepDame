@@ -18,6 +18,7 @@ class Submitbutton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: action,
       child: Stack(
         children: [
