@@ -20,6 +20,7 @@ lib/
     ├── SubmitButton.dart   # Custom styled action button
     └── Input.dart          # Custom text input field
 
+```
 🧩 Components (Prefabs)
  * SubmitButton.dart: A reusable button widget used for primary actions (e.g., logging in, registering).
  * Input.dart: A standardized text entry field used for capturing user data like usernames and passwords.
