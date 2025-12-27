@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class Submitbutton extends StatelessWidget {
   String? text;
@@ -13,8 +14,7 @@ class Submitbutton extends StatelessWidget {
     this.action, {
     super.key,
   });
-
-// TODO : add fonts into the project
+  
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -42,10 +42,16 @@ class Submitbutton extends StatelessWidget {
               child: SizedBox(
                 width: 208,
                 height: 55,
-                child: Center(child: Text(
-                  text == null ? "" : text.toString(),
-                  style: TextStyle(color: Colors.white, fontSize: 20 , fontWeight: FontWeight.bold),
-                ),)
+                child: Center(
+                  child: Text(
+                    text == null ? "" : text.toString(),
+                    style: GoogleFonts.nunito(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
               ),
             ),
           ],
