@@ -58,9 +58,6 @@ jobs:
         # Crucial for monorepos: tell it where the pom is
         cache-dependency-path: server/pom.xml
 
-    - name: Make mvnw executable
-      run: chmod +x mvnw
-
     - name: Build and Test
       run: mvn test
       env:
