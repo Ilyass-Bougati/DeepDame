@@ -1,8 +1,11 @@
 package com.deepdame;
 
+import com.deepdame.properties.JwtProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
+@EnableConfigurationProperties({JwtProperties.class,JwtProperties.class})
 @SpringBootApplication
 public class ServerApplication {
 

@@ -1,7 +1,9 @@
 package com.deepdame.dto.user;
 
 import com.deepdame.entity.User;
+import org.springframework.stereotype.Component;
 
+@Component
 public class UserMapperImpl implements UserMapper {
 
     /**
