@@ -4,11 +4,12 @@ import com.deepdame.engine.core.logic.*;
 import com.deepdame.engine.core.model.*;
 
 import java.util.Scanner;
+import java.util.UUID;
 
 public class Main {
     public static void main(String[] args){
         GameEngine engine = new GameEngine();
-        GameState state = new GameState("game_1");
+        GameState state = new GameState(UUID.randomUUID());
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("=== CHECKERS ENGINE TEST ===");

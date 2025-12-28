@@ -1,6 +1,7 @@
 package com.deepdame.engine.core.model;
 
-import java.lang.reflect.Array;
+import org.springframework.data.annotation.PersistenceCreator;
+
 import java.util.Arrays;
 
 public class Board {
@@ -10,6 +11,11 @@ public class Board {
     public Board() {
         this.grid = new Piece[SIZE][SIZE];
         initializeBoard();
+    }
+
+    @PersistenceCreator
+    public Board(Piece[][] grid) {
+        this.grid = grid;
     }
 
     private void initializeBoard(){

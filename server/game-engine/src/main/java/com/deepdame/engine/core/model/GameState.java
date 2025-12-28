@@ -1,19 +1,32 @@
 package com.deepdame.engine.core.model;
 
+import org.springframework.data.annotation.PersistenceCreator;
+
+import java.util.UUID;
+
 public class GameState {
 
-    private final String id;
+    private final UUID id;
     private final Board board;
     private PieceType currentTurn;
     private boolean isGameOver;
     private PieceType winner;
 
-    public GameState(String id){
+    public GameState(UUID id){
         this.id = id;
         this.board = new Board();
         this.currentTurn = PieceType.BLACK;
         this.isGameOver = false;
         this.winner = null;
+    }
+
+    @PersistenceCreator
+    public GameState(UUID id, Board board, PieceType currentTurn, boolean isGameOver, PieceType winner) {
+        this.id = id;
+        this.board = board;
+        this.currentTurn = currentTurn;
+        this.isGameOver = isGameOver;
+        this.winner = winner;
     }
 
     public void switchTurn(){
@@ -26,7 +39,7 @@ public class GameState {
         this.winner = winner;
     }
 
-    public String getId() { return id; }
+    public UUID getId() { return id; }
     public Board getBoard() { return board; }
     public PieceType getCurrentTurn() { return currentTurn; }
     public boolean isGameOver() { return isGameOver; }
