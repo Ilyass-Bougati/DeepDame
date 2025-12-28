@@ -29,9 +29,21 @@ You must install the game engine first so the backend can find it. Run this from
 mvn clean install -DskipTests
 ```
 
-**Step 2: Run the Spring Boot Server**
+**Step 2: Generate RSA Keys (Required)**
 
-Once the build is successful, start the server:
+The backend requires RSA keys for security (JWT / encryption).
+the following commands must be executed from the `/server/DeepDame/src/main/resources` directory:
+```bash
+mkdir -p certs
+cd certs
+openssl genpkey -algorithm RSA -out private.pem -pkeyopt rsa_keygen_bits:2048
+openssl rsa -pubout -in private.pem -out public.pem
+```
+Do NOT commit private_key.pem to version control.
+
+**Step 3: Run the Spring Boot Server**
+
+Now you can start the server:
 
 ```bash
 mvn spring-boot:run
