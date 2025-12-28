@@ -11,4 +11,10 @@
     </parent>
 
     <artifactId>game-engine</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-commons</artifactId>
+        </dependency>
+    </dependencies>
 </project>
