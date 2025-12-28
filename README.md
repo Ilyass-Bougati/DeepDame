@@ -31,8 +31,7 @@ mvn clean install -DskipTests
 
 **Step 2: Generate RSA Keys (Required)**
 
-The backend requires RSA keys for security (JWT / encryption).
-the following commands must be executed from the `/server/DeepDame/src/main/resources` directory:
+The backend requires RSA keys for security (JWT / encryption). the following commands must be executed from the `/server/DeepDame/src/main/resources` directory:
 ```bash
 mkdir -p certs
 cd certs
