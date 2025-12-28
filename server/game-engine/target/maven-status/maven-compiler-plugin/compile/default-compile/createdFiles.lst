@@ -1,9 +1,0 @@
-com\deepdame\engine\core\Main.class
-com\deepdame\engine\core\model\Move.class
-com\deepdame\engine\core\model\PieceType.class
-com\deepdame\engine\core\logic\MoveValidator.class
-com\deepdame\engine\core\model\Board.class
-com\deepdame\engine\core\model\Position.class
-com\deepdame\engine\core\model\Piece.class
-com\deepdame\engine\core\model\GameState.class
-com\deepdame\engine\core\logic\GameEngine.class
