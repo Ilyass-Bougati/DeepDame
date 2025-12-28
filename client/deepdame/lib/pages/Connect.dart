@@ -114,7 +114,6 @@ class Connect extends StatelessWidget {
       ),
     );
   }
-
   Widget _registerPage() {
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 253, 251, 247),
