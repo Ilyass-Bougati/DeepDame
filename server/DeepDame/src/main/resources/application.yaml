@@ -1,20 +1,26 @@
-spring:
-  application:
-    name: deepdame
-
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/deepdame}
-    username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
-    hikari:
-      connection-test-query: SELECT 1
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    open-in-view: true
-    properties:
-      hibernate:
-        format_sql=true:
+#spring:
+#  application:
+#    name: deepdame
+#
+#  datasource:
+#    driver-class-name: org.postgresql.Driver
+#    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/deepdame}
+#    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+#    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+#    hikari:
+#      connection-test-query: SELECT 1
+#
+#  data:
+#    mongodb:
+#      uri: mongodb://admin:password@localhost:27017/deepdame?authSource=admin
+#      auto-index-creation: true
+#
+#
+#  jpa:
+#    hibernate:
+#      ddl-auto: update
+#    show-sql: true
+#    open-in-view: true
+#    properties:
+#      hibernate:
+#        format_sql: trues
