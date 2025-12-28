@@ -1,0 +1,16 @@
+:root{
+    --bg-cream: #F9F9F4;       /* Fond crème clair */
+    --sage-primary: #73937E;   /* Vert sauge principal (Titres, labels) */
+    --sage-dark: #5E7A68;      /* Vert plus foncé (Ombre du bouton, focus) */
+    --sage-light: #B0C4B0;
+}
+
+body {
+    background-color: var(--bg-cream);
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+}
