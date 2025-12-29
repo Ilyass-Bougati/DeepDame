@@ -1,8 +1,12 @@
 import 'package:deepdame/prefabs/Input.dart';
 import 'package:deepdame/prefabs/SubmitButton.dart';
 import 'package:deepdame/prefabs/ValidationController.dart';
+import 'package:deepdame/requests/LoginRequest.dart';
+import 'package:deepdame/requests/RegisterRequest.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+import '../static/Utils.dart';
 
 class Connect extends StatelessWidget {
   final bool login;
@@ -155,11 +159,29 @@ class Connect extends StatelessWidget {
                   () {
                     if (username_controller.getState() == false ||
                         password_controller.getState() == false) {
-                      if (username_controller.getState() == false)
+                      if (username_controller.getState() == false) {
                         print("Username is invalid !");
+                      }
 
-                      if (password_controller.getState() == false)
+                      if (password_controller.getState() == false) {
                         print("Password is invalid !");
+                      }
+                    } else {
+                      LoginRequest request = LoginRequest(
+                        username_controller.getController().text,
+                        password_controller.getController().text,
+                      );
+
+                      void login() async {
+                        var resp = await Utils.postRequest(
+                          request,
+                          "auth/login",
+                        );
+
+                        print(resp.body);
+                      }
+
+                      login();
                     }
                   },
                 ),
@@ -361,10 +383,36 @@ class Connect extends StatelessWidget {
                   Color.fromARGB(255, 170, 188, 180),
                   Color.fromARGB(255, 119, 133, 127),
                   () {
+                    bool isValid = true;
                     for (String s in map.keys.toSet()) {
                       if (map[s]?.getState() == false) {
                         print("Field $s is invalid !");
+                        isValid = false;
+                        break;
                       }
+                    }
+
+                    if (isValid) {
+                      RegisterRequest request = RegisterRequest(
+                        (map['username']?.getController()
+                                as TextEditingController)
+                            .text,
+                        (map['email']?.getController() as TextEditingController)
+                            .text,
+                        (map['password']?.getController()
+                                as TextEditingController)
+                            .text,
+                      );
+
+                      void register() async {
+                        var resp = await Utils.postRequest(
+                          request,
+                          "auth/register",
+                        );
+                        print(resp.body);
+                      }
+
+                      register();
                     }
                     ;
                   },
