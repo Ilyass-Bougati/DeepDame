@@ -66,7 +66,7 @@ class Connect extends StatelessWidget {
                           alignment: Alignment.centerRight,
                           child: SizedBox(
                             child: Input(
-                              "JohnDoe67",
+                              "JohnDoe69",
                               TextInputType.name,
                               TextEditingController(),
                             ),
