@@ -96,12 +96,16 @@ class Connect extends StatelessWidget {
                               "JohnDoe69",
                               TextInputType.name,
                               username_controller.getController(),
-                              () => username_controller.setState(
-                                validator(
-                                  username_controller.getController(),
-                                  "username",
-                                ),
-                              ),
+                              "username is invalid",
+                              () {
+                                username_controller.setState(
+                                  validator(
+                                    username_controller.getController(),
+                                    "username",
+                                  ),
+                                );
+                                return username_controller.getState();
+                              },
                             ),
                           ),
                         ),
@@ -126,12 +130,16 @@ class Connect extends StatelessWidget {
                               "password",
                               TextInputType.visiblePassword,
                               password_controller.getController(),
-                              () => password_controller.setState(
-                                validator(
-                                  password_controller.getController(),
-                                  "password",
-                                ),
-                              ),
+                              "password is invalid",
+                              () {
+                                password_controller.setState(
+                                  validator(
+                                    password_controller.getController(),
+                                    "password",
+                                  ),
+                                );
+                                return password_controller.getState();
+                              },
                             ),
                           ),
                         ),
@@ -231,6 +239,7 @@ class Connect extends StatelessWidget {
                               TextInputType.name,
                               map['username']?.getController()
                                   as TextEditingController,
+                              "username invalid",
                               () {
                                 map['username']?.setState(
                                   validator(
@@ -239,7 +248,7 @@ class Connect extends StatelessWidget {
                                     "username",
                                   ),
                                 );
-                                ;
+                                return map['username']?.getState() as bool;
                               },
                             ),
                           ),
@@ -266,6 +275,7 @@ class Connect extends StatelessWidget {
                               TextInputType.emailAddress,
                               map['email']?.getController()
                                   as TextEditingController,
+                              "email invalid",
                               () {
                                 map['email']?.setState(
                                   validator(
@@ -274,7 +284,7 @@ class Connect extends StatelessWidget {
                                     "email",
                                   ),
                                 );
-                                ;
+                                return map['email']?.getState() as bool;
                               },
                             ),
                           ),
@@ -301,6 +311,7 @@ class Connect extends StatelessWidget {
                               TextInputType.visiblePassword,
                               map['password']?.getController()
                                   as TextEditingController,
+                              "8+ characters: 1+ Upper, 1+ Digit, 1+ Symbol",
                               () {
                                 map['password']?.setState(
                                   validator(
@@ -309,7 +320,7 @@ class Connect extends StatelessWidget {
                                     "password",
                                   ),
                                 );
-                                ;
+                                return map['password']?.getState() as bool;
                               },
                             ),
                           ),
@@ -323,6 +334,7 @@ class Connect extends StatelessWidget {
                               TextInputType.visiblePassword,
                               map['confirmed password']?.getController()
                                   as TextEditingController,
+                              "passwords do not match !",
                               () {
                                 map['confirmed password']?.setState(
                                   (map['password']?.getController()
@@ -333,6 +345,8 @@ class Connect extends StatelessWidget {
                                               as TextEditingController)
                                           .text,
                                 );
+                                return map['confirmed password']?.getState()
+                                    as bool;
                               },
                             ),
                           ),
