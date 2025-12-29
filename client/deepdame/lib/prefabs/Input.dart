@@ -5,12 +5,14 @@ class Input extends StatelessWidget {
   final TextInputType type;
   final TextEditingController controller;
   final String placeholder;
+  final void Function() verification;
 
-  const Input(this.placeholder, this.type ,this.controller, {super.key});
+  const Input(this.placeholder, this.type, this.controller, this.verification, {super.key});
 
   @override
   Widget build(BuildContext context) {
     return TextField(
+      onChanged: (value) => verification(),
       obscureText: type == TextInputType.visiblePassword ? true : false,
       keyboardType: type,
       cursorColor: Color.fromARGB(255, 170, 188, 180),

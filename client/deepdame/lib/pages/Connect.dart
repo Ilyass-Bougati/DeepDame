@@ -1,5 +1,6 @@
 import 'package:deepdame/prefabs/Input.dart';
 import 'package:deepdame/prefabs/SubmitButton.dart';
+import 'package:deepdame/prefabs/ValidationController.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -9,10 +10,36 @@ class Connect extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return login ? _loginPage() : _registerPage() ;
+    return login ? _loginPage() : _registerPage();
+  }
+
+  bool validator(TextEditingController controller, String type) {
+    String content = controller.text;
+    switch (type) {
+      case "username":
+        if (content.contains(" ")) {
+          return false;
+        }
+        return true;
+      case "email":
+        final emailRegex = RegExp(
+          r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+        );
+        return emailRegex.hasMatch(content);
+      case "password":
+        //Temporary password conditions
+        final passwordRegex = RegExp(
+          r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#\$&*~]).{8,}$',
+        );
+        return passwordRegex.hasMatch(content);
+      default:
+        return false;
+    }
   }
 
   Widget _loginPage() {
+    ValidationController username_controller = ValidationController();
+    ValidationController password_controller = ValidationController();
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 253, 251, 247),
       resizeToAvoidBottomInset: true,
@@ -66,9 +93,15 @@ class Connect extends StatelessWidget {
                           alignment: Alignment.centerRight,
                           child: SizedBox(
                             child: Input(
-                              "JohnDoe67",
+                              "JohnDoe69",
                               TextInputType.name,
-                              TextEditingController(),
+                              username_controller.getController(),
+                              () => username_controller.setState(
+                                validator(
+                                  username_controller.getController(),
+                                  "username",
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -92,7 +125,13 @@ class Connect extends StatelessWidget {
                             child: Input(
                               "password",
                               TextInputType.visiblePassword,
-                              TextEditingController(),
+                              password_controller.getController(),
+                              () => password_controller.setState(
+                                validator(
+                                  password_controller.getController(),
+                                  "password",
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -105,7 +144,16 @@ class Connect extends StatelessWidget {
                   "Login",
                   Color.fromARGB(255, 170, 188, 180),
                   Color.fromARGB(255, 119, 133, 127),
-                  () => print("This is a test behaviour !"),
+                  () {
+                    if (username_controller.getState() == false ||
+                        password_controller.getState() == false) {
+                      if (username_controller.getState() == false)
+                        print("Username is invalid !");
+
+                      if (password_controller.getState() == false)
+                        print("Password is invalid !");
+                    }
+                  },
                 ),
               ],
             ),
@@ -114,7 +162,18 @@ class Connect extends StatelessWidget {
       ),
     );
   }
+
   Widget _registerPage() {
+    Map<String, ValidationController> map = <String, ValidationController>{};
+
+    final entries = <String, ValidationController>{
+      "username": ValidationController(),
+      "email": ValidationController(),
+      "password": ValidationController(),
+      "confirmed password": ValidationController(),
+    };
+    map.addEntries(entries.entries);
+
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 253, 251, 247),
       resizeToAvoidBottomInset: true,
@@ -170,7 +229,18 @@ class Connect extends StatelessWidget {
                             child: Input(
                               "JohnDoe67",
                               TextInputType.name,
-                              TextEditingController(),
+                              map['username']?.getController()
+                                  as TextEditingController,
+                              () {
+                                map['username']?.setState(
+                                  validator(
+                                    map['username']?.getController()
+                                        as TextEditingController,
+                                    "username",
+                                  ),
+                                );
+                                ;
+                              },
                             ),
                           ),
                         ),
@@ -194,7 +264,18 @@ class Connect extends StatelessWidget {
                             child: Input(
                               "example@email.com",
                               TextInputType.emailAddress,
-                              TextEditingController(),
+                              map['email']?.getController()
+                                  as TextEditingController,
+                              () {
+                                map['email']?.setState(
+                                  validator(
+                                    map['email']?.getController()
+                                        as TextEditingController,
+                                    "email",
+                                  ),
+                                );
+                                ;
+                              },
                             ),
                           ),
                         ),
@@ -218,7 +299,18 @@ class Connect extends StatelessWidget {
                             child: Input(
                               "password",
                               TextInputType.visiblePassword,
-                              TextEditingController(),
+                              map['password']?.getController()
+                                  as TextEditingController,
+                              () {
+                                map['password']?.setState(
+                                  validator(
+                                    (map['password']?.getController()
+                                        as TextEditingController),
+                                    "password",
+                                  ),
+                                );
+                                ;
+                              },
                             ),
                           ),
                         ),
@@ -229,7 +321,19 @@ class Connect extends StatelessWidget {
                             child: Input(
                               "confirm password",
                               TextInputType.visiblePassword,
-                              TextEditingController(),
+                              map['confirmed password']?.getController()
+                                  as TextEditingController,
+                              () {
+                                map['confirmed password']?.setState(
+                                  (map['password']?.getController()
+                                              as TextEditingController)
+                                          .text ==
+                                      (map['confirmed password']
+                                                  ?.getController()
+                                              as TextEditingController)
+                                          .text,
+                                );
+                              },
                             ),
                           ),
                         ),
@@ -242,7 +346,14 @@ class Connect extends StatelessWidget {
                   "Register",
                   Color.fromARGB(255, 170, 188, 180),
                   Color.fromARGB(255, 119, 133, 127),
-                  () => print("This is a test behaviour !"),
+                  () {
+                    for (String s in map.keys.toSet()) {
+                      if (map[s]?.getState() == false) {
+                        print("Field $s is invalid !");
+                      }
+                    }
+                    ;
+                  },
                 ),
               ],
             ),
