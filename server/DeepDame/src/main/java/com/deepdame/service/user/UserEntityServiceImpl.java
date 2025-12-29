@@ -3,11 +3,11 @@ package com.deepdame.service.user;
 import com.deepdame.entity.User;
 import com.deepdame.exception.NotFoundException;
 import com.deepdame.repository.UserRepository;
-import com.deepdame.service.CrudEntityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -22,6 +22,12 @@ public class UserEntityServiceImpl implements UserEntityService {
     public User findById(UUID id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> findAll() {
+        return userRepository.findAll();
     }
 
     @Override
