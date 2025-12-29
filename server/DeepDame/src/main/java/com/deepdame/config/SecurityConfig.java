@@ -23,6 +23,7 @@ public class SecurityConfig {
     private final CustomUserDetailsService customUserDetailsService;
     private final JwtCookieFilter jwtCookieFilter;
 
+    @Order(2)
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -43,11 +44,11 @@ public class SecurityConfig {
     public SecurityFilterChain adminSecurity(HttpSecurity http) throws Exception {
         http
                 .securityMatcher("/admin/**", "/css/**", "/js/**")
-                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/admin/login", "/css/**", "/js/**").permitAll()
-                        .anyRequest().hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
                 )
+                .userDetailsService(customUserDetailsService)
                 .formLogin(form -> form
                         .loginPage("/admin/login")
                         .loginProcessingUrl("/admin/perform_login")

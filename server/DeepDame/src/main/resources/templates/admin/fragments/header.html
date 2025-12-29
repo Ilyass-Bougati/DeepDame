@@ -1,0 +1,42 @@
+<nav th:fragment="adminHeader"
+     xmlns:th="http://www.thymeleaf.org"
+     xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+     class="navbar navbar-expand-lg navbar-light bg-white px-4 mb-4 shadow-sm border-bottom w-100">
+
+    <div class="container-fluid">
+        <a class="navbar-brand d-flex flex-column" th:href="@{/admin}"
+           style="font-family: 'Georgia', serif; color: #73937e; font-weight: bold; line-height: 1;">
+            <span style="letter-spacing: 2px; font-size: 1.2rem;">DEEPDAME</span>
+            <span style="font-weight: 300; font-size: 0.7rem; color: #4a5d51;">ADMINISTRATION</span>
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#deepDameNavbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="deepDameNavbar">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/admin}" style="color: #4a5d51; font-weight: 500;">Dashboard</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                    <a class="nav-link" th:href="@{/admin/users}" style="color: #4a5d51; font-weight: 500;">Users</a>
+                </li>
+            </ul>
+
+            <div class="d-flex align-items-center" sec:authorize="isAuthenticated()">
+                <div class="me-3 text-end d-none d-sm-block">
+                    <small class="text-muted d-block" style="font-size: 0.7rem;">ACCOUNT</small>
+                    <span class="fw-bold" style="color: #73937e;" sec:authentication="name">Admin</span>
+                </div>
+                <form th:action="@{/admin/logout}" method="post" class="m-0">
+                    <button type="submit" class="btn btn-sm px-3 text-white"
+                            style="background-color: #73937e; border-radius: 20px; border: none; font-weight: 600;">
+                        Logout
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</nav>
