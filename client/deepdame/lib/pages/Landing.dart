@@ -8,7 +8,9 @@ class Landing extends StatelessWidget {
   const Landing({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => build_onConnection(context);
+
+  Widget build_offConnection(BuildContext context) {
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 253, 251, 247),
       body: Center(
@@ -91,6 +93,73 @@ class Landing extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+  Widget build_onConnection(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Color.fromARGB(255, 253, 251, 247),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Stack(
+              alignment: AlignmentDirectional.center,
+              children: [
+                Divider(
+                  height: 20,
+                  thickness: 2,
+                  indent: 20,
+                  endIndent: 20,
+                  color: Color.fromARGB(255, 119, 133, 127),
+                ),
+                Column(
+                  children: [
+                    Text(
+                      "Deep Dame",
+                      style: GoogleFonts.lora(
+                        fontSize: 50,
+                        fontWeight: FontWeight.bold,
+                        color: Color.fromARGB(255, 170, 188, 180),
+                      ),
+                    ),
+                    SizedBox(height: 50),
+                  ],
+                ),
+                Column(
+                  children: [
+                    SizedBox(height: 50),
+                    Text(
+                      "Hi, JohnDoe67 !",
+                      style: GoogleFonts.lora(
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                        color: Color.fromARGB(255, 170, 188, 180),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+
+            SvgPicture.asset('assets/vectors/Board.svg'),
+            SizedBox(height: 30),
+            Submitbutton(
+              "Play Online",
+              Color.fromARGB(255, 232, 208, 153),
+              Color.fromARGB(255, 155, 138, 101),
+              () => print("Load Pvp"),
+            ),
+            SizedBox(height: 10),
+            Submitbutton(
+              "Play vs Ai",
+              Color.fromARGB(255, 216, 157, 143),
+              Color.fromARGB(255, 142, 102, 93),
+              () => print("Load Pve"),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: BottomAppBar(color: Color.fromARGB(255, 235, 229, 222),),
     );
   }
 }

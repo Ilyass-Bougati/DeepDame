@@ -6,7 +6,7 @@ class Input extends StatelessWidget {
   final TextEditingController controller;
   final String placeholder;
 
-  const Input(this.placeholder, this.type ,this.controller, {super.key});
+  const Input(this.placeholder, this.type, this.controller, {super.key});
 
   @override
   Widget build(BuildContext context) {

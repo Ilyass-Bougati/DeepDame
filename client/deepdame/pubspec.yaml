@@ -63,6 +63,9 @@ flutter:
   #Cross-hatching 
     - assets/vectors/CrossHatchFade.svg
 
+  #Board
+    - assets/vectors/Board.svg
+
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
