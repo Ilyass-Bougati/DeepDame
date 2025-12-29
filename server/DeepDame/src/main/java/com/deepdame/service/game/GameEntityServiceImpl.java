@@ -41,6 +41,4 @@ public class GameEntityServiceImpl implements GameEntityService{
     public List<GameDocument> findGamesByPlayerId(UUID playerId) {
         return gameRepository.findByPlayerBlackIdOrPlayerWhiteId(playerId, playerId);
     }
-
-
 }
