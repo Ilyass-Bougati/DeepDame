@@ -151,7 +151,7 @@ public class GameServiceImpl implements GameService{
         boolean isWhite = playerId.equals(gameDoc.getPlayerWhiteId());
 
         if (!isBlack && !isWhite){
-            throw new IllegalStateException("WHO TF ARE YOU !!!!");
+            throw new IllegalArgumentException("WHO TF ARE YOU !!!!");
         }
         if (isBlack && currentTurn != PieceType.BLACK){
             throw new IllegalStateException("I'm not racist but it is White's turn");
