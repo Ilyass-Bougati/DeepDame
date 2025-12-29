@@ -26,6 +26,11 @@ public class GameEntityServiceImpl implements GameEntityService{
     }
 
     @Override
+    public List<GameDocument> findAll() {
+        return gameRepository.findAll();
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<GameDocument> findOpenPvpGames() {
         return gameRepository.findByModeAndPlayerWhiteIdIsNull(GameMode.PVP);
