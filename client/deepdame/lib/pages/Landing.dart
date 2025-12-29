@@ -8,7 +8,7 @@ class Landing extends StatelessWidget {
   const Landing({super.key});
 
   @override
-  Widget build(BuildContext context) => build_onConnection(context);
+  Widget build(BuildContext context) => build_offConnection(context);
 
   Widget build_offConnection(BuildContext context) {
     return Scaffold(
