@@ -126,16 +126,7 @@
 
                 <div class="mt-4 d-flex gap-2">
                     <a th:href="@{/admin/users/edit/{id}(id=${user.id})}" class="btn px-4 text-white" style="background-color: var(--soft-gold); border-radius: 10px;">Edit</a>
-                     <form th:action="@{/admin/users/ban/{id}(id=${user.id})}" method="post">
-                        <button type="submit"
-                                class="btn px-4 text-white"
-                                th:disabled="${user.hasRole('ADMIN')}"
-                                th:style="${user.hasRole('ADMIN')} ? 'background-color: #bdc3c7; cursor: not-allowed; border-radius: 10px;' : 'background-color: var(--dusty-clay); border-radius: 10px;'"
-                                th:title="${user.hasRole('ADMIN')} ? 'You cannot ban an administrator' : ''">
 
-                            <span th:text="${user.bannedFromApp ? 'Unban User' : 'Ban User'}">Action</span>
-                        </button>
-                    </form>
                 </div>
             </div>
         </div>

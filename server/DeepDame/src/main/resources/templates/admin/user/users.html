@@ -89,11 +89,6 @@
                     </td>
                     <td class="text-end px-4" ondblclick="event.stopPropagation();">
                         <a th:href="@{/admin/users/ban/{id}(id=${user.id})}" class="btn btn-sm btn-action-edit">Edit</a>
-                        <button class="btn btn-sm btn-action-ban ms-1"
-                                th:disabled="${user.hasRole('ADMIN')}"
-                                title="Cannot ban administrators">
-                            Ban
-                        </button>
                     </td>
                 </tr>
                 </tbody>
