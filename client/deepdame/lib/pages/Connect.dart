@@ -42,15 +42,17 @@ class Connect extends StatelessWidget {
   }
 
   Widget _loginPage() {
+    TextEditingController api_controller = TextEditingController();
+
     ValidationController username_controller = ValidationController();
     ValidationController password_controller = ValidationController();
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 253, 251, 247),
       resizeToAvoidBottomInset: true,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(80),
+        preferredSize: const Size.fromHeight(110),
         child: Container(
-          padding: EdgeInsets.only(top: 30),
+          padding: EdgeInsets.only(top: 60),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -147,11 +149,24 @@ class Connect extends StatelessWidget {
                             ),
                           ),
                         ),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: SizedBox(
+                            child: Input(
+                              "Api",
+                              TextInputType.text,
+                              api_controller,
+                              "",
+                              () {
+                                return true;
+                              },
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 ),
-                SizedBox(height: 80),
                 Submitbutton(
                   "Login",
                   Color.fromARGB(255, 170, 188, 180),
@@ -173,9 +188,10 @@ class Connect extends StatelessWidget {
                       );
 
                       void login() async {
-                        var resp = await Utils.postRequest(
+                        var resp = await Utils.api_postRequest(
                           request,
                           "auth/login",
+                          api_controller.text
                         );
 
                         print(resp.body);
@@ -194,6 +210,7 @@ class Connect extends StatelessWidget {
   }
 
   Widget _registerPage() {
+    TextEditingController api_controller = TextEditingController();
     Map<String, ValidationController> map = <String, ValidationController>{};
 
     final entries = <String, ValidationController>{
@@ -208,9 +225,9 @@ class Connect extends StatelessWidget {
       backgroundColor: Color.fromARGB(255, 253, 251, 247),
       resizeToAvoidBottomInset: true,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(80),
+        preferredSize: const Size.fromHeight(110),
         child: Container(
-          padding: EdgeInsets.only(top: 30),
+          padding: EdgeInsets.only(top: 60),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -373,11 +390,24 @@ class Connect extends StatelessWidget {
                             ),
                           ),
                         ),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: SizedBox(
+                            child: Input(
+                              "Api",
+                              TextInputType.text,
+                              api_controller,
+                              "",
+                              () {
+                                return true;
+                              },
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 ),
-                SizedBox(height: 80),
                 Submitbutton(
                   "Register",
                   Color.fromARGB(255, 170, 188, 180),
@@ -405,9 +435,10 @@ class Connect extends StatelessWidget {
                       );
 
                       void register() async {
-                        var resp = await Utils.postRequest(
+                        var resp = await Utils.api_postRequest(
                           request,
                           "auth/register",
+                          api_controller.text,
                         );
                         print(resp.body);
                       }
