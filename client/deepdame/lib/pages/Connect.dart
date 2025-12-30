@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:deepdame/prefabs/Input.dart';
 import 'package:deepdame/prefabs/SubmitButton.dart';
 import 'package:deepdame/prefabs/ValidationController.dart';
@@ -44,7 +46,7 @@ class Connect extends StatelessWidget {
   Widget _loginPage() {
     TextEditingController api_controller = TextEditingController();
 
-    ValidationController username_controller = ValidationController();
+    ValidationController email_controller = ValidationController();
     ValidationController password_controller = ValidationController();
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 253, 251, 247),
@@ -87,7 +89,7 @@ class Connect extends StatelessWidget {
                         Align(
                           alignment: AlignmentGeometry.centerLeft,
                           child: Text(
-                            "Username :",
+                            "Email :",
                             style: GoogleFonts.nunito(
                               color: Color.fromARGB(255, 170, 188, 180),
                               fontSize: 20,
@@ -99,18 +101,18 @@ class Connect extends StatelessWidget {
                           alignment: Alignment.centerRight,
                           child: SizedBox(
                             child: Input(
-                              "JohnDoe69",
-                              TextInputType.name,
-                              username_controller.getController(),
-                              "username is invalid",
+                              "example@email.com",
+                              TextInputType.emailAddress,
+                              email_controller.getController(),
+                              "email is invalid",
                               () {
-                                username_controller.setState(
+                                email_controller.setState(
                                   validator(
-                                    username_controller.getController(),
-                                    "username",
+                                    email_controller.getController(),
+                                    "email",
                                   ),
                                 );
-                                return username_controller.getState();
+                                return email_controller.getState();
                               },
                             ),
                           ),
@@ -172,9 +174,9 @@ class Connect extends StatelessWidget {
                   Color.fromARGB(255, 170, 188, 180),
                   Color.fromARGB(255, 119, 133, 127),
                   () {
-                    if (username_controller.getState() == false ||
+                    if (email_controller.getState() == false ||
                         password_controller.getState() == false) {
-                      if (username_controller.getState() == false) {
+                      if (email_controller.getState() == false) {
                         print("Username is invalid !");
                       }
 
@@ -183,18 +185,34 @@ class Connect extends StatelessWidget {
                       }
                     } else {
                       LoginRequest request = LoginRequest(
-                        username_controller.getController().text,
+                        email_controller.getController().text,
                         password_controller.getController().text,
                       );
 
                       void login() async {
-                        var resp = await Utils.api_postRequest(
+                        await Utils.api_postRequest(
                           request,
                           "auth/login",
-                          api_controller.text
+                          api_controller.text,
                         );
 
-                        print(resp.body);
+                        List<Cookie> cookies = await persistCookieJar
+                            .loadForRequest(
+                              Uri.parse("${api_controller.text}/auth/login"),
+                            );
+
+                      
+                        if (cookies.isEmpty) {
+                          print("📭 No cookies found ");
+                        } else {
+                          print("--- 🍪 Cookies ");
+                          for (var cookie in cookies) {
+                            print("Name: ${cookie.name}");
+                            print("Value: ${cookie.value}");
+                            print("Expires: ${cookie.expires}");
+                            print("--------------------------");
+                          }
+                        }
                       }
 
                       login();
@@ -440,7 +458,7 @@ class Connect extends StatelessWidget {
                           "auth/register",
                           api_controller.text,
                         );
-                        print(resp.body);
+                        print(resp.data);
                       }
 
                       register();
