@@ -76,4 +76,11 @@ public class User {
 
     @Column(length = 1024)
     private String refreshToken;
+
+
+    public boolean hasRole(String roleName) {
+        if (this.roles == null) return false;
+        return this.roles.stream()
+                .anyMatch(role -> role.getName().equals(roleName));
+    }
 }
