@@ -1,8 +1,6 @@
 package com.deepdame.entity;
 
-import com.deepdame.engine.core.model.Board;
 import com.deepdame.engine.core.model.GameState;
-import com.deepdame.engine.core.model.PieceType;
 import com.deepdame.enums.GameMode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

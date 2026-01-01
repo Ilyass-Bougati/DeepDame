@@ -11,7 +11,7 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 public class WebsocketConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(new GameWebSocketHandler(), "/game-ws")
+        registry.addHandler(new GameWebSocketHandler(), "/game-ws/v1")
                 .setAllowedOrigins("*");
     }
 }
