@@ -3,11 +3,11 @@ package com.deepdame.service.user;
 import com.deepdame.entity.User;
 import com.deepdame.exception.NotFoundException;
 import com.deepdame.repository.UserRepository;
-import com.deepdame.service.CrudEntityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 import java.util.UUID;
 
 @Service
@@ -26,12 +26,14 @@ public class UserEntityServiceImpl implements UserEntityService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "users", key = "#email")
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("User not found with email: " + email));
     }
 
     @Override
+    @CacheEvict(value = "users", key = "#email")
     public void updateRefreshToken(String email, String token) {
         User user = findByEmail(email);
         user.setRefreshToken(token);

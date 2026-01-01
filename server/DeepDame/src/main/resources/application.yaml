@@ -10,6 +10,16 @@ spring:
     hikari:
       connection-test-query: SELECT 1
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  cache:
+    type: redis
+    redis:
+      time-to-live: 1800000 #30min
+
   jpa:
     hibernate:
       ddl-auto: update
