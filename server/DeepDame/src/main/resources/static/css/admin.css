@@ -1,8 +1,10 @@
-:root{
-    --bg-cream: #F9F9F4;       /* Fond crème clair */
-    --sage-primary: #73937E;   /* Vert sauge principal (Titres, labels) */
-    --sage-dark: #5E7A68;      /* Vert plus foncé (Ombre du bouton, focus) */
-    --sage-light: #B0C4B0;
+:root {
+    --bg-cream: #F9F9F4;       /* Light cream background */
+    --sage-primary: #73937E;   /* Main Sage Green */
+    --sage-dark: #5E7A68;      /* Darker Sage */
+    --sage-light: #B0C4B0;     /* Soft Sage */
+    --dusty-clay: #B88675;     /* NEW: Dusty Clay (for Ban/Alerts) */
+    --soft-gold: #C5A059;      /* NEW: Soft Gold (for Edit/Verification) */
 }
 
 body {
