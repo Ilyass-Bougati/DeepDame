@@ -1,7 +1,9 @@
 package com.deepdame.dto.role;
 
 import com.deepdame.entity.Role;
+import org.springframework.stereotype.Component;
 
+@Component
 public class RoleMapperImpl implements RoleMapper {
     @Override
     public RoleDto toDTO(Role role) {
