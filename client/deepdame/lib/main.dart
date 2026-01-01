@@ -8,24 +8,24 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
 Future<void> initCookies() async {
-  try{
+  try {
     final appDocDir = await getApplicationDocumentsDirectory();
-  final String cookiePath = "${appDocDir.path}/.cookies/";
+    final String cookiePath = "${appDocDir.path}/.cookies/";
 
-  await Directory(cookiePath).create(recursive: true);
+    await Directory(cookiePath).create(recursive: true);
 
-  persistCookieJar = PersistCookieJar(
-    ignoreExpires: false,
-    storage: FileStorage(cookiePath),
-  );
+    persistCookieJar = PersistCookieJar(
+      ignoreExpires: false,
+      storage: FileStorage(cookiePath),
+    );
 
-  dio.interceptors.add(CookieManager(persistCookieJar));}
-  catch(e){
+    dio.interceptors.add(CookieManager(persistCookieJar));
+  } catch (e) {
     print(e);
   }
 }
 
-void main(){
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
   initCookies();
   runApp(const MyApp());
@@ -37,9 +37,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Color.fromARGB(255, 119, 133, 127),
+        ),
+      ),
       debugShowCheckedModeBanner: false,
       title: 'Deep Dame',
-      home: Landing(),
+      home: Landing(false),
     );
   }
 }
