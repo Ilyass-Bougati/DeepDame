@@ -6,11 +6,9 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -52,23 +50,44 @@ public class GameCacheService {
 
     public List<GameDocument> getOpenGames(){
 
-        Set<String> ids = stringTemplate.opsForSet().members(KEY_LOBBY);
+        Set<String> idSet = stringTemplate.opsForSet().members(KEY_LOBBY);
 
-        if (ids == null || ids.isEmpty()) return List.of();
+        if (idSet == null || idSet.isEmpty()) return List.of();
 
-        List<String> keys = ids.stream()
+        List<String> idList = new ArrayList<>(idSet);
+
+        return fetchGamesBatch(idList);
+    }
+
+    private List<GameDocument> fetchGamesBatch(List<String> idList){
+
+        List<String> keys = idList.stream()
                 .map(id -> KEY_GAME + id)
                 .toList();
 
-        return fetchGamesBatch(keys);
-    }
+        List<GameDocument> rawGames = gameTemplate.opsForValue().multiGet(keys);
 
-    private List<GameDocument> fetchGamesBatch(List<String> keys){
+        if (rawGames == null) return List.of();
 
-        List<GameDocument> games = gameTemplate.opsForValue().multiGet(keys);
+        // the game object in redis have ttl of 1h but lobby does not have a ttl
+        // so we need to remove the ids of the dead games manually
+        List<GameDocument> validGames = new ArrayList<>();
+        List<String> staleIds = new ArrayList<>();
 
-        if (games == null) return List.of();
+        for (int i = 0; i < rawGames.size(); i++){
+            GameDocument game = rawGames.get(i);
 
-        return games;
+            if (game == null){
+                staleIds.add(idList.get(i));
+            } else {
+                validGames.add(game);
+            }
+        }
+
+        if (!staleIds.isEmpty()){
+            stringTemplate.opsForSet().remove(KEY_LOBBY, staleIds.toArray());
+        }
+
+        return validGames;
     }
 }
