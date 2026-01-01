@@ -1,8 +1,14 @@
+import 'dart:io';
+
 import 'package:deepdame/prefabs/Input.dart';
 import 'package:deepdame/prefabs/SubmitButton.dart';
 import 'package:deepdame/prefabs/ValidationController.dart';
+import 'package:deepdame/requests/LoginRequest.dart';
+import 'package:deepdame/requests/RegisterRequest.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+import '../static/Utils.dart';
 
 class Connect extends StatelessWidget {
   final bool login;
@@ -10,7 +16,42 @@ class Connect extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return login ? _loginPage() : _registerPage();
+    return login ? _loginPage(context) : _registerPage(context);
+  }
+
+  void showLoadingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible:
+          false, //comment to make the popup dismissible for debug purposes.
+      builder: (BuildContext context) {
+        return AlertDialog(
+          contentPadding: EdgeInsets.all(25),
+          backgroundColor: Color.fromARGB(255, 253, 251, 247),
+          content: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator.adaptive(
+                backgroundColor: Color.fromARGB(255, 170, 188, 180),
+              ),
+              SizedBox(width: 20),
+              Text(
+                "Connecting ..",
+                style: GoogleFonts.nunito(
+                  color: Color.fromARGB(255, 170, 188, 180),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void showErrorDialog(BuildContext context, String error) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
   }
 
   bool validator(TextEditingController controller, String type) {
@@ -37,16 +78,18 @@ class Connect extends StatelessWidget {
     }
   }
 
-  Widget _loginPage() {
-    ValidationController username_controller = ValidationController();
+  Widget _loginPage(BuildContext context) {
+    TextEditingController api_controller = TextEditingController();
+
+    ValidationController email_controller = ValidationController();
     ValidationController password_controller = ValidationController();
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 253, 251, 247),
       resizeToAvoidBottomInset: true,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(80),
+        preferredSize: const Size.fromHeight(110),
         child: Container(
-          padding: EdgeInsets.only(top: 30),
+          padding: EdgeInsets.only(top: 60),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -81,7 +124,7 @@ class Connect extends StatelessWidget {
                         Align(
                           alignment: AlignmentGeometry.centerLeft,
                           child: Text(
-                            "Username :",
+                            "Email :",
                             style: GoogleFonts.nunito(
                               color: Color.fromARGB(255, 170, 188, 180),
                               fontSize: 20,
@@ -93,18 +136,18 @@ class Connect extends StatelessWidget {
                           alignment: Alignment.centerRight,
                           child: SizedBox(
                             child: Input(
-                              "JohnDoe69",
-                              TextInputType.name,
-                              username_controller.getController(),
-                              "username is invalid",
+                              "example@email.com",
+                              TextInputType.emailAddress,
+                              email_controller.getController(),
+                              "email is invalid",
                               () {
-                                username_controller.setState(
+                                email_controller.setState(
                                   validator(
-                                    username_controller.getController(),
-                                    "username",
+                                    email_controller.getController(),
+                                    "email",
                                   ),
                                 );
-                                return username_controller.getState();
+                                return email_controller.getState();
                               },
                             ),
                           ),
@@ -143,23 +186,76 @@ class Connect extends StatelessWidget {
                             ),
                           ),
                         ),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: SizedBox(
+                            child: Input(
+                              "Api",
+                              TextInputType.text,
+                              api_controller,
+                              "",
+                              () {
+                                return true;
+                              },
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 ),
-                SizedBox(height: 80),
                 Submitbutton(
                   "Login",
                   Color.fromARGB(255, 170, 188, 180),
                   Color.fromARGB(255, 119, 133, 127),
                   () {
-                    if (username_controller.getState() == false ||
+                    if (email_controller.getState() == false ||
                         password_controller.getState() == false) {
-                      if (username_controller.getState() == false)
+                      if (email_controller.getState() == false) {
                         print("Username is invalid !");
+                      }
 
-                      if (password_controller.getState() == false)
+                      if (password_controller.getState() == false) {
                         print("Password is invalid !");
+                      }
+                    } else {
+                      LoginRequest request = LoginRequest(
+                        email_controller.getController().text,
+                        password_controller.getController().text,
+                      );
+
+                      void login() async {
+                        await Utils.api_postRequest(
+                          request,
+                          "auth/login",
+                          api_controller.text,
+                        ).onError((e, stacktrace) {
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                          }
+                          showErrorDialog(context, e.toString());
+                        });
+
+                        List<Cookie> cookies = await persistCookieJar
+                            .loadForRequest(
+                              Uri.parse("${api_controller.text}/auth/login"),
+                            );
+
+                        if (cookies.isEmpty) {
+                          print("📭 No cookies found ");
+                        } else {
+                          print("--- 🍪 Cookies ");
+                          for (var cookie in cookies) {
+                            print("Name: ${cookie.name}");
+                            print("Value: ${cookie.value}");
+                            print("Expires: ${cookie.expires}");
+                            print("--------------------------");
+                          }
+                        }
+                      }
+
+                      login();
+                      showLoadingDialog(context);
                     }
                   },
                 ),
@@ -171,7 +267,8 @@ class Connect extends StatelessWidget {
     );
   }
 
-  Widget _registerPage() {
+  Widget _registerPage(BuildContext context) {
+    TextEditingController api_controller = TextEditingController();
     Map<String, ValidationController> map = <String, ValidationController>{};
 
     final entries = <String, ValidationController>{
@@ -186,9 +283,9 @@ class Connect extends StatelessWidget {
       backgroundColor: Color.fromARGB(255, 253, 251, 247),
       resizeToAvoidBottomInset: true,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(80),
+        preferredSize: const Size.fromHeight(110),
         child: Container(
-          padding: EdgeInsets.only(top: 30),
+          padding: EdgeInsets.only(top: 60),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -351,20 +448,61 @@ class Connect extends StatelessWidget {
                             ),
                           ),
                         ),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: SizedBox(
+                            child: Input(
+                              "Api",
+                              TextInputType.text,
+                              api_controller,
+                              "",
+                              () {
+                                return true;
+                              },
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 ),
-                SizedBox(height: 80),
                 Submitbutton(
                   "Register",
                   Color.fromARGB(255, 170, 188, 180),
                   Color.fromARGB(255, 119, 133, 127),
                   () {
+                    bool isValid = true;
                     for (String s in map.keys.toSet()) {
                       if (map[s]?.getState() == false) {
                         print("Field $s is invalid !");
+                        isValid = false;
+                        break;
                       }
+                    }
+
+                    if (isValid) {
+                      RegisterRequest request = RegisterRequest(
+                        (map['username']?.getController()
+                                as TextEditingController)
+                            .text,
+                        (map['email']?.getController() as TextEditingController)
+                            .text,
+                        (map['password']?.getController()
+                                as TextEditingController)
+                            .text,
+                      );
+
+                      void register() async {
+                        var resp = await Utils.api_postRequest(
+                          request,
+                          "auth/register",
+                          api_controller.text,
+                        );
+                        print(resp.data);
+                      }
+
+                      register();
+                      showLoadingDialog(context);
                     }
                     ;
                   },

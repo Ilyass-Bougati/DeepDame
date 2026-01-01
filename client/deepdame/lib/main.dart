@@ -1,7 +1,33 @@
-import 'package:deepdame/pages/Landing.dart';
-import 'package:flutter/material.dart';
+import 'dart:io';
 
-void main() {
+import 'package:cookie_jar/cookie_jar.dart';
+import 'package:deepdame/pages/Landing.dart';
+import 'package:deepdame/static/Utils.dart';
+import 'package:dio_cookie_manager/dio_cookie_manager.dart';
+import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+
+Future<void> initCookies() async {
+  try{
+    final appDocDir = await getApplicationDocumentsDirectory();
+  final String cookiePath = "${appDocDir.path}/.cookies/";
+
+  await Directory(cookiePath).create(recursive: true);
+
+  persistCookieJar = PersistCookieJar(
+    ignoreExpires: false,
+    storage: FileStorage(cookiePath),
+  );
+
+  dio.interceptors.add(CookieManager(persistCookieJar));}
+  catch(e){
+    print(e);
+  }
+}
+
+void main(){
+  WidgetsFlutterBinding.ensureInitialized();
+  initCookies();
   runApp(const MyApp());
 }
 
