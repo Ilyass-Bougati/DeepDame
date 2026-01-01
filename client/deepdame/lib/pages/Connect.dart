@@ -16,7 +16,42 @@ class Connect extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return login ? _loginPage() : _registerPage();
+    return login ? _loginPage(context) : _registerPage(context);
+  }
+
+  void showLoadingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible:
+          false, //comment to make the popup dismissible for debug purposes.
+      builder: (BuildContext context) {
+        return AlertDialog(
+          contentPadding: EdgeInsets.all(25),
+          backgroundColor: Color.fromARGB(255, 253, 251, 247),
+          content: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator.adaptive(
+                backgroundColor: Color.fromARGB(255, 170, 188, 180),
+              ),
+              SizedBox(width: 20),
+              Text(
+                "Connecting ..",
+                style: GoogleFonts.nunito(
+                  color: Color.fromARGB(255, 170, 188, 180),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void showErrorDialog(BuildContext context, String error) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
   }
 
   bool validator(TextEditingController controller, String type) {
@@ -43,7 +78,7 @@ class Connect extends StatelessWidget {
     }
   }
 
-  Widget _loginPage() {
+  Widget _loginPage(BuildContext context) {
     TextEditingController api_controller = TextEditingController();
 
     ValidationController email_controller = ValidationController();
@@ -194,14 +229,18 @@ class Connect extends StatelessWidget {
                           request,
                           "auth/login",
                           api_controller.text,
-                        );
+                        ).onError((e, stacktrace) {
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                          }
+                          showErrorDialog(context, e.toString());
+                        });
 
                         List<Cookie> cookies = await persistCookieJar
                             .loadForRequest(
                               Uri.parse("${api_controller.text}/auth/login"),
                             );
 
-                      
                         if (cookies.isEmpty) {
                           print("📭 No cookies found ");
                         } else {
@@ -216,6 +255,7 @@ class Connect extends StatelessWidget {
                       }
 
                       login();
+                      showLoadingDialog(context);
                     }
                   },
                 ),
@@ -227,7 +267,7 @@ class Connect extends StatelessWidget {
     );
   }
 
-  Widget _registerPage() {
+  Widget _registerPage(BuildContext context) {
     TextEditingController api_controller = TextEditingController();
     Map<String, ValidationController> map = <String, ValidationController>{};
 
@@ -462,6 +502,7 @@ class Connect extends StatelessWidget {
                       }
 
                       register();
+                      showLoadingDialog(context);
                     }
                     ;
                   },

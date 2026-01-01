@@ -25,16 +25,45 @@ class Utils {
     String route,
     String newApi,
   ) async {
+    Response? resp;
     try {
-      print(request.toJson());
-      return (await dio.post(
+      resp = await dio.post(
         "$newApi/$route",
         data: request.toJson(),
         options: Options(contentType: Headers.jsonContentType),
-      )).data;
+      );
+
+      return resp.data;
     } on DioException catch (e) {
+      String exceptionStr = "";
       print("Error: ${e.response?.statusCode} - ${e.message}");
-      rethrow;
+      switch (e.response?.statusCode) {
+        case 400:
+          exceptionStr += "Error : Bad request.";
+          break;
+
+        case 401:
+          exceptionStr += "Error : Bad credentials.";
+          break;
+
+        case 403:
+          exceptionStr += "Error : Forbidden.";
+          break;
+
+        case 404:
+          exceptionStr += "Error : Not found.";
+          break;
+
+        case 408:
+          exceptionStr += "Error : Timed out.";
+          break;
+
+        case 500:
+          exceptionStr += "Error : Server internal error.";
+          break;
+      }
+
+      throw Exception(exceptionStr);
     }
   }
 }
