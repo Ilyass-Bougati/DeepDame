@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +19,10 @@ public class GameCacheService {
 
     private static final String KEY_GAME = "game:";
     private static final String KEY_LOBBY = "lobby:open_games";
+    private static final String KEY_USER_GAME = "user:%s:active_game";
 
+
+    // game stuff
     public void saveGame(GameDocument game){
 
         String key = KEY_GAME + game.getId();
@@ -40,6 +42,8 @@ public class GameCacheService {
         gameTemplate.delete(key);
     }
 
+
+    // lobby stuff
     public void addToLobby(UUID gameId){
         stringTemplate.opsForSet().add(KEY_LOBBY, gameId.toString());
     }
@@ -59,6 +63,29 @@ public class GameCacheService {
         return fetchGamesBatch(idList);
     }
 
+
+    // user game stuff
+    public void setUserCurrentGame(UUID userId, UUID gameId){
+        String key = String.format(KEY_USER_GAME, userId);
+        stringTemplate.opsForValue().set(key, gameId.toString());
+    }
+
+    public UUID getUserCurrentGameId(UUID userId){
+        String key = String.format(KEY_USER_GAME, userId);
+        String gameIdString = stringTemplate.opsForValue().get(key);
+        return (gameIdString == null) ? null : UUID.fromString(gameIdString);
+    }
+
+    public boolean isUserPlaying(UUID userId){
+        return stringTemplate.hasKey(String.format(KEY_USER_GAME, userId));
+    }
+
+    public void clearUserCurrentGame(UUID userId){
+        stringTemplate.delete(String.format(KEY_USER_GAME, userId));
+    }
+
+
+    // helper function for fetching the open games and helling the lobby set
     private List<GameDocument> fetchGamesBatch(List<String> idList){
 
         List<String> keys = idList.stream()
