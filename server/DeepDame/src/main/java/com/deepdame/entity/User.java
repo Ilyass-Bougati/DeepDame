@@ -76,5 +76,4 @@ public class User {
 
     @Column(length = 1024)
     private String refreshToken;
-
 }
