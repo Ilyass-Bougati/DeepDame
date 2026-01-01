@@ -1,7 +1,9 @@
 package com.deepdame.dto.generalChatMessage;
 
 import com.deepdame.entity.GeneralChatMessage;
+import org.springframework.stereotype.Component;
 
+@Component
 public class GeneralChatMessageMapperImpl implements GeneralChatMessageMapper {
     @Override
     public GeneralChatMessageDto toDTO(GeneralChatMessage generalChatMessage) {

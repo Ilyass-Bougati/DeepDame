@@ -1,7 +1,9 @@
 package com.deepdame.exception;
 
+import com.deepdame.utils.CookieUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -70,6 +72,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleUnauthorized(Unauthorized ex) {
         Map<String, String> errorResponse = new HashMap<>();
         errorResponse.put("error", ex.getMessage());
-        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                // removing the access_token
+                .header(HttpHeaders.SET_COOKIE, CookieUtils.genCookie("access_token", "", 1, "/").toString())
+                .body(errorResponse);
     }
 }
