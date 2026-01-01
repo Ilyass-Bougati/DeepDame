@@ -1,5 +1,4 @@
-import 'dart:io';
-
+import 'package:deepdame/pages/Landing.dart';
 import 'package:deepdame/prefabs/Input.dart';
 import 'package:deepdame/prefabs/SubmitButton.dart';
 import 'package:deepdame/prefabs/ValidationController.dart';
@@ -139,21 +138,14 @@ class Connect extends StatelessWidget {
                               "example@email.com",
                               TextInputType.emailAddress,
                               email_controller.getController(),
-                              "email is invalid",
+                              "",
                               () {
-                                email_controller.setState(
-                                  validator(
-                                    email_controller.getController(),
-                                    "email",
-                                  ),
-                                );
-                                return email_controller.getState();
+                                return true;
                               },
                             ),
                           ),
                         ),
 
-                        //Password & Confirm password
                         SizedBox(height: 50),
                         Align(
                           alignment: AlignmentGeometry.centerLeft,
@@ -173,15 +165,9 @@ class Connect extends StatelessWidget {
                               "password",
                               TextInputType.visiblePassword,
                               password_controller.getController(),
-                              "password is invalid",
+                              "",
                               () {
-                                password_controller.setState(
-                                  validator(
-                                    password_controller.getController(),
-                                    "password",
-                                  ),
-                                );
-                                return password_controller.getState();
+                                return true;
                               },
                             ),
                           ),
@@ -209,54 +195,45 @@ class Connect extends StatelessWidget {
                   Color.fromARGB(255, 170, 188, 180),
                   Color.fromARGB(255, 119, 133, 127),
                   () {
-                    if (email_controller.getState() == false ||
-                        password_controller.getState() == false) {
-                      if (email_controller.getState() == false) {
-                        print("Username is invalid !");
-                      }
+                    LoginRequest request = LoginRequest(
+                      email_controller.getController().text,
+                      password_controller.getController().text,
+                    );
 
-                      if (password_controller.getState() == false) {
-                        print("Password is invalid !");
-                      }
-                    } else {
-                      LoginRequest request = LoginRequest(
-                        email_controller.getController().text,
-                        password_controller.getController().text,
-                      );
-
-                      void login() async {
-                        await Utils.api_postRequest(
-                          request,
-                          "auth/login",
-                          api_controller.text,
-                        ).onError((e, stacktrace) {
-                          if (context.mounted) {
-                            Navigator.pop(context);
-                          }
-                          showErrorDialog(context, e.toString());
-                        });
-
-                        List<Cookie> cookies = await persistCookieJar
-                            .loadForRequest(
-                              Uri.parse("${api_controller.text}/auth/login"),
-                            );
-
-                        if (cookies.isEmpty) {
-                          print("📭 No cookies found ");
-                        } else {
-                          print("--- 🍪 Cookies ");
-                          for (var cookie in cookies) {
-                            print("Name: ${cookie.name}");
-                            print("Value: ${cookie.value}");
-                            print("Expires: ${cookie.expires}");
-                            print("--------------------------");
-                          }
+                    Future<void> login() async {
+                      await Utils.api_postRequest(
+                        request,
+                        "auth/login",
+                        api_controller.text,
+                      ).onError((e, stacktrace) {
+                        if (context.mounted) {
+                          Navigator.pop(context);
                         }
-                      }
-
-                      login();
-                      showLoadingDialog(context);
+                        showErrorDialog(context, e.toString());
+                        throw Exception();
+                      });
                     }
+
+                    void _login() async {
+                      try {
+                        await login();
+                        FocusManager.instance.primaryFocus?.unfocus();
+                        Navigator.pop(context);
+
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          Navigator.pop(context);
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (_) => Landing(true)),
+                          );
+                        });
+                      } catch (e) {
+                        return;
+                      }
+                    }
+
+                    _login();
+                    showLoadingDialog(context);
                   },
                 ),
               ],
@@ -492,16 +469,35 @@ class Connect extends StatelessWidget {
                             .text,
                       );
 
-                      void register() async {
-                        var resp = await Utils.api_postRequest(
+                      Future<void> register() async {
+                        await Utils.api_postRequest(
                           request,
                           "auth/register",
                           api_controller.text,
-                        );
-                        print(resp.data);
+                        ).onError((e, stacktrace) {
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                          }
+                          showErrorDialog(context, e.toString());
+                          throw Exception();
+                        });
                       }
 
-                      register();
+                      void _register() async{
+                        try {
+                          await register();
+                          FocusManager.instance.primaryFocus?.unfocus();
+                          Navigator.pop(context);
+
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            Navigator.pop(context);
+                          });
+                        } catch (e) {
+                          return;
+                        }
+                      }
+
+                      _register();
                       showLoadingDialog(context);
                     }
                     ;
