@@ -54,11 +54,21 @@ public class GameCacheService {
 
         Set<String> ids = stringTemplate.opsForSet().members(KEY_LOBBY);
 
-        List<GameDocument> gameDocuments = new ArrayList<>();
+        if (ids == null || ids.isEmpty()) return List.of();
 
-        for (String id : ids){
-            gameDocuments.add(getGame(UUID.fromString(id)));
-        }
-        return gameDocuments;
+        List<String> keys = ids.stream()
+                .map(id -> KEY_GAME + id)
+                .toList();
+
+        return fetchGamesBatch(keys);
+    }
+
+    private List<GameDocument> fetchGamesBatch(List<String> keys){
+
+        List<GameDocument> games = gameTemplate.opsForValue().multiGet(keys);
+
+        if (games == null) return List.of();
+
+        return games;
     }
 }
