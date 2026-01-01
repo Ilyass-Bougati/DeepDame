@@ -6,8 +6,8 @@ import java.util.UUID;
 
 public class GameState {
 
-    private final UUID id;
-    private final Board board;
+    private UUID id;
+    private Board board;
     private PieceType currentTurn;
     private boolean isGameOver;
     private PieceType winner;
@@ -28,6 +28,8 @@ public class GameState {
         this.isGameOver = isGameOver;
         this.winner = winner;
     }
+
+    public GameState(){}
 
     public void switchTurn(){
         if (isGameOver) return;
