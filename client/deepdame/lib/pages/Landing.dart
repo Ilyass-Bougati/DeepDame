@@ -5,10 +5,11 @@ import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class Landing extends StatelessWidget {
-  const Landing({super.key});
+  final bool isConnected;
+  const Landing(this.isConnected , {super.key});
 
   @override
-  Widget build(BuildContext context) => build_offConnection(context);
+  Widget build(BuildContext context) => isConnected ? build_onConnection(context) : build_offConnection(context);
 
   Widget build_offConnection(BuildContext context) {
     return Scaffold(
@@ -95,8 +96,10 @@ class Landing extends StatelessWidget {
       ),
     );
   }
+
   Widget build_onConnection(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       backgroundColor: Color.fromARGB(255, 253, 251, 247),
       body: Center(
         child: Column(
@@ -159,7 +162,10 @@ class Landing extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: BottomAppBar(color: Color.fromARGB(255, 235, 229, 222),),
+      bottomNavigationBar: BottomAppBar(
+        height: 50,
+        color: Color.fromARGB(200, 235, 229, 222),
+      ),
     );
   }
 }
