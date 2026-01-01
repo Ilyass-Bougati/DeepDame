@@ -46,8 +46,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto register(RegisterRequest request) {
         User user = User.builder()
-                .username(request.getUsername())
-                .email(request.getEmail())
+                .username(request.getUsername() == null ? null : request.getUsername().trim())
+                .email(request.getEmail() == null ? null : request.getEmail().toLowerCase().trim())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .build();
 

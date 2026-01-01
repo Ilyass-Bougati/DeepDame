@@ -20,12 +20,4 @@ public class RegisterRequest {
 
     @NotBlank(message = "Password is required")
     private String password;
-
-    public void setEmail(String email) {
-        this.email = email == null ? null : email.toLowerCase().strip();
-    }
-
-    public void setUsername(String username) {
-        this.username = username == null ? null : username.trim();
-    }
 }
