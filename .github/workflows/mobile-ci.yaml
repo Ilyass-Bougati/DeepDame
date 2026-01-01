@@ -1,54 +1,67 @@
-# name: Flutter Build (Debug)
+name: Flutter Release (On Merge)
 
-# on:
-#   pull_request:
-#     branches: [ "main" ]
-#     paths:
-#       - 'client/**'
+on:
+  pull_request:
+    branches: [ "main" ]
+    types: [ closed ]
+    paths:
+      - 'client/**'
 
-# jobs:
-#   build:
-#     runs-on: ubuntu-latest
-#     defaults:
-#       run:
-#         working-directory: ./client/deepdame
+permissions:
+  contents: write
 
-#     steps:
-#       - uses: actions/checkout@v4
+jobs:
+  build:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./client/deepdame
 
-#       - name: Setup Java
-#         uses: actions/setup-java@v4
-#         with:
-#           distribution: 'temurin'
-#           java-version: '17'
-#           cache: 'gradle'
+    steps:
+      - uses: actions/checkout@v4
 
-#       - name: Setup Flutter
-#         uses: subosito/flutter-action@v2
-#         with:
-#           channel: 'stable'
-#           cache: true
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
       
-#       - name: Cache Pub Dependencies
-#         uses: actions/cache@v3
-#         with:
-#           path: |
-#             ~/.pub-cache/hosted
-#             ~/.pub-cache/git
-#           # Key changes if pubspec.lock changes
-#           key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
-#           restore-keys: |
-#             ${{ runner.os }}-pub-
+      - name: Extract Version from pubspec.yaml
+        id: extract_version
+        run: |
+          # Grabs the line 'version: x.x.x+x', removes 'version: ', and strips build number (+1)
+          VERSION=$(grep 'version:' pubspec.yaml | cut -d ' ' -f 2 | cut -d '+' -f 1)
+          echo "DETECTED_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Detected version: $VERSION"
 
-#       - name: Get Dependencies
-#         run: flutter pub get
+      - name: Cache Pub Dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.pub-cache/hosted
+            ~/.pub-cache/git
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
 
-#       - name: Build Debug APK
-#         run: flutter build apk --debug
+      - name: Get Dependencies
+        run: flutter pub get
 
-#       - name: Upload APK Artifact
-#         uses: actions/upload-artifact@v4
-#         with:
-#           name: deepdame-debug-apk
-#           path: client/deepdame/build/app/outputs/flutter-apk/app-debug.apk
-#           retention-days: 2
+      - name: Build Release APK
+        run: flutter build apk --release
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.DETECTED_VERSION }}
+          name: Release v${{ env.DETECTED_VERSION }}
+          files: client/deepdame/build/app/outputs/flutter-apk/app-release.apk
+          generate_release_notes: true
