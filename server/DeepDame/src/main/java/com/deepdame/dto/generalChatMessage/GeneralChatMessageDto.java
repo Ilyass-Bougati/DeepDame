@@ -1,5 +1,6 @@
 package com.deepdame.dto.generalChatMessage;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -21,5 +22,6 @@ public class GeneralChatMessageDto {
     private String message;
 
     @NotNull
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS")
     private LocalDateTime createdAt;
 }
