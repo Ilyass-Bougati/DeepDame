@@ -72,4 +72,11 @@ public class GlobalExceptionHandler {
         errorResponse.put("error", ex.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
     }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<String> handleConflictException(ConflictException exp) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT) // Renvoie 409
+                .body(exp.getMessage());
+    }
 }
