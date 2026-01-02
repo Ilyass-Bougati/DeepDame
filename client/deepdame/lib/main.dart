@@ -7,6 +7,8 @@ import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
+bool? connected;
+
 Future<void> initCookies() async {
   try {
     final appDocDir = await getApplicationDocumentsDirectory();
@@ -19,16 +21,18 @@ Future<void> initCookies() async {
       storage: FileStorage(cookiePath),
     );
 
-    dio.interceptors.add(CookieManager(persistCookieJar));
+    dio.interceptors.add(CookieManager(persistCookieJar!));
   } catch (e) {
     print(e);
   }
+
+  runApp(const MyApp());
 }
+
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   initCookies();
-  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -45,7 +49,7 @@ class MyApp extends StatelessWidget {
       ),
       debugShowCheckedModeBanner: false,
       title: 'Deep Dame',
-      home: Landing(false),
+      home: Landing(),
     );
   }
 }

@@ -10,43 +10,13 @@ import 'package:google_fonts/google_fonts.dart';
 import '../static/Utils.dart';
 
 class Connect extends StatelessWidget {
-  final bool login;
-  const Connect(this.login, {super.key});
+  
+  final bool hasAccount;
+  const Connect(this.hasAccount,{super.key});
 
   @override
   Widget build(BuildContext context) {
-    return login ? _loginPage(context) : _registerPage(context);
-  }
-
-  void showLoadingDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible:
-          false, //comment to make the popup dismissible for debug purposes.
-      builder: (BuildContext context) {
-        return AlertDialog(
-          contentPadding: EdgeInsets.all(25),
-          backgroundColor: Color.fromARGB(255, 253, 251, 247),
-          content: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator.adaptive(
-                backgroundColor: Color.fromARGB(255, 170, 188, 180),
-              ),
-              SizedBox(width: 20),
-              Text(
-                "Connecting ..",
-                style: GoogleFonts.nunito(
-                  color: Color.fromARGB(255, 170, 188, 180),
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
+    return hasAccount ? _loginPage(context) : _registerPage(context);
   }
 
   void showErrorDialog(BuildContext context, String error) {
@@ -224,7 +194,7 @@ class Connect extends StatelessWidget {
                           Navigator.pop(context);
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (_) => Landing(true)),
+                            MaterialPageRoute(builder: (_) => Landing()),
                           );
                         });
                       } catch (e) {
@@ -233,7 +203,7 @@ class Connect extends StatelessWidget {
                     }
 
                     _login();
-                    showLoadingDialog(context);
+                    Utils.showLoadingDialog(context);
                   },
                 ),
               ],
@@ -498,7 +468,7 @@ class Connect extends StatelessWidget {
                       }
 
                       _register();
-                      showLoadingDialog(context);
+                      Utils.showLoadingDialog(context);
                     }
                     ;
                   },
