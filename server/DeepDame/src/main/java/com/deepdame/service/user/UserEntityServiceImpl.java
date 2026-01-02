@@ -6,6 +6,8 @@ import com.deepdame.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 import java.util.List;
 import java.util.UUID;
@@ -26,6 +28,7 @@ public class UserEntityServiceImpl implements UserEntityService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "users", key = "#email")
     public List<User> findAll() {
         return userRepository.findAll();
     }
@@ -38,6 +41,7 @@ public class UserEntityServiceImpl implements UserEntityService {
     }
 
     @Override
+    @CacheEvict(value = "users", key = "#email")
     public void updateRefreshToken(String email, String token) {
         User user = findByEmail(email);
         user.setRefreshToken(token);

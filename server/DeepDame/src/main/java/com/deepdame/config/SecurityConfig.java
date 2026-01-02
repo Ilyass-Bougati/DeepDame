@@ -41,6 +41,7 @@ public class SecurityConfig {
 
         return http.build();
     }
+
     @Bean
     @Order(1)
     public SecurityFilterChain adminSecurity(HttpSecurity http) throws Exception {

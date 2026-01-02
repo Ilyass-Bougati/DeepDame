@@ -4,6 +4,7 @@ import com.deepdame.dto.user.RegisterRequest;
 import com.deepdame.dto.user.UserDto;
 import com.deepdame.dto.user.UserMapper;
 import com.deepdame.entity.User;
+import com.deepdame.exception.ConflictException;
 import com.deepdame.exception.NotFoundException;
 import com.deepdame.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -45,9 +46,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto register(RegisterRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new ConflictException("This email address is already in use by another account.");
+        }
         User user = User.builder()
-                .username(request.getUsername())
-                .email(request.getEmail())
+                .username(request.getUsername() == null ? null : request.getUsername().trim())
+                .email(request.getEmail() == null ? null : request.getEmail().toLowerCase().trim())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .build();
 
