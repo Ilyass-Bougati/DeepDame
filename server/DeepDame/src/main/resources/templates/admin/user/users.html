@@ -95,12 +95,12 @@
                         <a th:href="@{/admin/users/edit/{id}(id=${user.id})}" class="btn btn-sm btn-outline-primary">Edit</a>
 
                         <button type="button"
-                                class="btn btn-outline-danger"
+                                class="btn btn-sm btn-outline-danger"
                                 data-bs-toggle="modal"
                                 data-bs-target="#deleteModal"
                                 th:data-bs-id="${user.id}"
                                 th:data-bs-username="${user.username}"
-                                th:if="${user.email != currentAdminEmail}">
+                                th:if="${@userSecurity.canManage(user.id, #authentication.principal)}">
                             Delete
                         </button>
 

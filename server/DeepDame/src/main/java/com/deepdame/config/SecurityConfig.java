@@ -47,7 +47,7 @@ public class SecurityConfig {
                 .securityMatcher("/admin/**")
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/admin/login").permitAll()
-                        .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/admin/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPER-ADMIN")
                 )
                 .userDetailsService(customUserDetailsService)
                 .formLogin(form -> form

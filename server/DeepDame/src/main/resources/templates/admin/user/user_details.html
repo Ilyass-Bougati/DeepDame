@@ -132,18 +132,14 @@
                     </a>
 
                     <button type="button"
-                            class="btn btn-outline-danger"
+                            class="btn btn-sm btn-outline-danger"
                             data-bs-toggle="modal"
                             data-bs-target="#deleteModal"
                             th:data-bs-id="${user.id}"
                             th:data-bs-username="${user.username}"
-                            th:if="${user.email != currentAdminEmail}">
+                            th:if="${@userSecurity.canManage(user.id, #authentication.principal)">
                         Delete
                     </button>
-
-                    <span th:if="${user.email == currentAdminEmail}" class="badge bg-light text-muted p-2">
-                        <i class="bi bi-info-circle"></i> You cannot delete your own account
-                    </span>
                 </div>
             </div>
         </div>
