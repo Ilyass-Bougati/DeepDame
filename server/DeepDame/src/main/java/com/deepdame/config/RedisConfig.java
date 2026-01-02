@@ -63,6 +63,20 @@ public class RedisConfig {
     }
 
     @Bean
+    public RedisTemplate<String, GameDocument> gameRedisTemplate(RedisConnectionFactory connectionFactory){
+
+        RedisTemplate<String, GameDocument> template = new RedisTemplate<>();
+
+        template.setConnectionFactory(connectionFactory);
+        template.setKeySerializer(new StringRedisSerializer());
+
+        JacksonJsonRedisSerializer<GameDocument> serializer = new JacksonJsonRedisSerializer<>(GameDocument.class);
+        template.setValueSerializer(serializer);
+
+        return template;
+    }
+
+    @Bean
     public CacheManager cacheManager(LettuceConnectionFactory connectionFactory) {
         ObjectMapper mapper = createObjectMapper();
         GenericJacksonJsonRedisSerializer jsonSerializer = new GenericJacksonJsonRedisSerializer(mapper);

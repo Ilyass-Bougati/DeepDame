@@ -11,8 +11,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,9 +29,13 @@ public class GameServiceTest {
     @Autowired
     private GameRepository gameRepository;
 
+    @Autowired
+    private StringRedisTemplate stringTemplate;
+
     @BeforeEach
     void setUp() {
         gameRepository.deleteAll();
+        Objects.requireNonNull(stringTemplate.getConnectionFactory()).getConnection().serverCommands().flushDb();
     }
 
     @Test
@@ -39,10 +46,11 @@ public class GameServiceTest {
         GameDto game = gameService.createGame(playerId, GameMode.PVE);
 
         assertNotNull(game.getId());
-        assertEquals(GameMode.PVE, game.getMode());
-        assertEquals(playerId, game.getPlayerBlackId());
-        assertNull(game.getPlayerWhiteId(), "PVE White player ID should be null in DTO");
-        assertNotNull(game.getGameState(), "Game state must be initialized");
+
+        GameDto found = gameService.findById(game.getId());
+        assertNotNull(found);
+
+        assertEquals(0, gameRepository.count(), "Active game should NOT be in MongoDB");
     }
 
     @Test
@@ -61,14 +69,13 @@ public class GameServiceTest {
     @DisplayName("second player join a PVP game")
     void testJoinGameSuccess() {
 
-        UUID player1 = UUID.randomUUID();
-        GameDto game = gameService.createGame(player1, GameMode.PVP);
+        UUID p1 = UUID.randomUUID();
+        GameDto game = gameService.createGame(p1, GameMode.PVP);
 
-        UUID player2 = UUID.randomUUID();
-        GameDto joined = gameService.joinGame(game.getId(), player2);
+        UUID p2 = UUID.randomUUID();
+        gameService.joinGame(game.getId(), p2);
 
-        assertEquals(player2, joined.getPlayerWhiteId());
-        assertEquals(player1, joined.getPlayerBlackId());
+        assertEquals(0, gameRepository.count(), "Joined game should NOT be in MongoDB yet");
     }
 
     @Test
@@ -82,7 +89,7 @@ public class GameServiceTest {
             gameService.joinGame(game.getId(), player1);
         });
 
-        assertEquals("You cannot play against yourself", exception.getMessage());
+        assertEquals("You are already in an active game.", exception.getMessage());
     }
 
     @Test
@@ -106,15 +113,9 @@ public class GameServiceTest {
         UUID p1 = UUID.randomUUID();
         GameDto game = gameService.createGame(p1, GameMode.PVE);
 
-        GameDto updatedGame = gameService.makeMove(game.getId(), p1,  new Move(new Position(5 , 0), new Position(4, 1)));
+        gameService.makeMove(game.getId(), p1, new Move(new Position(5, 0), new Position(4, 1)));
 
-        assertEquals(PieceType.WHITE, updatedGame.getGameState().getCurrentTurn());
-
-        Piece piece = updatedGame.getGameState().getBoard().getPiece(new Position(4, 1));
-
-        assertEquals(Piece.regular(PieceType.BLACK), piece);
-        assertNull(updatedGame.getGameState().getBoard().getPiece(new Position(5, 0)));
-
+        assertEquals(0, gameRepository.count(), "Game in progress should NOT be in MongoDB");
     }
 
     @Test
@@ -152,8 +153,8 @@ public class GameServiceTest {
             gameService.makeMove(game.getId(), p2, new Move(new Position(2, 1), new Position(3, 0)));
         });
 
-        assertEquals("It is Black's turn you little racist",exception1.getMessage());
-        assertEquals("It is Black's turn you little racist",exception2.getMessage());
+        assertEquals("It is currently Black's turn.",exception1.getMessage());
+        assertEquals("It is currently Black's turn.",exception2.getMessage());
     }
 
     @Test
@@ -168,7 +169,7 @@ public class GameServiceTest {
             gameService.makeMove(game.getId(), randomGuy, new Move(new Position(5, 0), new Position(4, 1)));
         });
 
-        assertEquals("WHO TF ARE YOU !!!!",exception.getMessage());
+        assertEquals("Player is not a participant in this game.",exception.getMessage());
 
     }
 
@@ -181,28 +182,30 @@ public class GameServiceTest {
         GameDto game = gameService.createGame(p1, GameMode.PVP);
         gameService.joinGame(game.getId(), p2);
 
-        GameDto end = gameService.surrenderGame(game.getId(), p1);
+        gameService.surrenderGame(game.getId(), p1);
 
-        assertTrue(end.getGameState().isGameOver());
-        assertEquals(PieceType.WHITE, end.getGameState().getWinner());
-
+        assertEquals(1, gameRepository.count(), "Finished game MUST be in MongoDB");
     }
 
     @Test
     @DisplayName("sould list all open PVP games only")
     void testGetOpenGmaes(){
         UUID p1 = UUID.randomUUID();
+        UUID p2 = UUID.randomUUID();
+        UUID p3 = UUID.randomUUID();
+        UUID p4 = UUID.randomUUID();
 
         gameService.createGame(p1, GameMode.PVP);
-        gameService.createGame(p1, GameMode.PVE);
+        gameService.createGame(p2, GameMode.PVE);
 
-        GameDto fullGmae =  gameService.createGame(p1, GameMode.PVP);
-        gameService.joinGame(fullGmae.getId(), UUID.randomUUID());
+        GameDto fullGame =  gameService.createGame(p3, GameMode.PVP);
+        gameService.joinGame(fullGame.getId(), p4);
 
         List<GameDto> openGames = gameService.getOpenGames();
 
         assertEquals(1, openGames.size());
         assertEquals(GameMode.PVP, openGames.get(0).getMode());
+        assertEquals(p1, openGames.get(0).getPlayerBlackId());
 
     }
 

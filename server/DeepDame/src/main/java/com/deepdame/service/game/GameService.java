@@ -16,5 +16,6 @@ public interface GameService extends CrudDtoService<UUID, GameDto> {
     GameDto surrenderGame(UUID gameId, UUID playerId);
 
     List<GameDto> getOpenGames();
-    List<GameDto> getUserGames(UUID playerId);
+    List<GameDto> getUserFinishedGames(UUID playerId);
+    GameDto getUserCurrentGame(UUID playerId);
 }
