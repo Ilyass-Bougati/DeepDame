@@ -8,11 +8,14 @@ import com.deepdame.engine.core.model.Move;
 import com.deepdame.engine.core.model.PieceType;
 import com.deepdame.entity.GameDocument;
 import com.deepdame.enums.GameMode;
+import com.deepdame.exception.NotFoundException;
 import com.deepdame.repository.GameRepository;
+import com.deepdame.service.cache.GameCacheService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,8 +24,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class GameServiceImpl implements GameService{
 
+    private final GameCacheService gameCacheService;
     private final GameRepository gameRepository;
-    private final GameEntityServiceImpl gameEntityService;
+    private final GameEntityService gameEntityService;
     private final GameMapper gameMapper;
 
     private final GameEngine gameEngine = new GameEngine();
@@ -30,8 +34,13 @@ public class GameServiceImpl implements GameService{
 
     @Override
     public GameDto findById(UUID id){
-        GameDocument entity = gameEntityService.findById(id);
-        return gameMapper.toDTO(entity);
+        GameDocument gameDoc = gameCacheService.getGame(id);
+
+        if (gameDoc == null) {
+            gameDoc = gameEntityService.findById(id);
+        }
+
+        return gameMapper.toDTO(gameDoc);
     }
 
     @Override
@@ -48,30 +57,45 @@ public class GameServiceImpl implements GameService{
 
     @Override
     public void delete(UUID id) {
-        gameRepository.deleteById(id);
+        gameCacheService.deleteGame(id);
     }
 
 
     @Override
     public GameDto createGame(UUID playerID, GameMode gameMode){
-        UUID gameId = UUID.randomUUID();
 
-        GameState gameState = new GameState(gameId);
+        if (gameCacheService.isUserPlaying(playerID)){
+            throw new IllegalStateException("you are alredy in an active game.");
+        }
+
+        UUID gameId = UUID.randomUUID();
 
         GameDocument gameDoc = GameDocument.builder()
                 .id(gameId)
-                .gameState(gameState)
                 .mode(gameMode)
                 .playerBlackId(playerID)
+                .gameState(new GameState(gameId))
+                .history(new ArrayList<>())
                 .build();
 
-        return gameMapper.toDTO(gameRepository.save(gameDoc));
+        gameCacheService.saveGame(gameDoc);
+        gameCacheService.setUserCurrentGame(playerID, gameId);
+
+        if (gameMode == GameMode.PVP){
+            gameCacheService.addToLobby(gameId);
+        }
+
+        return gameMapper.toDTO(gameDoc);
     }
 
     @Override
     public GameDto joinGame(UUID gameId, UUID playerId){
 
-        GameDocument gameDoc = gameEntityService.findById(gameId);
+        if (gameCacheService.isUserPlaying(playerId)){
+            throw new IllegalStateException("You are already in an active game.");
+        }
+
+        GameDocument gameDoc = gameCacheService.getGame(gameId);
 
         if (gameDoc.getMode() != GameMode.PVP){
             throw new IllegalStateException("Cannot join a PVE game");
@@ -84,13 +108,21 @@ public class GameServiceImpl implements GameService{
         }
 
         gameDoc.setPlayerWhiteId(playerId);
-        return gameMapper.toDTO(gameRepository.save(gameDoc));
+
+        gameCacheService.saveGame(gameDoc);
+        gameCacheService.setUserCurrentGame(playerId, gameId);
+        gameCacheService.removeFromLobby(gameId);
+
+        // notofication that someone joind
+
+        return gameMapper.toDTO(gameDoc);
     }
 
     @Override
     public GameDto makeMove(UUID gameId, UUID playerId, Move move){
 
-        GameDocument gameDoc = gameEntityService.findById(gameId);
+        GameDocument gameDoc = gameCacheService.getGame(gameId);
+        if (gameDoc == null) throw new NotFoundException("Game not found or expired");
         GameState currentState = gameDoc.getGameState();
 
         if (currentState.isGameOver()){
@@ -102,17 +134,24 @@ public class GameServiceImpl implements GameService{
         GameState newState = gameEngine.applyMove(currentState, move);
 
         gameDoc.setGameState(newState);
-        GameDocument savedGame = gameRepository.save(gameDoc);
+        gameDoc.getHistory().add(move);
+
+        if (newState.isGameOver()){
+            handleGameOver(gameDoc);
+        } else {
+            gameCacheService.saveGame(gameDoc);
+        }
 
         // Calling the ai move
 
-        return gameMapper.toDTO(savedGame);
+        return gameMapper.toDTO(gameDoc);
     }
 
     @Override
     public GameDto surrenderGame(UUID gameId, UUID playerId){
 
-        GameDocument gameDoc = gameEntityService.findById(gameId);
+        GameDocument gameDoc = gameCacheService.getGame(gameId);
+        if (gameDoc == null) throw new NotFoundException("Game not found");
         GameState gameState = gameDoc.getGameState();
 
         if (gameState.isGameOver()){
@@ -128,21 +167,32 @@ public class GameServiceImpl implements GameService{
         }
 
         gameDoc.setGameState(gameState);
-        return gameMapper.toDTO(gameRepository.save(gameDoc));
+        handleGameOver(gameDoc);
+
+        return gameMapper.toDTO(gameDoc);
     }
 
     @Override
     public List<GameDto> getOpenGames(){
-        return gameEntityService.findOpenPvpGames().stream()
+        return gameCacheService.getOpenGames().stream()
                 .map(gameMapper::toDTO)
                 .toList();
     }
 
     @Override
-    public List<GameDto> getUserGames(UUID playerId){
+    public List<GameDto> getUserFinishedGames(UUID playerId){
         return gameEntityService.findGamesByPlayerId(playerId).stream()
                 .map(gameMapper::toDTO)
                 .toList();
+    }
+
+    @Override
+    public GameDto getUserCurrentGame(UUID playerId){
+        UUID gameId = gameCacheService.getUserCurrentGameId(playerId);
+        if (gameId == null) return null; // im not sure if i should return null ot throw an exception here
+
+        GameDocument gameDoc = gameCacheService.getGame(gameId);
+        return gameMapper.toDTO(gameDoc);
     }
 
     private void validatePlayerTurn(GameDocument gameDoc, UUID playerId, PieceType currentTurn){
@@ -151,14 +201,26 @@ public class GameServiceImpl implements GameService{
         boolean isWhite = playerId.equals(gameDoc.getPlayerWhiteId());
 
         if (!isBlack && !isWhite){
-            throw new IllegalArgumentException("WHO TF ARE YOU !!!!");
+            throw new IllegalArgumentException("Player is not a participant in this game.");
         }
         if (isBlack && currentTurn != PieceType.BLACK){
-            throw new IllegalStateException("I'm not racist but it is White's turn");
+            throw new IllegalStateException("It is currently White's turn.");
         }
         if (isWhite && currentTurn != PieceType.WHITE){
-            throw new IllegalStateException("It is Black's turn you little racist");
+            throw new IllegalStateException("It is currently Black's turn.");
         }
     }
 
+    private void handleGameOver(GameDocument doc) {
+
+        gameRepository.save(doc);
+
+        gameCacheService.deleteGame(doc.getId());
+        gameCacheService.removeFromLobby(doc.getId());
+
+        gameCacheService.clearUserCurrentGame(doc.getPlayerBlackId());
+        if (doc.getPlayerWhiteId() != null) {
+            gameCacheService.clearUserCurrentGame(doc.getPlayerWhiteId());
+        }
+    }
 }
