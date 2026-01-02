@@ -2,6 +2,7 @@ package com.deepdame.service.cache;
 
 import com.deepdame.entity.GameDocument;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -21,13 +22,16 @@ public class GameCacheService {
     private static final String KEY_LOBBY = "lobby:open_games";
     private static final String KEY_USER_GAME = "user:%s:active_game";
 
+    @Value("${game.cache.ttl-in-millis}")
+    private long gameTtlMillis;
+
 
     // game stuff
     public void saveGame(GameDocument game){
 
         String key = KEY_GAME + game.getId();
 
-        gameTemplate.opsForValue().set(key, game, 1, TimeUnit.HOURS);
+        gameTemplate.opsForValue().set(key, game, gameTtlMillis, TimeUnit.MILLISECONDS);
     }
 
 
