@@ -6,10 +6,13 @@ import com.deepdame.entity.GeneralChatMessage;
 import com.deepdame.exception.NotFoundException;
 import com.deepdame.repository.GeneralChatMessageRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.Serial;
 import java.util.UUID;
 
+@Service
 @Transactional
 @RequiredArgsConstructor
 public class GeneralChatMessageServiceImpl implements GeneralChatMessageService {
