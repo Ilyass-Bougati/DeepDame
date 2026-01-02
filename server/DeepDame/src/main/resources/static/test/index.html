@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DeepDame Chat Tester</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+        body { font-family: monospace; background-color: #121212; color: #e0e0e0; display: flex; gap: 20px; padding: 20px; }
+        .panel { background: #1e1e1e; padding: 20px; border-radius: 8px; width: 45%; border: 1px solid #333; }
+        h2 { margin-top: 0; color: #bb86fc; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        input, button { display: block; width: 100%; margin-bottom: 10px; padding: 10px; box-sizing: border-box; background: #333; color: white; border: 1px solid #555; }
+        button { background-color: #03dac6; color: black; font-weight: bold; cursor: pointer; border: none; }
+        button:hover { background-color: #018786; }
+        button:disabled { background-color: #555; cursor: not-allowed; }
+        #logs { height: 400px; overflow-y: auto; background: #000; padding: 10px; border: 1px solid #333; margin-top: 20px; white-space: pre-wrap; }
+        .success { color: #03dac6; }
+        .error { color: #cf6679; }
+        .info { color: #bb86fc; }
+    </style>
+</head>
+<body>
+
+<div class="panel">
+    <h2>1. Authentication</h2>
+    <form id="loginForm" onsubmit="performLogin(event)">
+        <label>Email</label>
+        <input type="text" id="email" value="user@example.com">
+        <label>Password</label>
+        <input type="password" id="password" value="password">
+        <button type="submit">Login & Get Cookie</button>
+    </form>
+    <div id="authStatus" style="margin-top:10px; color:#888;">Status: Not Logged In</div>
+</div>
+
+<div class="panel">
+    <h2>2. General Chat</h2>
+    <div style="display: flex; gap: 5px;">
+        <button onclick="connect()" id="connectBtn">Connect WS</button>
+        <button onclick="disconnect()" id="disconnectBtn" disabled>Disconnect</button>
+    </div>
+
+    <hr style="border-color: #333; margin: 20px 0;">
+
+    <label>Message</label>
+    <input type="text" id="messageInput" placeholder="Type hello..." disabled>
+    <button onclick="sendMessage()" id="sendBtn" disabled>Send Payload</button>
+
+    <div id="logs"></div>
+</div>
+
+<script>
+    var stompClient = null;
+
+    // --- UTILS ---
+    function log(msg, type = 'info') {
+        const logs = document.getElementById('logs');
+        const entry = document.createElement('div');
+        entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        entry.className = type;
+        logs.appendChild(entry);
+        logs.scrollTop = logs.scrollHeight;
+    }
+
+    // Formats JS Date to "yyyy-MM-dd HH:mm:ss.SSS"
+    function getJavaDate() {
+        const now = new Date();
+        const iso = now.toISOString(); // 2023-01-01T10:00:00.123Z
+        return iso.replace('T', ' ').replace('Z', '');
+    }
+
+    function uuidv4() {
+        return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c =>
+            (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+        );
+    }
+
+    // --- 1. LOGIN ---
+    async function performLogin(e) {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        try {
+            const response = await fetch('/api/v1/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                // CRITICAL: This tells browser to save the Set-Cookie header
+                credentials: 'include',
+                body: JSON.stringify({ email, password })
+            });
+
+            if (response.ok) {
+                document.getElementById('authStatus').innerText = "Status: Logged In (Cookie Set)";
+                document.getElementById('authStatus').style.color = "#03dac6";
+                log("Login Successful. Cookie stored in browser.", "success");
+            } else {
+                throw new Error("Login failed: " + response.status);
+            }
+        } catch (err) {
+            log(err.message, "error");
+        }
+    }
+
+    // --- 2. WEBSOCKET ---
+    function connect() {
+        // SockJS will automatically use the browser's cookies
+        var socket = new SockJS('/ws');
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function (frame) {
+            log('Connected: ' + frame, "success");
+            document.getElementById('connectBtn').disabled = true;
+            document.getElementById('disconnectBtn').disabled = false;
+            document.getElementById('sendBtn').disabled = false;
+            document.getElementById('messageInput').disabled = false;
+
+            stompClient.subscribe('/topic/general-chat', function (message) {
+                log("RECEIVED: " + message.body, "success");
+            });
+        }, function(error) {
+            log("Connection Error: " + error, "error");
+        });
+    }
+
+    function disconnect() {
+        if (stompClient !== null) stompClient.disconnect();
+        log("Disconnected", "info");
+        document.getElementById('connectBtn').disabled = false;
+        document.getElementById('disconnectBtn').disabled = true;
+    }
+
+    function sendMessage() {
+        const text = document.getElementById('messageInput').value;
+
+        // Construct DTO exactly as Java expects
+        const payload = {
+            id: uuidv4(),      // Placeholder (Backend will overwrite, but validator needs it)
+            userId: uuidv4(),  // Placeholder (Backend overrides from Principal)
+            message: text,
+            createdAt: getJavaDate() // Matches @JsonFormat
+        };
+
+        stompClient.send("/app/message", {}, JSON.stringify(payload));
+        log("SENT: " + JSON.stringify(payload), "info");
+    }
+</script>
+</body>
+</html>
