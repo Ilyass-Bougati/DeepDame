@@ -16,6 +16,7 @@ public class GameMapperImpl implements GameMapper{
                 .mode(entity.getMode())
                 .playerBlackId(entity.getPlayerBlackId())
                 .playerWhiteId(entity.getPlayerWhiteId())
+                .history(entity.getHistory())
                 .build();
     }
 
@@ -29,6 +30,7 @@ public class GameMapperImpl implements GameMapper{
                 .mode(gameDto.getMode())
                 .playerBlackId(gameDto.getPlayerBlackId())
                 .playerWhiteId(gameDto.getPlayerWhiteId())
+                .history(gameDto.getHistory())
                 .build();
     }
 }
