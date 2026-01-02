@@ -1,5 +1,10 @@
 package com.deepdame.config;
 
+import com.deepdame.entity.GameDocument;
+import com.deepdame.properties.RedisProperties;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.serializer.JacksonJsonRedisSerializer;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
@@ -25,10 +30,9 @@ import java.time.Duration;
 
 @Configuration
 @EnableCaching
+@RequiredArgsConstructor
 public class RedisConfig {
-
-    @Value("${spring.cache.redis.time-to-live}")
-    private long timeToLive;
+    private final RedisProperties redisProperties;
 
     private ObjectMapper createObjectMapper() {
         return JsonMapper.builder()
@@ -82,7 +86,7 @@ public class RedisConfig {
         GenericJacksonJsonRedisSerializer jsonSerializer = new GenericJacksonJsonRedisSerializer(mapper);
 
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMillis(timeToLive))
+                .entryTtl(Duration.ofMillis(redisProperties.timeToLive()))
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jsonSerializer));
 

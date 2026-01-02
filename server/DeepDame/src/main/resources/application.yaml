@@ -1,34 +1,34 @@
-spring:
-  application:
-    name: deepdame
-
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/deepdame}
-    username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
-    hikari:
-      connection-test-query: SELECT 1
-
-  data:
-    redis:
-      host: localhost
-      port: 6379
-
-  cache:
-    type: redis
-    redis:
-      time-to-live: 1800000 #30min
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    open-in-view: true
-    properties:
-      hibernate:
-        format_sql=true:
-
-jwt:
-    access-token-private-key: classpath:certs/private.pem
-    access-token-public-key: classpath:certs/public.pem
+#spring:
+#  application:
+#    name: deepdame
+#
+#  datasource:
+#    driver-class-name: org.postgresql.Driver
+#    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/deepdame}
+#    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+#    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+#    hikari:
+#      connection-test-query: SELECT 1
+#
+#  data:
+#    redis:
+#      host: localhost
+#      port: 6379
+#
+#  cache:
+#    type: redis
+#    redis:
+#      time-to-live: 1800000
+#
+#  jpa:
+#    hibernate:
+#      ddl-auto: update
+#    show-sql: true
+#    open-in-view: true
+#    properties:
+#      hibernate:
+#        format_sql=true:
+#
+#jwt:
+#    access-token-private-key: classpath:certs/private.pem
+#    access-token-public-key: classpath:certs/public.pem
