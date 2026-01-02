@@ -8,7 +8,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 @Getter
 @RequiredArgsConstructor
@@ -24,7 +23,9 @@ public class CustomUserDetails implements UserDetails {
     }
 
     @Override
-    public String getPassword() {return user.getPassword();}
+    public String getPassword() {
+        return user.getPassword();
+    }
 
     @Override
     public String getUsername() {

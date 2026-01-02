@@ -32,6 +32,19 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+    
+      mongodb:
+        image: mongo:latest
+        env:
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: password
+        ports:
+          - "27017:27017"
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand(\"ping\").ok'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
     - uses: actions/checkout@v4
@@ -41,13 +54,21 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        # This enables caching for Maven dependencies automatically
         cache: 'maven'
+        # Crucial for monorepos: tell it where the pom is
+        cache-dependency-path: server/pom.xml
+    
+    - name: Run Key Generation
+      run: |
+        chmod +x keygen.sh
+        ./keygen.sh
 
     - name: Build and Test
-      # Since we set the working-directory above, this runs inside ./server
-      run: mvn -B clean verify
+      run: mvn test
       env:
+        # Postgres Config
         SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/deepdame
         SPRING_DATASOURCE_USERNAME: postgres
         SPRING_DATASOURCE_PASSWORD: postgres
+        # Mongo Config
+        SPRING_DATA_MONGODB_URI: mongodb://admin:password@localhost:27017/deepdame?authSource=admin

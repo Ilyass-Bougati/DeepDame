@@ -1,6 +1,7 @@
 package com.deepdame.engine.core.model;
 
-import java.lang.reflect.Array;
+import org.springframework.data.annotation.PersistenceCreator;
+
 import java.util.Arrays;
 
 public class Board {
@@ -10,6 +11,11 @@ public class Board {
     public Board() {
         this.grid = new Piece[SIZE][SIZE];
         initializeBoard();
+    }
+
+    @PersistenceCreator
+    public Board(Piece[][] grid) {
+        this.grid = grid;
     }
 
     private void initializeBoard(){
@@ -31,7 +37,7 @@ public class Board {
         }
     }
 
-    private boolean isValidBounds(Position p) {
+    public boolean isValidBounds(Position p) {
         return p.row() >= 0 && p.row() < SIZE && p.col() >= 0 && p.col() < SIZE;
     }
 

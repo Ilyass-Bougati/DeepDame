@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class Submitbutton extends StatelessWidget {
+class Submitbutton extends StatefulWidget {
   final String? text;
   final Color mainCol;
   final Color shadowCol;
@@ -16,9 +16,43 @@ class Submitbutton extends StatelessWidget {
   });
 
   @override
+  State<Submitbutton> createState() =>
+      // ignore: no_logic_in_create_state
+      _createState(text as String, mainCol, shadowCol, action);
+}
+
+// ignore: camel_case_types
+class _createState extends State<Submitbutton> {
+  final String? text;
+  Color? tmp;
+  Color mainCol;
+  final Color shadowCol;
+  final void Function() action;
+
+  _createState(String this.text, this.mainCol, this.shadowCol, this.action) {
+    tmp = mainCol;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: action,
+      onTapDown: (details) => {
+        setState(() {
+          mainCol = shadowCol;
+        }),
+      },
+      onTapUp: (details) => {
+        setState(() {
+          mainCol = tmp as Color;
+        }),
+      },
+      onTapCancel: () => {
+        setState(() {
+          mainCol = tmp as Color;
+        }),
+      },
       child: Stack(
         children: [
           Column(

@@ -30,6 +30,11 @@ environment:
 dependencies:
   flutter_svg: ^2.0.10
   google_fonts: 6.3.3
+  dio: ^5.8.0+1
+  dio_cookie_manager: ^3.3.0
+  cookie_jar: ^4.0.8
+  path_provider: ^2.1.5
+  http: ^1.6.0
 
   flutter:
     sdk: flutter
@@ -62,6 +67,9 @@ flutter:
   #Vectors:
   #Cross-hatching 
     - assets/vectors/CrossHatchFade.svg
+
+  #Board
+    - assets/vectors/Board.svg
 
 
   # The following line ensures that the Material Icons font is
