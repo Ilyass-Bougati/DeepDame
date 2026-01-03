@@ -7,7 +7,11 @@ import com.deepdame.entity.User;
 import com.deepdame.exception.ConflictException;
 import com.deepdame.exception.NotFoundException;
 import com.deepdame.repository.UserRepository;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,13 +33,22 @@ public class UserServiceImpl implements UserService {
         return userMapper.toDTO(userRepository.save(user));
     }
 
+    /**
+     * Note that this method doesn't update the email or the password
+     * @param userDto the new user data
+     * @return the new registered user data
+     */
     @Override
+    @Caching(evict = {
+            @CacheEvict(value = "users.email", key = "#userDto.email"),
+            @CacheEvict(value = "users.id", key = "#userDto.id"),
+            @CacheEvict(value = "users.all", key = "'ALL_USERS'")
+    })
     public UserDto update(UserDto userDto) {
         User user = userRepository.findById(userDto.getId())
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
         user.setUsername(userDto.getUsername());
-        user.setEmail(userDto.getEmail());
         user.setBannedFromChat(userDto.getBannedFromChat());
         user.setBannedFromApp(userDto.getBannedFromApp());
         user.setEmailValidated(userDto.getEmailValidated());
@@ -58,6 +71,13 @@ public class UserServiceImpl implements UserService {
         User savedUser = userRepository.save(user);
 
         return userMapper.toDTO(savedUser);
+    }
+
+    @Override
+    public UserDto findByEmail(@NonNull String email) {
+        return userRepository.findByEmail(email)
+                .map(userMapper::toDTO)
+                .orElseThrow(() -> new NotFoundException("User not found"));
     }
 
     @Override

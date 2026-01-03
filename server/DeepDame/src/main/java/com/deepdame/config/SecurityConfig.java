@@ -72,9 +72,4 @@ public class SecurityConfig {
         return (web) -> web.ignoring()
                 .requestMatchers("/css/*", "/js/*");
     }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 }

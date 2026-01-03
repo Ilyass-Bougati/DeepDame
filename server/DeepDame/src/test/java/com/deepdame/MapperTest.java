@@ -24,8 +24,8 @@ import static org.mockito.Mockito.when;
 
 public class MapperTest {
 
-    private final UserMapper userMapper = new UserMapperImpl();
     private final RoleMapper roleMapper = new RoleMapperImpl();
+    private final UserMapper userMapper = new UserMapperImpl(roleMapper);
 
     private GeneralChatMessageMapper generalChatMessageMapper;
     private UserEntityService userEntityService;
