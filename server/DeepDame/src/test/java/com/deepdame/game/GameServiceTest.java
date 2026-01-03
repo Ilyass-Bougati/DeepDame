@@ -1,17 +1,15 @@
-package com.deepdame;
+package com.deepdame.game;
 
 import com.deepdame.dto.game.GameDto;
 import com.deepdame.engine.core.model.*;
 import com.deepdame.enums.GameMode;
 import com.deepdame.repository.GameRepository;
-import com.deepdame.service.game.GameEntityService;
 import com.deepdame.service.game.GameService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.List;
