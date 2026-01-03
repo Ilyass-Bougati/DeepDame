@@ -12,42 +12,56 @@ import com.deepdame.dto.user.UserMapperImpl;
 import com.deepdame.entity.GeneralChatMessage;
 import com.deepdame.entity.Role;
 import com.deepdame.entity.User;
+import com.deepdame.service.user.UserEntityService;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.util.UUID;
 
+import static org.mockito.Mockito.when;
 
 public class MapperTest {
-    private final UserMapper userMapper = new UserMapperImpl();
+
     private final RoleMapper roleMapper = new RoleMapperImpl();
-    private final GeneralChatMessageMapper generalChatMessageMapper = new GeneralChatMessageMapperImpl();
+    private final UserMapper userMapper = new UserMapperImpl(roleMapper);
+
+    private GeneralChatMessageMapper generalChatMessageMapper;
+    private UserEntityService userEntityService;
+
+    @BeforeEach
+    public void setup() {
+        userEntityService = Mockito.mock(UserEntityService.class);
+        generalChatMessageMapper = new GeneralChatMessageMapperImpl(userEntityService);
+    }
 
     @Test
     public void userMapperTest() {
         User mockUser = User.builder()
-                .id(new UUID(0, 0))
+                .id(UUID.randomUUID())
                 .username("mock.user")
                 .email("mock.email@gmail.com")
                 .password("mock.password")
                 .bannedFromApp(true)
+                .bannedFromChat(false)
+                .emailValidated(false)
                 .build();
 
         UserDto dto = userMapper.toDTO(mockUser);
 
-        // checking the mapping
         Assertions.assertEquals(mockUser.getEmail(), dto.getEmail());
         Assertions.assertEquals(mockUser.getUsername(), dto.getUsername());
         Assertions.assertEquals(mockUser.getId(), dto.getId());
-        Assertions.assertEquals(mockUser.getBannedFromApp(), true);
-        Assertions.assertEquals(mockUser.getBannedFromChat(), false);
-        Assertions.assertEquals(mockUser.getEmailValidated(), false);
+        Assertions.assertEquals(true, dto.getBannedFromApp());
+        Assertions.assertEquals(false, dto.getBannedFromChat());
+        Assertions.assertEquals(false, dto.getEmailValidated());
     }
 
     @Test
     public void roleMapperTest() {
         Role mockRole = Role.builder()
-                .id(new UUID(0, 0))
+                .id(UUID.randomUUID())
                 .name("mockRole")
                 .build();
 
@@ -58,18 +72,45 @@ public class MapperTest {
     }
 
     @Test
-    public void generalChatMessageMapperTest() {
-        User user = new User();
+    public void generalChatMessageToDtoTest() {
+        UUID userId = UUID.randomUUID();
+        User user = User.builder().id(userId).username("testUser").build();
+
         GeneralChatMessage mockGeneralChatMessage = GeneralChatMessage.builder()
-                .id(new UUID(0, 0))
+                .id(UUID.randomUUID())
                 .message("mock message")
-                .user(user)
+                .user(user) // User must have an ID or mapper will throw NPE
                 .build();
 
         GeneralChatMessageDto dto = generalChatMessageMapper.toDTO(mockGeneralChatMessage);
 
         Assertions.assertEquals(mockGeneralChatMessage.getId(), dto.getId());
         Assertions.assertEquals(mockGeneralChatMessage.getMessage(), dto.getMessage());
-        Assertions.assertEquals(mockGeneralChatMessage.getUser(), user);
+        // The DTO has userId (UUID), not User object
+        Assertions.assertEquals(mockGeneralChatMessage.getUser().getId(), dto.getUserId());
+    }
+
+    @Test
+    public void generalChatMessageToEntityTest() {
+        // Prepare data
+        UUID userId = UUID.randomUUID();
+        User mockUser = User.builder().id(userId).username("foundUser").build();
+
+        GeneralChatMessageDto dto = GeneralChatMessageDto.builder()
+                .id(UUID.randomUUID())
+                .message("test message")
+                .userId(userId)
+                .build();
+
+        // TEACH the mock service what to do when called
+        when(userEntityService.findById(userId)).thenReturn(mockUser);
+
+        // Run the mapper
+        GeneralChatMessage entity = generalChatMessageMapper.toEntity(dto);
+
+        // Verify results
+        Assertions.assertEquals(dto.getId(), entity.getId());
+        Assertions.assertEquals(dto.getMessage(), entity.getMessage());
+        Assertions.assertEquals(mockUser, entity.getUser()); // Verify the service was called and user set
     }
 }

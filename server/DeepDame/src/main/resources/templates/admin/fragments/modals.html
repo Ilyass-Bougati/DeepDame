@@ -1,0 +1,43 @@
+<div th:fragment="deleteUserModal">
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 20px; border: none;">
+                <div class="modal-header border-0 pt-4 px-4">
+                    <h5 class="modal-title fw-bold text-danger">Confirm Deletion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body px-4">
+                    <p>Are you sure you want to permanently delete <strong id="deleteUserName">this user</strong>?</p>
+                    <p class="text-muted small">This action is irreversible.</p>
+                </div>
+                <div class="modal-footer border-0 pb-4 px-4">
+                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal" style="border-radius: 10px;">Cancel</button>
+                    <form id="deleteForm" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                        <button type="submit" class="btn btn-danger px-4" style="border-radius: 10px;">
+                            Confirm Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const deleteModal = document.getElementById('deleteModal');
+            if (deleteModal) {
+                deleteModal.addEventListener('show.bs.modal', function(event) {
+                    const button = event.relatedTarget;
+                    const userId = button.getAttribute('data-bs-id');
+                    const userName = button.getAttribute('data-bs-username');
+
+
+                    document.getElementById('deleteUserName').textContent = userName;
+                    document.getElementById('deleteForm').action = '/admin/users/delete/' + userId;
+                });
+            }
+        });
+    </script>
+</div>
