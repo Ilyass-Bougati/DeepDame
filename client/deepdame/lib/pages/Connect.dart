@@ -10,9 +10,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../static/Utils.dart';
 
 class Connect extends StatelessWidget {
-  
   final bool hasAccount;
-  const Connect(this.hasAccount,{super.key});
+  const Connect(this.hasAccount, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -217,6 +216,7 @@ class Connect extends StatelessWidget {
   Widget _registerPage(BuildContext context) {
     TextEditingController api_controller = TextEditingController();
     Map<String, ValidationController> map = <String, ValidationController>{};
+    String usernameErrorStr = "Invalid username";
 
     final entries = <String, ValidationController>{
       "username": ValidationController(),
@@ -278,12 +278,12 @@ class Connect extends StatelessWidget {
                         Align(
                           alignment: Alignment.centerRight,
                           child: SizedBox(
-                            child: Input(
+                            child: Input.onLostFocus(
                               "JohnDoe67",
                               TextInputType.name,
                               map['username']?.getController()
                                   as TextEditingController,
-                              "username invalid",
+                              usernameErrorStr,
                               () {
                                 map['username']?.setState(
                                   validator(
@@ -292,8 +292,16 @@ class Connect extends StatelessWidget {
                                     "username",
                                   ),
                                 );
-                                return map['username']?.getState() as bool;
+                                return (map['username']?.getState() as bool);
                               },
+                              () async {
+                                return (await Utils.api_getRequest(
+                                      "auth/checkUsername/${map['username']!.getController().text}",
+                                      api_controller.text,
+                                    )
+                                    as Map)['message'];
+                              },
+                              "Username unavailable",
                             ),
                           ),
                         ),
@@ -453,7 +461,7 @@ class Connect extends StatelessWidget {
                         });
                       }
 
-                      void _register() async{
+                      void _register() async {
                         try {
                           await register();
                           FocusManager.instance.primaryFocus?.unfocus();
