@@ -51,7 +51,7 @@ public class AuthControllerTest {
         var savedUser = userRepository.findByEmail("akira@deepdame.com")
                 .orElseThrow(() -> new AssertionError("User was not saved to the DB!"));
 
-        Assertions.assertEquals("Akira", savedUser.getUsername());
+        Assertions.assertEquals("akira", savedUser.getUsername());
         Assertions.assertEquals("akira@deepdame.com", savedUser.getEmail());
 
         Assertions.assertNotEquals("password123", savedUser.getPassword(),
@@ -74,7 +74,7 @@ public class AuthControllerTest {
 
     @Test
     void shouldFail_WhenUserAlreadyExists() throws Exception {
-        RegisterRequest firstRequest = new RegisterRequest("Akira", "duplicate@test.com", "pass");
+        RegisterRequest firstRequest = new RegisterRequest("dup.test", "duplicate@test.com", "pass");
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(firstRequest)))
@@ -93,7 +93,7 @@ public class AuthControllerTest {
     @Test
     void shouldLoginSuccessfully() throws Exception {
         RegisterRequest request = new RegisterRequest(
-                "Akira",
+                "login.test.user",
                 "login.test@example.com",
                 "password123"
         );
