@@ -35,7 +35,9 @@ public class UserDto {
 
     @NotNull
     private Boolean bannedFromApp;
-    private Set<RoleDto> roles;
+
+    @NotNull
+    private Set<RoleDto> roles = new HashSet<>();
 
     @NotNull
     private LocalDateTime createdAt;

@@ -11,10 +11,14 @@
 #      connection-test-query: SELECT 1
 #
 #  data:
-#    mongodb:
-#      uri: mongodb://admin:password@localhost:27017/deepdame?authSource=admin
-#      auto-index-creation: true
+#    redis:
+#      host: localhost
+#      port: 6379
 #
+#  cache:
+#    type: redis
+#    redis:
+#      time-to-live: 1800000
 #
 #  jpa:
 #    hibernate:
@@ -23,8 +27,8 @@
 #    open-in-view: true
 #    properties:
 #      hibernate:
-#        format_sql: trues
+#        format_sql=true:
 #
 #jwt:
-#  access-token-private-key: classpath:certs/private.pem
-#  access-token-public-key: classpath:certs/public.pem
+#    access-token-private-key: classpath:certs/private.pem
+#    access-token-public-key: classpath:certs/public.pem
