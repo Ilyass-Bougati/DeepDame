@@ -7,9 +7,11 @@ import com.deepdame.entity.User;
 import com.deepdame.exception.ConflictException;
 import com.deepdame.exception.NotFoundException;
 import com.deepdame.repository.UserRepository;
+import com.deepdame.service.username.UsernameService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,8 +28,13 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final UsernameService usernameService;
 
     @Override
+    @Caching(put = {
+            @CachePut(value = "users.email", key = "#result.email"),
+            @CachePut(value = "users.id", key = "#result.id")
+    })
     public UserDto save(UserDto userDto) {
         User user = userMapper.toEntity(userDto);
         return userMapper.toDTO(userRepository.save(user));
@@ -39,10 +46,9 @@ public class UserServiceImpl implements UserService {
      * @return the new registered user data
      */
     @Override
-    @Caching(evict = {
-            @CacheEvict(value = "users.email", key = "#userDto.email"),
-            @CacheEvict(value = "users.id", key = "#userDto.id"),
-            @CacheEvict(value = "users.all", key = "'ALL_USERS'")
+    @Caching(put = {
+            @CachePut(value = "users.email", key = "#result.email"),
+            @CachePut(value = "users.id", key = "#result.id")
     })
     public UserDto update(UserDto userDto) {
         User user = userRepository.findById(userDto.getId())
@@ -58,22 +64,28 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Caching(put = {
+            @CachePut(value = "users.email", key = "#result.email"),
+            @CachePut(value = "users.id", key = "#result.id")
+    })
     public UserDto register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new ConflictException("This email address is already in use by another account.");
         }
         User user = User.builder()
-                .username(request.getUsername() == null ? null : request.getUsername().trim())
+                .username(request.getUsername() == null ? null : request.getUsername().toLowerCase().trim())
                 .email(request.getEmail() == null ? null : request.getEmail().toLowerCase().trim())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .build();
 
         User savedUser = userRepository.save(user);
+        usernameService.reserveUsername(savedUser.getUsername());
 
         return userMapper.toDTO(savedUser);
     }
 
     @Override
+    @Cacheable(value = "users.email", key = "#email")
     public UserDto findByEmail(@NonNull String email) {
         return userRepository.findByEmail(email)
                 .map(userMapper::toDTO)
@@ -87,6 +99,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "users.id", key = "#id")
     public UserDto findById(UUID id) {
         return userRepository.findById(id)
                 .map(userMapper::toDTO)
