@@ -19,7 +19,7 @@ public class GeneralChatMessageDto {
     private UUID id;
 
     @NotNull
-    private UUID userId;
+    private ChatUserData user;
 
     @NotEmpty
     private String message;

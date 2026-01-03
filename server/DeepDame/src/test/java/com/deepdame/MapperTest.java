@@ -1,5 +1,6 @@
 package com.deepdame;
 
+import com.deepdame.dto.generalChatMessage.ChatUserData;
 import com.deepdame.dto.generalChatMessage.GeneralChatMessageDto;
 import com.deepdame.dto.generalChatMessage.GeneralChatMessageMapper;
 import com.deepdame.dto.generalChatMessage.GeneralChatMessageMapperImpl;
@@ -87,7 +88,7 @@ public class MapperTest {
         Assertions.assertEquals(mockGeneralChatMessage.getId(), dto.getId());
         Assertions.assertEquals(mockGeneralChatMessage.getMessage(), dto.getMessage());
         // The DTO has userId (UUID), not User object
-        Assertions.assertEquals(mockGeneralChatMessage.getUser().getId(), dto.getUserId());
+        Assertions.assertEquals(mockGeneralChatMessage.getUser().getId(), dto.getUser().getId());
     }
 
     @Test
@@ -99,7 +100,9 @@ public class MapperTest {
         GeneralChatMessageDto dto = GeneralChatMessageDto.builder()
                 .id(UUID.randomUUID())
                 .message("test message")
-                .userId(userId)
+                .user(ChatUserData.builder()
+                        .id(mockUser.getId())
+                        .build())
                 .build();
 
         // TEACH the mock service what to do when called
