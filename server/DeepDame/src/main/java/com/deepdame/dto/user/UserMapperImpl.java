@@ -1,10 +1,16 @@
 package com.deepdame.dto.user;
 
+import com.deepdame.dto.role.RoleMapper;
 import com.deepdame.entity.User;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.stream.Collectors;
+
 @Component
+@RequiredArgsConstructor
 public class UserMapperImpl implements UserMapper {
+    private final RoleMapper roleMapper;
 
     /**
      * This function doesn't set the roles of the user
@@ -21,6 +27,7 @@ public class UserMapperImpl implements UserMapper {
                 .bannedFromChat(user.getBannedFromChat())
                 .bannedFromApp(user.getBannedFromApp())
                 .emailValidated(user.getEmailValidated())
+                .roles(user.getRoles().stream().map(roleMapper::toDTO).collect(Collectors.toSet()))
                 .createdAt(user.getCreatedAt())
                 .build();
     }
