@@ -1,5 +1,6 @@
 package com.deepdame.websockets;
 
+import com.deepdame.dto.generalChatMessage.ChatUserData;
 import com.deepdame.dto.generalChatMessage.GeneralChatMessageDto;
 import com.deepdame.security.CustomUserDetails;
 import com.deepdame.service.generalChatMessage.GeneralChatMessageService;
@@ -24,7 +25,7 @@ public class GeneralChatController {
             @AuthenticationPrincipal CustomUserDetails principal,
             @Valid @Payload GeneralChatMessageDto message
     ) {
-        message.setUserId(principal.getUser().getId());
+        message.setUser(ChatUserData.builder().id(principal.getUser().getId()).build());
         message.setId(null);
         return generalChatMessageService.save(message);
     }
