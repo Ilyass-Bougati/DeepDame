@@ -1,9 +1,8 @@
-package com.deepdame;
+package com.deepdame.game;
 
 
 import com.deepdame.dto.game.GameDto;
 import com.deepdame.dto.game.GameMapper;
-import com.deepdame.engine.core.logic.*;
 import com.deepdame.engine.core.model.*;
 import com.deepdame.entity.GameDocument;
 import com.deepdame.enums.GameMode;
@@ -12,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.Scanner;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
