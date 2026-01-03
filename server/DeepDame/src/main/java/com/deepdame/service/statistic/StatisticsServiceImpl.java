@@ -1,6 +1,8 @@
 package com.deepdame.service.statistic;
 
 import com.deepdame.repository.GameRepository;
+import com.deepdame.repository.UserRepository;
+import com.deepdame.service.cache.GameCacheService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,8 @@ import java.util.UUID;
 public class StatisticsServiceImpl implements StatisticsService{
 
     private final GameRepository gameRepository;
+    private final GameCacheService gameCacheService;
+    private final UserRepository userRepository;
 
     public Map<String, Object> getUserStats(UUID userId){
 
@@ -45,6 +49,25 @@ public class StatisticsServiceImpl implements StatisticsService{
                 "myWins", myWins,
                 "friendWins", friendWins
         );
+    }
+
+    public Map<String, Object> getGlobalStats(){
+
+        Map<String, Object> globalStats = new HashMap<>();
+
+        globalStats.put("totalUsers", userRepository.count());
+        globalStats.put("totalNewUsersToday", userRepository.countNewUsersToday());
+        globalStats.put("activeUsers", userRepository.countByBannedFromAppFalse());
+        globalStats.put("bannedUsers", userRepository.countByBannedFromAppTrue());
+
+        globalStats.put("activeLobbyGames", gameCacheService.getOpenGames().size());
+
+        globalStats.put("totalGamesFinished", gameRepository.count());
+
+        LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
+        globalStats.put("gamesLast30Days", gameRepository.getGamesPerDay(thirtyDaysAgo));
+
+        return globalStats;
     }
 
     private double calculateRatio(long wins, long total) {
