@@ -5,8 +5,10 @@ import com.deepdame.dto.user.RegisterRequest;
 import com.deepdame.service.jwt.Token;
 import com.deepdame.service.jwt.TokenService;
 import com.deepdame.service.user.UserService;
+import com.deepdame.service.username.UsernameService;
 import com.deepdame.utils.CookieUtils;
 import jakarta.validation.Valid;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,7 @@ public class AuthController {
 
     private final TokenService tokenService;
     private final UserService userService;
+    private final UsernameService usernameService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Valid LoginRequest loginRequest) {
@@ -36,5 +39,11 @@ public class AuthController {
     public ResponseEntity<?> register(@RequestBody @Valid RegisterRequest request) {
         userService.register(request);
         return ResponseEntity.ok(Map.of("message", "User registered successfully"));
+    }
+
+    @GetMapping("/checkUsername/{username}")
+    public ResponseEntity<Map<String, Object>> checkUsername(@PathVariable @NonNull String username) {
+        Boolean isTaken = usernameService.isTaken(username.toLowerCase());
+        return ResponseEntity.ok(Map.of("message", isTaken));
     }
 }

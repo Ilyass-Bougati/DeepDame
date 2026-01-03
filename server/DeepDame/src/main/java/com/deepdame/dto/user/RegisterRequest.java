@@ -1,5 +1,6 @@
 package com.deepdame.dto.user;
 
+import com.deepdame.service.username.UniqueUsername;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -12,6 +13,7 @@ import lombok.*;
 public class RegisterRequest {
 
     @NotBlank(message = "Username is required")
+    @UniqueUsername
     private String username;
 
     @Email(message = "Email must be valid")
