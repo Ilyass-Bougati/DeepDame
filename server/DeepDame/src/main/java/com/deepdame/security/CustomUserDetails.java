@@ -1,5 +1,6 @@
 package com.deepdame.security;
 
+import com.deepdame.dto.user.UserDto;
 import com.deepdame.entity.User;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -13,8 +14,7 @@ import java.util.Collection;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CustomUserDetails implements UserDetails {
-
-    private User user;
+    private UserDto user;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -25,7 +25,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getPassword() {
-        return user.getPassword();
+        return "";
     }
 
     @Override

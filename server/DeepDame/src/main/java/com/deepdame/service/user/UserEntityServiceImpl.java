@@ -21,23 +21,29 @@ public class UserEntityServiceImpl implements UserEntityService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "users.id", key = "#id")
     public User findById(UUID id) {
-        return userRepository.findById(id)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
+        user.getRoles().size();
+        return user;
     }
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "users", key = "#email")
+    @Cacheable(value = "users.all", key = "'ALL_USERS'")
     public List<User> findAll() {
         return userRepository.findAll();
     }
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "users.email", key = "#email")
     public User findByEmail(String email) {
-        return userRepository.findByEmail(email)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("User not found with email: " + email));
+        user.getRoles().size();
+        return user;
     }
 
     @Override
