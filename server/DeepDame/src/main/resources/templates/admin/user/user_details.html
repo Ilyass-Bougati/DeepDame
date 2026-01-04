@@ -124,7 +124,7 @@
                     </div>
                 </div>
 
-                <div class="mt-4 d-flex gap-2">
+                <div class="mt-4 d-flex gap-2" th:if="${@userSecurity.canManage(user, #authentication.principal)}">
                     <a th:href="@{/admin/users/edit/{id}(id=${user.id})}"
                        class="btn px-4 text-white"
                        style="background-color: var(--soft-gold); border-radius: 10px;">
@@ -136,8 +136,7 @@
                             data-bs-toggle="modal"
                             data-bs-target="#deleteModal"
                             th:data-bs-id="${user.id}"
-                            th:data-bs-username="${user.username}"
-                            th:if="${@userSecurity.canManage(user.id, #authentication.principal)">
+                            th:data-bs-username="${user.username}">
                         Delete
                     </button>
                 </div>

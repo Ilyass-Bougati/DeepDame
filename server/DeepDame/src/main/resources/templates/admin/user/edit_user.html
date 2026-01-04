@@ -52,6 +52,7 @@
                 <form th:action="@{/admin/users/edit}" th:object="${user}" method="post">
 
                     <input type="hidden" th:field="*{id}">
+                    <input type="hidden" th:field="*{createdAt}">
 
                     <div class="row g-4">
                         <div class="col-md-6">
