@@ -1,6 +1,7 @@
 import 'package:deepdame/dtos/UserDto.dart';
 import 'package:deepdame/pages/Connect.dart';
 import 'package:deepdame/prefabs/SubmitButton.dart';
+import 'package:deepdame/prefabs/Navbar.dart';
 import 'package:deepdame/static/Utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -10,7 +11,9 @@ class Landing extends StatelessWidget {
   const Landing({super.key});
 
   @override
-  Widget build(BuildContext context) => build_temporarly(context);
+  Widget build(BuildContext context) => Utils.userDetails == null
+      ? build_temporarly(context)
+      : build_onConnection(context);
 
   Future<void> initLandingPage(BuildContext context) async {
     bool connected = false;
@@ -25,7 +28,7 @@ class Landing extends StatelessWidget {
       connected = true;
       UserDTO dto = UserDTO.fromJson(resp);
       Utils.userDetails = dto.toUser();
-
+      Utils.navbar = Navbar();
     } catch (e) {}
     Navigator.pushReplacement(
       context,
@@ -196,10 +199,7 @@ class Landing extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: BottomAppBar(
-        height: MediaQuery.of(context).size.height / 20,
-        color: Color.fromARGB(200, 235, 229, 222),
-      ),
+      bottomNavigationBar: Utils.navbar,
     );
   }
 }

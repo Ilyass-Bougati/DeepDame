@@ -8,6 +8,7 @@ PersistCookieJar? persistCookieJar;
 final dio = Dio();
 
 class Utils {
+  static Widget? navbar;
   static User? userDetails;
   static String API_URL = "http://192.168.1.26:8080/api/v1";
 

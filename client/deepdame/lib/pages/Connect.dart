@@ -193,7 +193,12 @@ class Connect extends StatelessWidget {
                           Navigator.pop(context);
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (_) => Landing()),
+                            PageRouteBuilder(
+                              pageBuilder: (context, animation1, animation2) =>
+                                  Landing(),
+                              transitionDuration: Duration.zero,
+                              reverseTransitionDuration: Duration.zero,
+                            ),
                           );
                         });
                       } catch (e) {
