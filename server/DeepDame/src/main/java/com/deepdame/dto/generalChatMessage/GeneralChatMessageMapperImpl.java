@@ -16,7 +16,10 @@ public class GeneralChatMessageMapperImpl implements GeneralChatMessageMapper {
         return GeneralChatMessageDto.builder()
                 .id(generalChatMessage.getId())
                 .message(generalChatMessage.getMessage())
-                .userId(generalChatMessage.getUser().getId())
+                .user(ChatUserData.builder()
+                        .id(generalChatMessage.getUser().getId())
+                        .username(generalChatMessage.getUser().getUsername())
+                        .build())
                 .createdAt(generalChatMessage.getCreatedAt())
                 .build();
     }
@@ -26,7 +29,7 @@ public class GeneralChatMessageMapperImpl implements GeneralChatMessageMapper {
         return GeneralChatMessage.builder()
                 .id(generalChatMessageDto.getId())
                 .message(generalChatMessageDto.getMessage())
-                .user(userEntityService.findById(generalChatMessageDto.getUserId()))
+                .user(userEntityService.findById(generalChatMessageDto.getUser().getId()))
                 .createdAt(generalChatMessageDto.getCreatedAt())
                 .build();
     }

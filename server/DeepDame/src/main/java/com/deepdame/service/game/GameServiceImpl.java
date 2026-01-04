@@ -213,6 +213,14 @@ public class GameServiceImpl implements GameService{
 
     private void handleGameOver(GameDocument doc) {
 
+        PieceType winner = doc.getGameState().getWinner();
+
+        if (winner.equals(PieceType.BLACK)) {
+            doc.setWinnerId(doc.getPlayerBlackId());
+        } else {
+            doc.setWinnerId(doc.getPlayerWhiteId());
+        }
+
         gameRepository.save(doc);
 
         gameCacheService.deleteGame(doc.getId());

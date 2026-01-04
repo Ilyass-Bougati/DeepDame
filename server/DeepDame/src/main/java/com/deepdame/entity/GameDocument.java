@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -28,11 +29,13 @@ public class GameDocument {
     private UUID playerBlackId;
     private UUID playerWhiteId;
 
+    private UUID winnerId;
+
+    @Builder.Default
+    private LocalDateTime gameDate = LocalDateTime.now();
+
     private GameState gameState;
 
     @Builder.Default
     private List<Move> history = new ArrayList<>();
 }
-
-
-
