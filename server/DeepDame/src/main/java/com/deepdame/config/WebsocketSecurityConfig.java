@@ -1,5 +1,6 @@
 package com.deepdame.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.Message;
@@ -10,19 +11,28 @@ import org.springframework.security.messaging.access.intercept.AuthorizationChan
 import org.springframework.security.messaging.access.intercept.MessageMatcherDelegatingAuthorizationManager;
 import org.springframework.security.messaging.context.AuthenticationPrincipalArgumentResolver;
 import org.springframework.security.messaging.context.SecurityContextChannelInterceptor;
+import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
 import java.util.List;
 
 @Configuration
+@EnableWebSocketMessageBroker
+@RequiredArgsConstructor
 public class WebsocketSecurityConfig implements WebSocketMessageBrokerConfigurer {
+
+    private final JwtWebSocketInterceptor jwtWebSocketInterceptor;
+
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
+
+        registration.interceptors(jwtWebSocketInterceptor);
+
         registration.interceptors(new SecurityContextChannelInterceptor());
 
         AuthorizationManager<Message<?>> manager = new MessageMatcherDelegatingAuthorizationManager.Builder()
                 .nullDestMatcher().permitAll()
-                .simpSubscribeDestMatchers("/topic/**", "/queue/**").authenticated()
+                .simpSubscribeDestMatchers("/topic/**", "/queue/**", "/user/**").authenticated()
                 .simpDestMatchers("/app/**").authenticated()
                 .anyMessage().denyAll()
                 .build();
