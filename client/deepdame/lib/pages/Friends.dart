@@ -4,6 +4,6 @@ import 'package:flutter/material.dart';
 class Friends extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(bottomNavigationBar:Utils.navbar);
+    return Scaffold(bottomNavigationBar: Utils.getNavbar(context, 2));
   }
 }

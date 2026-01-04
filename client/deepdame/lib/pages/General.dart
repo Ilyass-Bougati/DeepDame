@@ -11,6 +11,6 @@ class General extends StatefulWidget {
 class _GeneralCreateState extends State<General> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(bottomNavigationBar: Utils.navbar);
+    return Scaffold(bottomNavigationBar: Utils.getNavbar(context, 1));
   }
 }

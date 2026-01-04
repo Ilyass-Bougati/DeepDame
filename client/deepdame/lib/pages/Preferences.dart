@@ -180,7 +180,7 @@ class _preferencesCreateState extends State<Preferences> {
           ),
         ),
       ),
-      bottomNavigationBar: Utils.navbar,
+      bottomNavigationBar: Utils.getNavbar(context, 3),
     );
   }
 }

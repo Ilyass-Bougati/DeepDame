@@ -1,7 +1,6 @@
 import 'package:deepdame/dtos/UserDto.dart';
 import 'package:deepdame/pages/Connect.dart';
 import 'package:deepdame/prefabs/SubmitButton.dart';
-import 'package:deepdame/prefabs/Navbar.dart';
 import 'package:deepdame/static/Utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -28,7 +27,7 @@ class Landing extends StatelessWidget {
       connected = true;
       UserDTO dto = UserDTO.fromJson(resp);
       Utils.userDetails = dto.toUser();
-      Utils.navbar = Navbar();
+
     } catch (e) {}
     Navigator.pushReplacement(
       context,
@@ -199,7 +198,7 @@ class Landing extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: Utils.navbar,
+      bottomNavigationBar: Utils.getNavbar(context, 0),
     );
   }
 }

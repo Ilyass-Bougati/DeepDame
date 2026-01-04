@@ -63,19 +63,6 @@ flutter:
     - assets/fonts/Nunito/static/Nunito-Medium.ttf
     - assets/fonts/Nunito/static/Nunito-Regular.ttf
 
-  #Icons:
-  #General-Chat
-    - assets/vectors/icons/chat.svg
-
-  #Friends
-    - assets/vectors/icons/friends.svg
-
-  #Home
-    - assets/vectors/icons/home.svg
-
-  #Preferences
-    - assets/vectors/icons/preferences.svg
-
   #Vectors:
   #Cross-hatching 
     - assets/vectors/CrossHatchFade.svg
