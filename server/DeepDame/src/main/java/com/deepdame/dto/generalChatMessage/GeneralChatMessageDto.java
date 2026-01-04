@@ -18,6 +18,9 @@ public class GeneralChatMessageDto {
     @EqualsAndHashCode.Include
     private UUID id;
 
+    @NotNull
+    private ChatUserData user;
+
     @NotEmpty
     private String message;
 

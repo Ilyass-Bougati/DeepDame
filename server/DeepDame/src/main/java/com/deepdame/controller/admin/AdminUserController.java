@@ -20,7 +20,6 @@ import java.util.UUID;
 @RequestMapping("/admin/users")
 @PreAuthorize("hasAnyRole('ADMIN', 'SUPER-ADMIN')")
 @RequiredArgsConstructor
-
 public class AdminUserController {
     private final UserEntityService userEntityService;
     private final UserService userService;

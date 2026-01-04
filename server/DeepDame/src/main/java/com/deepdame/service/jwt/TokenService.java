@@ -1,6 +1,7 @@
 package com.deepdame.service.jwt;
 
 import com.deepdame.dto.auth.LoginRequest;
+import com.deepdame.entity.User;
 import com.deepdame.exception.Unauthorized;
 import com.deepdame.security.CustomUserDetails;
 import com.deepdame.security.CustomUserDetailsService;
@@ -55,8 +56,9 @@ public class TokenService {
 
     public Token login(LoginRequest loginRequest) {
         CustomUserDetails userDetails = (CustomUserDetails) customUserDetailsService.loadUserByUsername(loginRequest.getEmail());
+        User user = userEntityService.findByEmail(loginRequest.getEmail());
 
-        if (!passwordEncoder.matches(loginRequest.getPassword(), userDetails.getPassword())) {
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             throw new Unauthorized("Invalid Credentials");
         }
 

@@ -1,26 +1,24 @@
 package com.deepdame.config;
 
-import com.deepdame.entity.GameDocument;
-import com.deepdame.websockets.GameWebSocketHandler;
-import com.deepdame.websockets.GeneralChatWebSocketHandler;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.socket.config.annotation.EnableWebSocket;
-import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
-import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
+import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.web.socket.config.annotation.*;
 
 @Configuration
-@EnableWebSocket
-@RequiredArgsConstructor
-public class WebsocketConfig implements WebSocketConfigurer {
-    private final GameWebSocketHandler gameWebSocketHandler;
-    private final GeneralChatWebSocketHandler generalChatWebSocketHandler;
+@EnableWebSocketMessageBroker
+public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
-    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(gameWebSocketHandler, "/ws/game/v1")
-                .setAllowedOrigins("*");
-        registry.addHandler(generalChatWebSocketHandler, "/ws/general-chat/v1")
-                .setAllowedOrigins("*");
+    public void configureMessageBroker(MessageBrokerRegistry config) {
+        config.enableSimpleBroker("/topic");
+        config.setApplicationDestinationPrefixes("/app");
     }
+
+    @Override
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        registry.addEndpoint("/ws")
+                .setAllowedOriginPatterns("*")
+                .withSockJS();
+    }
+
 }

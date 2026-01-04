@@ -1,15 +1,50 @@
+import 'package:deepdame/dtos/UserDto.dart';
 import 'package:deepdame/pages/Connect.dart';
 import 'package:deepdame/prefabs/SubmitButton.dart';
+import 'package:deepdame/static/Utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class Landing extends StatelessWidget {
-  final bool isConnected;
-  const Landing(this.isConnected , {super.key});
+  const Landing({super.key});
 
   @override
-  Widget build(BuildContext context) => isConnected ? build_onConnection(context) : build_offConnection(context);
+  Widget build(BuildContext context) => build_temporarly(context);
+
+  Future<void> initLandingPage(BuildContext context) async {
+    bool connected = false;
+    try {
+      var resp = await Utils.api_getRequest("user/", Utils.API_URL).onError((
+        e,
+        stackTrace,
+      ) {
+        connected = false;
+        throw Exception();
+      });
+      connected = true;
+      UserDTO dto = UserDTO.fromJson(resp);
+      Utils.userDetails = dto.toUser();
+
+    } catch (e) {}
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => connected
+            ? build_onConnection(context)
+            : build_offConnection(context),
+      ),
+    );
+  }
+
+  Widget build_temporarly(BuildContext context) {
+    initLandingPage(context);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Utils.showLoadingDialog(context);
+    });
+
+    return Scaffold(backgroundColor: Color.fromARGB(255, 253, 251, 247));
+  }
 
   Widget build_offConnection(BuildContext context) {
     return Scaffold(
@@ -132,7 +167,7 @@ class Landing extends StatelessWidget {
                   children: [
                     SizedBox(height: 50),
                     Text(
-                      "Hi, JohnDoe67 !",
+                      "Hi, ${Utils.userDetails!.username} !",
                       style: GoogleFonts.lora(
                         fontSize: 25,
                         fontWeight: FontWeight.bold,
@@ -145,7 +180,6 @@ class Landing extends StatelessWidget {
             ),
 
             SvgPicture.asset('assets/vectors/Board.svg'),
-            SizedBox(height: 30),
             Submitbutton(
               "Play Online",
               Color.fromARGB(255, 232, 208, 153),
@@ -163,7 +197,7 @@ class Landing extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: BottomAppBar(
-        height: 50,
+        height: MediaQuery.of(context).size.height / 20,
         color: Color.fromARGB(200, 235, 229, 222),
       ),
     );

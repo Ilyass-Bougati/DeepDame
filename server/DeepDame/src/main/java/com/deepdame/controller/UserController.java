@@ -24,7 +24,7 @@ public class UserController {
         if (principal == null) {
             throw new Unauthorized("User not authenticated");
         } else {
-            return ResponseEntity.ok(userMapper.toDTO(principal.getUser()));
+            return ResponseEntity.ok(principal.getUser());
         }
     }
 }

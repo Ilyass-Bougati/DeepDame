@@ -6,10 +6,17 @@ import com.deepdame.entity.GeneralChatMessage;
 import com.deepdame.exception.NotFoundException;
 import com.deepdame.repository.GeneralChatMessageRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.Serial;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+@Service
 @Transactional
 @RequiredArgsConstructor
 public class GeneralChatMessageServiceImpl implements GeneralChatMessageService {
@@ -42,5 +49,14 @@ public class GeneralChatMessageServiceImpl implements GeneralChatMessageService 
         return generalChatMessageRepository.findById(id)
                 .map(generalChatMessageMapper::toDTO)
                 .orElseThrow(() -> new NotFoundException("GeneralChatMessage not found"));
+    }
+
+    @Override
+    public List<GeneralChatMessageDto> getGeneralChatMessages(Long limit) {
+        Pageable limitPage = PageRequest.of(0, limit.intValue());
+        return generalChatMessageRepository
+                .findByOrderByCreatedAt(limitPage).stream()
+                .map(generalChatMessageMapper::toDTO)
+                .toList();
     }
 }
