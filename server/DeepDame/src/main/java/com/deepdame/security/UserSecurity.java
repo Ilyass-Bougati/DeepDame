@@ -14,11 +14,8 @@ public class UserSecurity {
 
     private final UserEntityService userEntityService;
 
-    public boolean canManage(UUID targetId, CustomUserDetails currentUser) {
-        if (targetId == null || currentUser == null) return false;
-
-        User targetUser = userEntityService.findById(targetId);
-        if (targetUser == null) return false;
+    public boolean canManage(User targetUser, CustomUserDetails currentUser) {
+        if (targetUser == null || currentUser == null) return false;
 
         List<String> targetRoles = targetUser.getRoles().stream()
                 .map(r -> r.getName().toUpperCase())
@@ -44,4 +41,10 @@ public class UserSecurity {
 
         return false;
     }
+
+    public boolean canManage(UUID targetId, CustomUserDetails currentUser) {
+        if (targetId == null) return false;
+        return canManage(userEntityService.findById(targetId), currentUser);
+    }
+
 }
