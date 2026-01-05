@@ -31,7 +31,6 @@ public class GameServiceImpl implements GameService{
 
     private final GameEngine gameEngine = new GameEngine();
 
-
     @Override
     public GameDto findById(UUID id){
         GameDocument gameDoc = gameCacheService.getGame(id);
@@ -113,9 +112,30 @@ public class GameServiceImpl implements GameService{
         gameCacheService.setUserCurrentGame(playerId, gameId);
         gameCacheService.removeFromLobby(gameId);
 
-        // notofication that someone joind
-
         return gameMapper.toDTO(gameDoc);
+    }
+
+    @Override
+    public GameDto findOrStartMatch(UUID playerId){
+
+        if (gameCacheService.isUserPlaying(playerId)) {
+            UUID activeGameId = gameCacheService.getUserCurrentGameId(playerId);
+            return findById(activeGameId);
+        }
+
+        for (int i = 0; i < 3; i++) {
+            UUID openGameId = gameCacheService.getRandomOpenGameId();
+
+            if (openGameId != null) {
+                try {
+                    return joinGame(openGameId, playerId);
+                } catch (Exception e) {
+                    throw new NotFoundException("Unable to find a game");
+                }
+            }
+        }
+
+        return createGame(playerId, GameMode.PVP);
     }
 
     @Override

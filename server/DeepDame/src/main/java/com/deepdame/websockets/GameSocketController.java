@@ -79,18 +79,91 @@ public class GameSocketController {
         }
     }
 
+    @MessageMapping("/game/matchmaking")
+    public void findMatch(@AuthenticationPrincipal CustomUserDetails user){
+
+        String username = user.getUsername();
+        UUID playerId = user.getUser().getId();
+
+        log.trace("User {} requested matchmaking", username);
+
+        try{
+            GameDto game = gameService.findOrStartMatch(playerId);
+
+            if (game.getPlayerBlackId().equals(playerId) && game.getPlayerWhiteId() == null){
+                messagingTemplate.convertAndSendToUser(
+                        username,
+                        "/queue/game/created",
+                        new GameCreatedResponse(game.getId())
+                );
+            } else {
+                UserDto hostUser = userService.findById(game.getPlayerBlackId());
+
+                messagingTemplate.convertAndSendToUser(
+                        username,
+                        "/queue/game/joined",
+                        new GameJoinedResponse(game.getId(), hostUser.getUsername(), "WHITE")
+                );
+
+                UserDto me = userService.findById(playerId);
+                messagingTemplate.convertAndSendToUser(
+                        hostUser.getUsername(),
+                        "/queue/game/joined",
+                        new GameJoinedResponse(game.getId(), me.getUsername(), "BLACK")
+                );
+            }
+        } catch (Exception e) {
+            sendErrorMessage(username, "MATCHMAKING_ERROR", e.getMessage());
+        }
+    }
+
     @MessageMapping("/game/{gameId}/move")
     public void makeMove(@AuthenticationPrincipal CustomUserDetails user, @DestinationVariable UUID gameId, @Payload Move move) {
         try {
             UUID playerId = user.getUser().getId();
 
-            gameService.makeMove(gameId, playerId, move);
+            GameDto game = gameService.makeMove(gameId, playerId, move);
 
             messagingTemplate.convertAndSend("/topic/game/" + gameId, move);
+
+            if (game.getGameState().isGameOver()){
+                notifyGameOver(game);
+            }
 
         } catch (Exception e) {
             sendErrorMessage(user.getUsername(), "MOVE_ERROR", e.getMessage());
         }
+    }
+
+    @MessageMapping("/game/{gameId}/surrender")
+    public void surrenderGame(@AuthenticationPrincipal CustomUserDetails user, @DestinationVariable UUID gameId){
+
+        try{
+            UUID playerId = user.getUser().getId();
+            GameDto game = gameService.surrenderGame(gameId, playerId);
+
+            notifyGameOver(game);
+        } catch (Exception e) {
+            sendErrorMessage(user.getUsername(), "SURRENDER_ERROR", e.getMessage());
+        }
+    }
+
+    private void notifyGameOver(GameDto gameDto){
+
+        UUID winnerId = gameDto.getWinnerId();
+
+        String winnerColor = (gameDto.getGameState().getWinner() != null)? gameDto.getGameState().getWinner().name() :"Unknown";
+        String winnerName = "Unknown";
+
+        if (winnerId != null){
+            try{
+                winnerName = userService.findById(winnerId).getUsername();
+            } catch (Exception e){
+                winnerName = "Unknown";
+            }
+        }
+        GameOverResponse response = new GameOverResponse(winnerColor, winnerName, winnerId);
+        messagingTemplate.convertAndSend("/topic/game/" + gameDto.getId() + "/game-over", response);
     }
 
     private void sendErrorMessage(String username, String type, String message) {
@@ -101,4 +174,5 @@ public class GameSocketController {
     public record ErrorDto(String type, String message) {}
     public record GameCreatedResponse(UUID gameId) {}
     public record GameJoinedResponse(UUID gameId, String opponentName, String yourColor) {}
+    public record GameOverResponse(String winnerColor, String winnerName, UUID winnerId) {}
 }
