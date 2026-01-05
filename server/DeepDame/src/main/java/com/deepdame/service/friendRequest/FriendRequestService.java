@@ -6,5 +6,6 @@ import org.springframework.stereotype.Service;
 import java.util.UUID;
 
 public interface FriendRequestService {
-    void addFriendRequest(UUID userId, UUID friendId);
+    void addFriendRequest(UUID senderId, UUID receiverId);
+    Boolean friendRequestExists(UUID senderId, UUID receiverId);
 }

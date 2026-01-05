@@ -19,10 +19,10 @@ public class FriendRequestServiceImpl implements FriendRequestService {
     private final UserRepository userRepository;
 
     @Override
-    public void addFriendRequest(UUID userId, UUID friendId) {
-        User user = userRepository.findById(userId)
+    public void addFriendRequest(UUID senderId, UUID receiverId) {
+        User user = userRepository.findById(senderId)
                 .orElseThrow(() -> new NotFoundException("User not found!"));
-        User friend = userRepository.findById(userId)
+        User friend = userRepository.findById(receiverId)
                 .orElseThrow(() -> new NotFoundException("User not found!"));
 
         FriendRequest friendRequest = FriendRequest.builder()
@@ -31,5 +31,10 @@ public class FriendRequestServiceImpl implements FriendRequestService {
                 .build();
 
         friendRequestRepository.save(friendRequest);
+    }
+
+    @Override
+    public Boolean friendRequestExists(UUID senderId, UUID receiverId) {
+        return friendRequestRepository.existsBySenderIdAndReceiverIdOrReceiverIdAndSenderId(senderId, receiverId, receiverId, senderId);
     }
 }
