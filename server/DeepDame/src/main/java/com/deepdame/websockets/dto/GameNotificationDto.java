@@ -7,7 +7,7 @@ import lombok.Builder;
 import java.util.UUID;
 
 @Builder
-public record NotificationDto(
+public record GameNotificationDto(
         @NotNull UserDto user,
         @NotNull UUID gameId
 ) {

@@ -1,6 +1,7 @@
 package com.deepdame.repository;
 
 import com.deepdame.entity.User;
+import io.lettuce.core.dynamic.annotation.Param;
 import lombok.NonNull;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -26,4 +27,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     @Query("SELECT count(u) FROM User u WHERE u.createdAt >= CURRENT_DATE")
     long countNewUsersToday();
+
+    @Query("SELECT COUNT(u) > 0 FROM User u JOIN u.friends f WHERE u.id = :userId AND f.id = :friendId")
+    boolean areFriends(@Param("userId") UUID userId, @Param("friendId") UUID friendId);
 }

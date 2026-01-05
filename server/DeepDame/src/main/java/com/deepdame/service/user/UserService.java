@@ -11,4 +11,6 @@ import java.util.UUID;
 public interface UserService extends CrudDtoService<UUID, UserDto> {
     UserDto register(RegisterRequest request);
     UserDto findByEmail(@NonNull String email);
+    Boolean areFriends(UUID userId, UUID friendId);
+    void sendFriendInvitation(UUID userId, UUID friendId);
 }

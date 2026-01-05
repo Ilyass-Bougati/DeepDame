@@ -18,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -90,6 +91,20 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByEmail(email)
                 .map(userMapper::toDTO)
                 .orElseThrow(() -> new NotFoundException("User not found"));
+    }
+
+    @Override
+    public Boolean areFriends(UUID userId, UUID friendId) {
+        return userRepository.areFriends(userId, friendId);
+    }
+
+    @Override
+    public void sendFriendInvitation(UUID userId, UUID friendId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+        User friend = userRepository.findById(friendId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+        user.getReceivedFriendInvitations().add(friend);
     }
 
     @Override

@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.UUID;
 
-public record NotificationRequestDto(
+public record GameInvitationDto(
         @NotNull UUID userId,
         @NotNull UUID gameId
 ) {

@@ -68,7 +68,7 @@
                     <div class="card-header bg-success text-white">2. Send Invitation</div>
                     <div class="card-body">
                         <div class="alert alert-secondary py-2">
-                            <small>Sends to: <strong>/app/invite</strong> with JSON Body</small>
+                            <small>Sends to: <strong>/app/invite/game</strong> with JSON Body</small>
                         </div>
                         <div class="row g-2">
                             <div class="col-md-6">
@@ -181,7 +181,7 @@
             log('Connected via Cookie Session.');
 
             // Listen for notifications
-            const topic = `/topic/user/${myUserId}/notifications`;
+            const topic = `/topic/user/${myUserId}/game-notifications`;
             log(`Subscribing to: ${topic}`);
 
             stompClient.subscribe(topic, function (message) {
@@ -208,7 +208,7 @@
 
         // === THIS IS THE CHANGE ===
         // Destination is static, IDs go into the body
-        const destination = `/app/invite`;
+        const destination = `/app/invite/game`;
 
         const payload = {
             userId: targetId,  // Maps to NotificationRequestDto.userId
