@@ -120,4 +120,12 @@ public class UserServiceImpl implements UserService {
                 .map(userMapper::toDTO)
                 .orElseThrow(() -> new NotFoundException("User not found"));
     }
+
+    @Override
+    public List<User> searchUsers(String keyword) {
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            return userRepository.findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCase(keyword, keyword);
+        }
+        return userRepository.findAll();
+    }
 }

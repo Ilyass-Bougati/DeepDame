@@ -102,6 +102,11 @@
     <div class="brand-mini">DEEPDAME ADMIN</div>
     <h1 class="login-title">Log in</h1>
 
+    <div th:if="${param.logout}" class="alert alert-success py-2 small mb-4" role="alert"
+         style="background-color: rgba(115, 147, 126, 0.1); border-left: 4px solid #73937e; color: #4a5d51;">
+        You have been successfully logged out.
+    </div>
+
     <div th:if="${param.error}" class="alert alert-sage-danger py-2 small mb-4" role="alert">
         Invalid email or password.
     </div>
