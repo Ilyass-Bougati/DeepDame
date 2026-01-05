@@ -18,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -104,5 +105,13 @@ public class UserServiceImpl implements UserService {
         return userRepository.findById(id)
                 .map(userMapper::toDTO)
                 .orElseThrow(() -> new NotFoundException("User not found"));
+    }
+
+    @Override
+    public List<User> searchUsers(String keyword) {
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            return userRepository.findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCase(keyword, keyword);
+        }
+        return userRepository.findAll();
     }
 }

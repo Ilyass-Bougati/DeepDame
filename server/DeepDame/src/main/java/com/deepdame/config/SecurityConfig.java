@@ -2,10 +2,13 @@ package com.deepdame.config;
 
 import com.deepdame.filter.JwtCookieFilter;
 import com.deepdame.security.CustomUserDetailsService;
+import com.deepdame.utils.CookieUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -45,23 +48,34 @@ public class SecurityConfig {
     @Order(1)
     public SecurityFilterChain adminSecurity(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/admin/**")
+                .securityMatcher("/admin/**", "/api/auth/refresh" )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/admin/login").permitAll()
+                        .requestMatchers("/admin/login", "/admin/perform_login").permitAll()
                         .requestMatchers("/admin/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPER-ADMIN")
+                        .anyRequest().authenticated()
                 )
-                .userDetailsService(customUserDetailsService)
-                .formLogin(form -> form
-                        .loginPage("/admin/login")
-                        .loginProcessingUrl("/admin/perform_login")
-                        .usernameParameter("email")
-                        .defaultSuccessUrl("/admin", true)
-                        .failureUrl("/admin/login?error=true")
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint(new org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint("/admin/login"))
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.sendRedirect("/admin/login?denied=true");
+                        })
                 )
+
+                .formLogin(AbstractHttpConfigurer::disable)
                 .logout(logout -> logout
                         .logoutUrl("/admin/logout")
+                        .addLogoutHandler((request, response, authentication) -> {
+                            ResponseCookie cookie = CookieUtils.genCookie("access_token", "", 0, "/");
+                            response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+                            ResponseCookie refreshCookie = CookieUtils.genCookie("refresh_token", "", 0, "/");
+                            response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+                        })
                         .logoutSuccessUrl("/admin/login?logout=true")
-                );
+                )
+                .addFilterBefore(jwtCookieFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

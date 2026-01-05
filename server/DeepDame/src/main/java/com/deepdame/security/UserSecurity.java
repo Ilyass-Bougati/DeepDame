@@ -14,11 +14,16 @@ public class UserSecurity {
 
     private final UserEntityService userEntityService;
 
-    public boolean canManage(UUID targetId, CustomUserDetails currentUser) {
-        if (targetId == null || currentUser == null) return false;
+    public boolean canManage(User targetUser, Object principal) {
+        if (targetUser == null || principal == null) return false;
+        String currentUserEmail;
 
-        User targetUser = userEntityService.findById(targetId);
-        if (targetUser == null) return false;
+
+        if (principal instanceof CustomUserDetails userDetails) {
+            currentUserEmail = userDetails.getUsername();
+        } else {
+            currentUserEmail = principal.toString(); // Cas où c'est un String
+        }
 
         List<String> targetRoles = targetUser.getRoles().stream()
                 .map(r -> r.getName().toUpperCase())
@@ -28,13 +33,14 @@ public class UserSecurity {
             return false;
         }
 
-        if (targetUser.getEmail().equals(currentUser.getUsername())) {
+        if (targetUser.getEmail().equals(currentUserEmail)) {
             return true;
         }
+        User currentUser = userEntityService.findByEmail(currentUserEmail);
+        if (currentUser == null) return false;
 
-        List<String> currentRoles = currentUser.getAuthorities().stream()
-                .map(a -> a.getAuthority().replace("ROLE_", "").toUpperCase())
-                .toList();
+        List<String> currentRoles = currentUser.getRoles().stream()
+                .map(r -> r.getName().toUpperCase()).toList();
 
         if (currentRoles.contains("SUPER-ADMIN")) return true;
 
@@ -44,4 +50,10 @@ public class UserSecurity {
 
         return false;
     }
+
+    public boolean canManage(UUID targetId, Object principal) {
+        if (targetId == null) return false;
+        return canManage(userEntityService.findById(targetId), principal);
+    }
+
 }
