@@ -108,6 +108,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void logout(UUID userId) {
+        userRepository.invalidateRefreshToken(userId);
+    }
+
+    @Override
     public void delete(UUID uuid) {
         userRepository.deleteById(uuid);
     }
