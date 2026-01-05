@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>DeepDame Smart Debugger v2</title>
+    <title>DeepDame Smart Debugger v2.1</title>
     <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
     <style>
         body { font-family: 'Consolas', 'Segoe UI', monospace; padding: 20px; background: #1e1e1e; color: #c0c0c0; margin: 0; height: 100vh; display: flex; flex-direction: column; }
@@ -41,10 +41,14 @@
         button { cursor: pointer; padding: 8px; background: #007bff; color: white; border: none; width: 100%; font-weight: bold; border-radius: 3px; margin-bottom: 5px; }
         button:disabled { background: #444; cursor: not-allowed; color: #888; }
         button:hover:not(:disabled) { background: #0056b3; }
+
+        /* Custom Button Colors */
         .btn-red { background: #dc3545; }
         .btn-red:hover:not(:disabled) { background: #a71d2a; }
         .btn-green { background: #28a745; }
         .btn-green:hover:not(:disabled) { background: #1e7e34; }
+        .btn-purple { background: #6f42c1; } /* AI Color */
+        .btn-purple:hover:not(:disabled) { background: #59359a; }
 
         /* Interactive Logs */
         .log-header { padding: 10px; border-bottom: 1px solid #333; background: #252526; display: flex; justify-content: space-between; align-items: center; }
@@ -68,7 +72,7 @@
 <body>
 
 <div style="margin-bottom: 10px;">
-    <h1 style="margin:0; font-size: 1.5rem;">♟️ DeepDame Smart Debugger v2</h1>
+    <h1 style="margin:0; font-size: 1.5rem;">♟️ DeepDame Smart Debugger v2.1</h1>
 </div>
 
 <div class="container">
@@ -93,12 +97,14 @@
 
         <div class="box">
             <h2>3. Lobby & Match</h2>
-            <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-                <button onclick="createGame()" id="createBtn" disabled>Create Game</button>
-                <button onclick="findMatch()" id="matchBtn" class="btn-green" disabled>Auto Match 🎲</button>
+            <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+                <button onclick="createGame('PVP')" id="createBtn" disabled>Create PVP</button>
+                <button onclick="createGame('PVE')" id="createPveBtn" class="btn-purple" disabled>Create PVE 🤖</button>
             </div>
 
-            <button onclick="refreshLobby()" style="background: #555; font-size: 11px;">Refresh Lobby List</button>
+            <button onclick="findMatch()" id="matchBtn" class="btn-green" disabled>Auto Match 🎲</button>
+
+            <button onclick="refreshLobby()" style="background: #555; font-size: 11px; margin-top: 5px;">Refresh Lobby List</button>
             <div id="lobbyList" style="height:100px; overflow-y:auto; background:#222; border:1px solid #333; margin-top:5px;"></div>
         </div>
 
@@ -200,14 +206,12 @@
                 const f = move.from;
                 const t = move.to;
 
-                // Safety check for array bounds
                 if (!localGrid[f.row] || !localGrid[t.row]) return;
 
                 const piece = localGrid[f.row][f.col];
                 localGrid[t.row][t.col] = piece;
                 localGrid[f.row][f.col] = '.';
 
-                // Handle Jump
                 if (Math.abs(f.row - t.row) === 2) {
                     const midRow = (f.row + t.row) / 2;
                     const midCol = (f.col + t.col) / 2;
@@ -310,11 +314,21 @@
     }
 
     // --- 3. ACTIONS ---
-    function createGame() {
+
+    // UPDATED: Accepts mode (PVP or PVE)
+    function createGame(mode) {
         if(!stompClient || !stompClient.connected) return;
-        const payload = "PVP";
-        log(`📤 SEND CREATE`, 'c-out', payload);
-        stompClient.publish({ destination: '/app/game/create', body: JSON.stringify(payload), headers: { 'content-type': 'application/json' } });
+
+        // Use argument or default to PVP
+        const payload = mode || "PVP";
+
+        log(`📤 SEND CREATE (${payload})`, 'c-out', payload);
+
+        stompClient.publish({
+            destination: '/app/game/create',
+            body: JSON.stringify(payload),
+            headers: { 'content-type': 'application/json' }
+        });
     }
 
     function findMatch() {
@@ -358,9 +372,6 @@
             const data = JSON.parse(msg.body);
             log(`🏆 GAME OVER! Winner: ${data.winnerColor}`, 'c-sys', msg.body);
             alert(`GAME OVER\nWinner: ${data.winnerColor} (${data.winnerName})`);
-
-            // --- FIX: WE NO LONGER DISABLE BUTTONS HERE ---
-            // This allows you to immediately Create/Match a new game without refreshing
         });
     }
 
@@ -383,8 +394,10 @@
         document.getElementById('connectBtn').disabled = connected;
         document.getElementById('disconnectBtn').disabled = !connected;
 
-        // Always enabled if connected, regardless of turn or game state
+        // Enable both PVP and PVE buttons
         document.getElementById('createBtn').disabled = !connected;
+        document.getElementById('createPveBtn').disabled = !connected;
+
         document.getElementById('matchBtn').disabled = !connected;
         document.getElementById('moveBtn').disabled = !connected;
         document.getElementById('surrenderBtn').disabled = !connected;

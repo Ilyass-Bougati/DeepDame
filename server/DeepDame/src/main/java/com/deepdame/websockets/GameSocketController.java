@@ -16,6 +16,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -126,6 +127,10 @@ public class GameSocketController {
 
             messagingTemplate.convertAndSend("/topic/game/" + gameId, move);
 
+            if (game.getMode() == GameMode.PVE){
+                broadcastAiMove(game, move);
+            }
+
             if (game.getGameState().isGameOver()){
                 notifyGameOver(game);
             }
@@ -145,6 +150,22 @@ public class GameSocketController {
             notifyGameOver(game);
         } catch (Exception e) {
             sendErrorMessage(user.getUsername(), "SURRENDER_ERROR", e.getMessage());
+        }
+    }
+
+    private void broadcastAiMove(GameDto game, Move userMove){
+
+        List<Move> history = game.getHistory();
+
+        if (history != null && !history.isEmpty()){
+            Move lastMove = history.get(history.size() - 1);
+
+            boolean isSameMove = lastMove.from().equals(userMove.from()) && lastMove.to().equals(userMove.to());
+
+            if (!isSameMove){
+                log.debug("Broadcasting AI Move for Game {}", game.getId());
+                messagingTemplate.convertAndSend("/topic/game/" + game.getId(), lastMove);
+            }
         }
     }
 

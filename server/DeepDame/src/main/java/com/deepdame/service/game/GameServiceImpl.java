@@ -7,9 +7,11 @@ import com.deepdame.engine.core.model.GameState;
 import com.deepdame.engine.core.model.Move;
 import com.deepdame.engine.core.model.PieceType;
 import com.deepdame.entity.GameDocument;
+import com.deepdame.enums.AiDifficulty;
 import com.deepdame.enums.GameMode;
 import com.deepdame.exception.NotFoundException;
 import com.deepdame.repository.GameRepository;
+import com.deepdame.service.ai.AiOrchestrator;
 import com.deepdame.service.cache.GameCacheService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,7 @@ public class GameServiceImpl implements GameService{
     private final GameRepository gameRepository;
     private final GameEntityService gameEntityService;
     private final GameMapper gameMapper;
+    private final AiOrchestrator aiOrchestrator;
 
     private final GameEngine gameEngine = new GameEngine();
 
@@ -162,7 +165,9 @@ public class GameServiceImpl implements GameService{
             gameCacheService.saveGame(gameDoc);
         }
 
-        // Calling the ai move
+        if (!newState.isGameOver() && gameDoc.getMode() == GameMode.PVE) {
+            triggerAiMove(gameDoc);
+        }
 
         return gameMapper.toDTO(gameDoc);
     }
@@ -250,5 +255,28 @@ public class GameServiceImpl implements GameService{
         if (doc.getPlayerWhiteId() != null) {
             gameCacheService.clearUserCurrentGame(doc.getPlayerWhiteId());
         }
+    }
+
+
+    private GameDto triggerAiMove(GameDocument gameDoc) {
+
+        try {
+            List<Move> legalMoves = gameEngine.getLegalMoves(gameDoc.getGameState().getBoard(), PieceType.WHITE);
+
+            // the ai model works best if the difficulty is set to HARD, i didn't boder to remove for future improvement
+            Move aiMove = aiOrchestrator.getAiMove(gameDoc.getGameState().getBoard(), legalMoves, AiDifficulty.HARD);
+
+            GameState newState = gameEngine.applyMove(gameDoc.getGameState(), aiMove);
+            gameDoc.setGameState(newState);
+            gameDoc.getHistory().add(aiMove);
+
+            gameCacheService.saveGame(gameDoc);
+
+            if (newState.isGameOver()) handleGameOver(gameDoc);
+
+            return gameMapper.toDTO(gameDoc);
+        } catch (Exception e) {
+        }
+        return null;
     }
 }
