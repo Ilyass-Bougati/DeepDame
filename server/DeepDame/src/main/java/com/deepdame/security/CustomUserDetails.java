@@ -1,7 +1,6 @@
 package com.deepdame.security;
 
 import com.deepdame.dto.user.UserDto;
-import com.deepdame.entity.User;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -11,8 +10,8 @@ import java.util.Collection;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class CustomUserDetails implements UserDetails {
     private UserDto user;
 

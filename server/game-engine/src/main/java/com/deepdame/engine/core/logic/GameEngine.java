@@ -39,6 +39,10 @@ public class GameEngine {
         return state;
     }
 
+    public List<Move> getLegalMoves(Board board, PieceType player){
+        return validator.getLegalMoves(board, player);
+    }
+
     private void checkPromotion(Board board ,Piece piece, Position position){
         if (piece.type() == PieceType.BLACK && position.row() == 0){
             Piece kingPiece = board.getPiece(position).promote();

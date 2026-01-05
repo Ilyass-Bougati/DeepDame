@@ -18,4 +18,6 @@ public interface GameService extends CrudDtoService<UUID, GameDto> {
     List<GameDto> getOpenGames();
     List<GameDto> getUserFinishedGames(UUID playerId);
     GameDto getUserCurrentGame(UUID playerId);
+
+    GameDto findOrStartMatch(UUID playerId);
 }

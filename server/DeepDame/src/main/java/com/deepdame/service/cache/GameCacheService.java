@@ -67,6 +67,13 @@ public class GameCacheService {
         return fetchGamesBatch(idList);
     }
 
+    public UUID getRandomOpenGameId() {
+        String idString = stringTemplate.opsForSet().randomMember(KEY_LOBBY);
+
+        if (idString == null) return null;
+        return UUID.fromString(idString);
+    }
+
 
     // user game stuff
     public void setUserCurrentGame(UUID userId, UUID gameId){

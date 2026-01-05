@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>DeepDame Smart Debugger + ASCII</title>
+    <title>DeepDame Smart Debugger v2.1</title>
     <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
     <style>
         body { font-family: 'Consolas', 'Segoe UI', monospace; padding: 20px; background: #1e1e1e; color: #c0c0c0; margin: 0; height: 100vh; display: flex; flex-direction: column; }
 
-        /* Layout - Updated to 3 columns */
+        /* Layout */
         .container { display: flex; gap: 20px; flex: 1; min-height: 0; }
-        .controls { width: 350px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
-        .ascii-panel { width: 300px; display: flex; flex-direction: column; background: #151515; border: 1px solid #333; border-radius: 5px; align-items: center; justify-content: center; }
+        .controls { width: 360px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
+        .ascii-panel { width: 340px; display: flex; flex-direction: column; background: #151515; border: 1px solid #333; border-radius: 5px; align-items: center; justify-content: center; }
         .logs-panel { flex: 1; background: #111; border: 1px solid #333; display: flex; flex-direction: column; border-radius: 5px; }
 
         /* ASCII Board Styling */
@@ -31,10 +31,24 @@
         .box { background: #2d2d2d; border: 1px solid #444; padding: 15px; border-radius: 5px; }
         h2 { border-bottom: 2px solid #007bff; padding-bottom: 5px; margin-top: 0; font-size: 1.2rem; color: #fff; }
         label { display: block; margin-bottom: 5px; font-weight: bold; color: #888; font-size: 0.8rem; }
-        input, textarea { background: #444; color: white; border: 1px solid #555; padding: 8px; width: 100%; box-sizing: border-box; margin-bottom: 8px; font-family: monospace; }
-        button { cursor: pointer; padding: 8px; background: #007bff; color: white; border: none; width: 100%; font-weight: bold; border-radius: 3px; }
+        input[type="text"], input[type="password"], input[type="email"], textarea { background: #444; color: white; border: 1px solid #555; padding: 8px; width: 100%; box-sizing: border-box; margin-bottom: 8px; font-family: monospace; }
+
+        /* Coord Inputs */
+        .coord-row { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+        .coord-input { width: 40px !important; text-align: center; margin-bottom: 0 !important; }
+
+        /* Buttons */
+        button { cursor: pointer; padding: 8px; background: #007bff; color: white; border: none; width: 100%; font-weight: bold; border-radius: 3px; margin-bottom: 5px; }
         button:disabled { background: #444; cursor: not-allowed; color: #888; }
         button:hover:not(:disabled) { background: #0056b3; }
+
+        /* Custom Button Colors */
+        .btn-red { background: #dc3545; }
+        .btn-red:hover:not(:disabled) { background: #a71d2a; }
+        .btn-green { background: #28a745; }
+        .btn-green:hover:not(:disabled) { background: #1e7e34; }
+        .btn-purple { background: #6f42c1; } /* AI Color */
+        .btn-purple:hover:not(:disabled) { background: #59359a; }
 
         /* Interactive Logs */
         .log-header { padding: 10px; border-bottom: 1px solid #333; background: #252526; display: flex; justify-content: space-between; align-items: center; }
@@ -47,7 +61,6 @@
         .time { color: #555; margin-right: 10px; font-size: 11px; min-width: 60px; }
         .json-box { display: none; background: #181818; padding: 10px; margin-left: 20px; border-left: 2px solid #444; color: #a9b7c6; overflow-x: auto; }
         .expanded .json-box { display: block; animation: fadeIn 0.2s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         /* Log Colors */
         .c-sys { color: #dcdcaa; }
@@ -59,7 +72,7 @@
 <body>
 
 <div style="margin-bottom: 10px;">
-    <h1 style="margin:0; font-size: 1.5rem;">♟️ DeepDame Smart Debugger</h1>
+    <h1 style="margin:0; font-size: 1.5rem;">♟️ DeepDame Smart Debugger v2.1</h1>
 </div>
 
 <div class="container">
@@ -78,36 +91,54 @@
             <h2>2. Connection</h2>
             <div style="display: flex; gap: 5px;">
                 <button id="connectBtn" onclick="connect()" disabled>Connect WS</button>
-                <button id="disconnectBtn" onclick="disconnect()" disabled style="background:#dc3545">Disconnect</button>
+                <button id="disconnectBtn" onclick="disconnect()" disabled class="btn-red">Disconnect</button>
             </div>
         </div>
 
         <div class="box">
-            <h2>3. Lobby</h2>
-            <button onclick="refreshLobby()" style="background: #555; margin-bottom: 5px;">Refresh List</button>
-            <div id="lobbyList" style="height:100px; overflow-y:auto; background:#222; border:1px solid #333;"></div>
+            <h2>3. Lobby & Match</h2>
+            <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+                <button onclick="createGame('PVP')" id="createBtn" disabled>Create PVP</button>
+                <button onclick="createGame('PVE')" id="createPveBtn" class="btn-purple" disabled>Create PVE 🤖</button>
+            </div>
+
+            <button onclick="findMatch()" id="matchBtn" class="btn-green" disabled>Auto Match 🎲</button>
+
+            <button onclick="refreshLobby()" style="background: #555; font-size: 11px; margin-top: 5px;">Refresh Lobby List</button>
+            <div id="lobbyList" style="height:100px; overflow-y:auto; background:#222; border:1px solid #333; margin-top:5px;"></div>
         </div>
 
         <div class="box">
-            <h2>4. Actions</h2>
-            <button id="createBtn" onclick="createGame()" disabled>Create Game (PVP)</button>
-            <br><br>
+            <h2>4. Game Actions</h2>
             <label>Target Game ID:</label>
             <input type="text" id="gameIdInput" placeholder="UUID..." readonly />
 
-            <label>Move JSON:</label>
-            <textarea id="movePayload" rows="6">{
-  "from": { "row": 5, "col": 0 },
-  "to": { "row": 4, "col": 1 }
+            <label style="margin-top:10px; color:#fff;">Quick Move Input:</label>
+            <div class="coord-row">
+                <span style="font-size:11px; width:40px;">FROM:</span>
+                <input type="text" class="coord-input" id="fromR" placeholder="R" oninput="updateJson()">
+                <input type="text" class="coord-input" id="fromC" placeholder="C" oninput="updateJson()">
+                <span style="margin:0 5px;">➔</span>
+                <span style="font-size:11px; width:30px;">TO:</span>
+                <input type="text" class="coord-input" id="toR" placeholder="R" oninput="updateJson()">
+                <input type="text" class="coord-input" id="toC" placeholder="C" oninput="updateJson()">
+            </div>
+
+            <label>Generated JSON:</label>
+            <textarea id="movePayload" rows="4" readonly style="background:#222; color:#777;">{
+  "from": { "row": 0, "col": 0 },
+  "to": { "row": 0, "col": 0 }
 }</textarea>
             <button id="moveBtn" onclick="makeMove()" disabled>Send Move</button>
+            <button id="surrenderBtn" onclick="surrender()" class="btn-red" disabled style="margin-top:10px;">Surrender 🏳️</button>
         </div>
     </div>
 
     <div class="ascii-panel">
-        <h3 style="margin-top:0; color:#888;">Client-Side State</h3>
+        <h3 style="margin-top:0; color:#888;">Client-Side View</h3>
         <div id="asciiDisplay">Board not initialized</div>
         <button onclick="initLocalBoard()" style="width:auto; margin-top:10px; background:#444; font-size:11px;">Reset Board</button>
+        <div style="font-size:10px; color:#555; margin-top:5px;">(Updates on server broadcast)</div>
     </div>
 
     <div class="logs-panel">
@@ -124,15 +155,25 @@
     const API_BASE = "/api/v1";
     const WS_URL = "ws://" + window.location.host + "/ws/websocket";
 
+    // --- JSON AUTO-UPDATER ---
+    function updateJson() {
+        const fR = document.getElementById('fromR').value || 0;
+        const fC = document.getElementById('fromC').value || 0;
+        const tR = document.getElementById('toR').value || 0;
+        const tC = document.getElementById('toC').value || 0;
+
+        const payload = {
+            from: { row: parseInt(fR), col: parseInt(fC) },
+            to: { row: parseInt(tR), col: parseInt(tC) }
+        };
+        document.getElementById('movePayload').value = JSON.stringify(payload, null, 2);
+    }
+
     // --- ASCII BOARD LOGIC ---
     let localGrid = [];
 
     function initLocalBoard() {
-        // Initialize 8x8 grid with '.'
         localGrid = Array(8).fill(null).map(() => Array(8).fill('.'));
-
-        // Apply Logic: (row + col) % 2 != 0 are dark squares
-        // Rows 0-2: White ('w'), Rows 5-7: Black ('b')
         for (let row = 0; row < 8; row++) {
             for (let col = 0; col < 8; col++) {
                 if ((row + col) % 2 !== 0) {
@@ -142,17 +183,14 @@
             }
         }
         renderAscii();
-        log("🖥️ Local Board Initialized", 'c-sys');
+        log("🖥️ Local Board Reset", 'c-sys');
     }
 
     function renderAscii() {
         if(localGrid.length === 0) return;
-
-        // Header
         let output = "   0 1 2 3 4 5 6 7\n\n";
-
         for (let r = 0; r < 8; r++) {
-            output += `${r} |`; // Row Number
+            output += `${r} |`;
             for (let c = 0; c < 8; c++) {
                 output += ` ${localGrid[r][c]}`;
             }
@@ -164,35 +202,30 @@
     function handleMoveUpdate(jsonBody) {
         try {
             const move = JSON.parse(jsonBody);
-            // Check if this looks like a move object
             if (move.from && move.to) {
                 const f = move.from;
                 const t = move.to;
 
-                // 1. Move the piece in local memory
+                if (!localGrid[f.row] || !localGrid[t.row]) return;
+
                 const piece = localGrid[f.row][f.col];
                 localGrid[t.row][t.col] = piece;
                 localGrid[f.row][f.col] = '.';
 
-                // 2. Handle Jump (Simple Logic)
-                // If row difference is 2, remove the middle piece
                 if (Math.abs(f.row - t.row) === 2) {
                     const midRow = (f.row + t.row) / 2;
                     const midCol = (f.col + t.col) / 2;
                     localGrid[midRow][midCol] = '.';
                     log(`⚔️ Capture at [${midRow},${midCol}]`, 'c-sys');
                 }
-
                 renderAscii();
             }
         } catch (e) {
-            console.error("Failed to parse move for ASCII update", e);
+            console.error("Failed to parse move", e);
         }
     }
 
-    // --- EXISTING LOGGING & APP LOGIC ---
-
-    // (Logging Engine kept exactly as is)
+    // --- LOGGING ENGINE ---
     function log(summary, type = 'c-sys', detailObj = null) {
         const container = document.getElementById('logContent');
         const time = new Date().toLocaleTimeString().split(' ')[0] + "." + new Date().getMilliseconds();
@@ -236,7 +269,7 @@
             if (response.ok) {
                 document.getElementById('authStatus').innerHTML = "<span style='color:#28a745'>✅ Logged In</span>";
                 document.getElementById('connectBtn').disabled = false;
-                log("✅ Login Success (Cookie Saved)", 'c-sys');
+                log("✅ Login Success", 'c-sys');
             } else { throw new Error(response.status); }
         } catch (err) { log("❌ Login Failed: " + err.message, 'c-err'); }
     }
@@ -250,7 +283,7 @@
             log("✅ <b>STOMP CONNECTED</b>", 'c-sys');
             setConnected(true);
             refreshLobby();
-            initLocalBoard(); // Initialize ASCII board on connect
+            initLocalBoard();
 
             stompClient.subscribe('/user/queue/errors', (msg) => log(`❌ ERROR RECEIVED`, 'c-err', msg.body));
 
@@ -280,12 +313,28 @@
         log("🔌 Disconnected", 'c-sys');
     }
 
-    // --- 3. GAME ACTIONS ---
-    function createGame() {
+    // --- 3. ACTIONS ---
+
+    // UPDATED: Accepts mode (PVP or PVE)
+    function createGame(mode) {
         if(!stompClient || !stompClient.connected) return;
-        const payload = "PVP";
-        log(`📤 SEND CREATE`, 'c-out', payload);
-        stompClient.publish({ destination: '/app/game/create', body: JSON.stringify(payload), headers: { 'content-type': 'application/json' } });
+
+        // Use argument or default to PVP
+        const payload = mode || "PVP";
+
+        log(`📤 SEND CREATE (${payload})`, 'c-out', payload);
+
+        stompClient.publish({
+            destination: '/app/game/create',
+            body: JSON.stringify(payload),
+            headers: { 'content-type': 'application/json' }
+        });
+    }
+
+    function findMatch() {
+        if(!stompClient || !stompClient.connected) return;
+        log(`🎲 REQUEST MATCHMAKING`, 'c-out');
+        stompClient.publish({ destination: '/app/game/matchmaking' });
     }
 
     function joinGame(id) {
@@ -300,13 +349,29 @@
         stompClient.publish({ destination: `/app/game/${id}/move`, body: rawBody, headers: { 'content-type': 'application/json' } });
     }
 
+    function surrender() {
+        const id = document.getElementById('gameIdInput').value;
+        if (!id) { log("❌ No Game ID selected", 'c-err'); return; }
+
+        if (confirm("Are you sure you want to surrender?")) {
+            log(`🏳️ SURRENDER (${id})`, 'c-out');
+            stompClient.publish({ destination: `/app/game/${id}/surrender` });
+        }
+    }
+
     function subscribeToGame(id) {
         if (stompClient.subscriptions && Object.keys(stompClient.subscriptions).some(k => k.includes(id))) return;
         log(`📡 Subscribed to game channel`, 'c-sys');
+
         stompClient.subscribe(`/topic/game/${id}`, (msg) => {
             log(`♟️ BOARD UPDATE`, 'c-in', msg.body);
-            // UPDATE ASCII BOARD HERE
             handleMoveUpdate(msg.body);
+        });
+
+        stompClient.subscribe(`/topic/game/${id}/game-over`, (msg) => {
+            const data = JSON.parse(msg.body);
+            log(`🏆 GAME OVER! Winner: ${data.winnerColor}`, 'c-sys', msg.body);
+            alert(`GAME OVER\nWinner: ${data.winnerColor} (${data.winnerName})`);
         });
     }
 
@@ -328,8 +393,14 @@
     function setConnected(connected) {
         document.getElementById('connectBtn').disabled = connected;
         document.getElementById('disconnectBtn').disabled = !connected;
+
+        // Enable both PVP and PVE buttons
         document.getElementById('createBtn').disabled = !connected;
+        document.getElementById('createPveBtn').disabled = !connected;
+
+        document.getElementById('matchBtn').disabled = !connected;
         document.getElementById('moveBtn').disabled = !connected;
+        document.getElementById('surrenderBtn').disabled = !connected;
     }
 </script>
 </body>
