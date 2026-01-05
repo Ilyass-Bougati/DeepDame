@@ -39,7 +39,7 @@
             <div class="edit-card shadow-sm p-4 p-md-5">
                 <div class="d-flex align-items-center mb-4">
                     <div class="me-3" style="width: 50px; height: 50px; background-color: var(--sage-primary); color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem;">
-                        <span th:text="${user.username.substring(0, 1).toUpperCase()}">U</span>
+                        <span th:text="${user.username != null and !user.username.isEmpty() ? user.username.substring(0, 1).toUpperCase() : 'U'}">U</span>
                     </div>
                     <div>
                         <h2 class="mb-0 h4">Edit User Account</h2>

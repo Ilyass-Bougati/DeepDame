@@ -12,9 +12,8 @@
                 </div>
                 <div class="modal-footer border-0 pb-4 px-4">
                     <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal" style="border-radius: 10px;">Cancel</button>
-                    <form id="deleteForm" method="post">
-                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
+                    <form id="deleteForm" th:action="@{/admin/users/delete/0}" method="post">
                         <button type="submit" class="btn btn-danger px-4" style="border-radius: 10px;">
                             Confirm Delete
                         </button>
@@ -32,7 +31,6 @@
                     const button = event.relatedTarget;
                     const userId = button.getAttribute('data-bs-id');
                     const userName = button.getAttribute('data-bs-username');
-
 
                     document.getElementById('deleteUserName').textContent = userName;
                     document.getElementById('deleteForm').action = '/admin/users/delete/' + userId;

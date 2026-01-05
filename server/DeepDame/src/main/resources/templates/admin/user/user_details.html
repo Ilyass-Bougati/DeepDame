@@ -63,7 +63,7 @@
             <div class="detail-card shadow-sm text-center h-100">
                 <div class="mx-auto mb-3 d-flex align-items-center justify-content-center"
                      style="width: 80px; height: 80px; border-radius: 50%; background-color: var(--sage-primary); color: white; font-size: 2rem; font-family: 'Georgia', serif;">
-                    <span th:text="${user.username.substring(0, 1).toUpperCase()}">U</span>
+                    <span th:text="${not #strings.isEmpty(user.username) ? user.username.substring(0, 1).toUpperCase() : 'U'}">U</span>
                 </div>
                 <h3 style="font-family: 'Georgia', serif; color: var(--sage-dark);" th:text="${user.username}">Username</h3>
                 <p class="text-muted small" th:text="${user.email}">user@email.com</p>
@@ -95,7 +95,7 @@
                         <div class="info-label">Internal ID</div>
                         <div class="info-value small text-muted text-break" th:text="${user.id}">uuid</div>
                         <div class="info-label">Member Since</div>
-                        <div class="info-value" th:text="${#temporals.format(user.createdAt, 'MMMM dd, yyyy')}">Date</div>
+                        <div class="info-value" th:text="${user.createdAt != null ? #temporals.format(user.createdAt, 'MMMM dd, yyyy') : 'N/A'}">Date</div>
                     </div>
                     <div class="col-md-6">
                         <div class="info-label">Email Verification</div>
