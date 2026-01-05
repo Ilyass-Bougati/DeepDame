@@ -15,4 +15,5 @@ public interface UserService extends CrudDtoService<UUID, UserDto> {
     UserDto findByEmail(@NonNull String email);
     Boolean areFriends(UUID userId, UUID friendId);
     void sendFriendInvitation(UUID userId, UUID friendId);
+    void logout(UUID userId);
 }
