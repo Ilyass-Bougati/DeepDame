@@ -56,6 +56,9 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPER-ADMIN")
                         .anyRequest().authenticated()
                 )
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint(new org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint("/admin/login"))
+                )
 
                 .formLogin(AbstractHttpConfigurer::disable)
                 .logout(logout -> logout
