@@ -58,6 +58,9 @@ public class SecurityConfig {
                 )
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint(new org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint("/admin/login"))
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.sendRedirect("/admin/login?denied=true");
+                        })
                 )
 
                 .formLogin(AbstractHttpConfigurer::disable)
