@@ -32,6 +32,10 @@ public class JwtWebSocketInterceptor implements ChannelInterceptor {
 
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
 
+            if (accessor.getUser() != null) {
+                return message;
+            }
+
             String authHeader = accessor.getFirstNativeHeader("Authorization");
 
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
