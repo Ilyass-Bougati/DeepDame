@@ -94,6 +94,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Boolean areFriends(UUID userId, UUID friendId) {
+        return userRepository.areFriends(userId, friendId);
+    }
+
+    @Override
+    public void sendFriendInvitation(UUID userId, UUID friendId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+        User friend = userRepository.findById(friendId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+        user.getReceivedFriendInvitations().add(friend);
+    }
+
+    @Override
     public void delete(UUID uuid) {
         userRepository.deleteById(uuid);
     }
