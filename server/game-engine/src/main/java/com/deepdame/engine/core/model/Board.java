@@ -57,6 +57,10 @@ public class Board {
         setPiece(position, null);
     }
 
+    public Piece[][] getGrid() {
+        return grid;
+    }
+
     // for debug
     public void printBoard(){
         for (int i = 0; i < SIZE; i++){
