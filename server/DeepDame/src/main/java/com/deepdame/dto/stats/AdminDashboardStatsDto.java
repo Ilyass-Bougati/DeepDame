@@ -2,8 +2,7 @@ package com.deepdame.dto.stats;
 
 import lombok.Builder;
 import lombok.Data;
-import java.time.LocalDate;
-import java.util.Map;
+import java.util.List;
 
 @Data
 @Builder
@@ -17,5 +16,6 @@ public class AdminDashboardStatsDto {
     private int activeLobbyGames;
     private long totalGamesFinished;
 
-    private Map<LocalDate, Long> gamesPerDayLast30Days;
+    private List<String> chartDays;
+    private List<Long> chartCounts;
 }

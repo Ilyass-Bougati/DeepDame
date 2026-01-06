@@ -9,17 +9,17 @@ import com.deepdame.repository.mongo.PlayerStatisticsRepository;
 import com.deepdame.service.cache.GameCacheService;
 import com.deepdame.listeners.WebSocketPresenceEventListener;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StatisticsServiceImpl implements StatisticsService {
@@ -52,6 +52,23 @@ public class StatisticsServiceImpl implements StatisticsService {
                         (existing, replacement) -> existing
                 ));
 
+        Map<LocalDate, Long> continuousMap = new TreeMap<>();
+
+        for (int i = 0; i < 30; i++) {
+            LocalDate date = LocalDate.now().minusDays(29 - i);
+            continuousMap.put(date, chartMap.getOrDefault(date, 0L));
+        }
+
+        List<String> days = new ArrayList<>();
+        List<Long> counts = new ArrayList<>();
+
+        continuousMap.forEach((date, count) -> {
+            days.add(date.toString());
+            counts.add(count);
+        });
+
+        log.debug("the chart data = {}", continuousMap);
+
         return AdminDashboardStatsDto.builder()
                 .totalUsers(userRepository.count())
                 .newUsersToday(userRepository.countByCreatedAtAfter(startOfDay))
@@ -60,7 +77,8 @@ public class StatisticsServiceImpl implements StatisticsService {
                 .onlinePlayers(onlineCount)
                 .activeLobbyGames(gameCacheService.getOpenGames().size())
                 .totalGamesFinished(gameRepository.count())
-                .gamesPerDayLast30Days(chartMap)
+                .chartDays(days)
+                .chartCounts(counts)
                 .build();
     }
 
