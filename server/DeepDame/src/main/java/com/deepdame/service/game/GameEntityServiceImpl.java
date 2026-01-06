@@ -1,9 +1,9 @@
 package com.deepdame.service.game;
 
-import com.deepdame.entity.GameDocument;
+import com.deepdame.entity.mongo.GameDocument;
 import com.deepdame.enums.GameMode;
 import com.deepdame.exception.NotFoundException;
-import com.deepdame.repository.GameRepository;
+import com.deepdame.repository.mongo.GameRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

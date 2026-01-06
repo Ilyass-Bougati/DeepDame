@@ -1,6 +1,6 @@
-package com.deepdame.repository;
+package com.deepdame.repository.mongo;
 
-import com.deepdame.entity.GameDocument;
+import com.deepdame.entity.mongo.GameDocument;
 import com.deepdame.enums.GameMode;
 import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;

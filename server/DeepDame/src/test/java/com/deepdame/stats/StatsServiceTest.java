@@ -1,9 +1,9 @@
 package com.deepdame.stats;
 
-import com.deepdame.entity.GameDocument;
+import com.deepdame.entity.mongo.GameDocument;
 import com.deepdame.entity.User;
 import com.deepdame.enums.GameMode;
-import com.deepdame.repository.GameRepository;
+import com.deepdame.repository.mongo.GameRepository;
 import com.deepdame.repository.UserRepository;
 import com.deepdame.service.cache.GameCacheService;
 import com.deepdame.service.statistic.StatisticsServiceImpl;

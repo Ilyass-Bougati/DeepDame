@@ -1,4 +1,4 @@
-package com.deepdame.entity;
+package com.deepdame.entity.mongo;
 
 import com.deepdame.engine.core.model.GameState;
 import com.deepdame.engine.core.model.Move;
