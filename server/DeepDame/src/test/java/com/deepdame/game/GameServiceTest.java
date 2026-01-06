@@ -3,7 +3,7 @@ package com.deepdame.game;
 import com.deepdame.dto.game.GameDto;
 import com.deepdame.engine.core.model.*;
 import com.deepdame.enums.GameMode;
-import com.deepdame.repository.GameRepository;
+import com.deepdame.repository.mongo.GameRepository;
 import com.deepdame.service.game.GameService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

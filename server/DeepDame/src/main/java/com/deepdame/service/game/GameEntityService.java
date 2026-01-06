@@ -1,6 +1,6 @@
 package com.deepdame.service.game;
 
-import com.deepdame.entity.GameDocument;
+import com.deepdame.entity.mongo.GameDocument;
 import com.deepdame.service.CrudEntityService;
 
 import java.util.List;
