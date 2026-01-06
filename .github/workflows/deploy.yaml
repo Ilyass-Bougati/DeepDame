@@ -15,4 +15,4 @@ jobs:
     - name: Execute Deployment Script
       run: |
         # Adjust path to where you saved the script
-        /home/ilyass/apps/deploy.sh
+        /home/ilyass/DeepDame/server/DeepDame/deploy.sh
