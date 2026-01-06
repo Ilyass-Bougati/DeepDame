@@ -16,6 +16,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -153,6 +154,37 @@ public class GameSocketController {
         }
     }
 
+    @MessageMapping("/game/{gameId}/chat")
+    public void sendGameMessage(@AuthenticationPrincipal CustomUserDetails user, @DestinationVariable UUID gameId, @Payload ChatRequest request) {
+
+        String username = user.getUsername();
+        UUID userId = user.getUser().getId();
+
+        try {
+            GameDto game = gameService.findById(gameId);
+
+            boolean isBlack = userId.equals(game.getPlayerBlackId());
+            boolean isWhite = userId.equals(game.getPlayerWhiteId());
+
+            if (!isBlack && !isWhite) {
+                log.trace("Security Alert: User {} tried to chat in game {} but is not a player.", username, gameId);
+                sendErrorMessage(username, "CHAT_ERROR", "You are not a participant in this game.");
+                return;
+            }
+
+            ChatMessageResponse response = new ChatMessageResponse(
+                    username,
+                    request.content(),
+                    Instant.now().toString()
+            );
+
+            messagingTemplate.convertAndSend("/topic/game/" + gameId + "/chat", response);
+
+        } catch (Exception e) {
+            sendErrorMessage(username, "CHAT_ERROR", "Game not found or expired.");
+        }
+    }
+
     private void broadcastAiMove(GameDto game, Move userMove){
 
         List<Move> history = game.getHistory();
@@ -196,4 +228,6 @@ public class GameSocketController {
     public record GameCreatedResponse(UUID gameId) {}
     public record GameJoinedResponse(UUID gameId, String opponentName, String yourColor) {}
     public record GameOverResponse(String winnerColor, String winnerName, UUID winnerId) {}
+    public record ChatRequest(String content) {}
+    public record ChatMessageResponse(String sender, String content, String timestamp) {}
 }
