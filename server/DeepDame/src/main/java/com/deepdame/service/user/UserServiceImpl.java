@@ -9,6 +9,7 @@ import com.deepdame.exception.NotFoundException;
 import com.deepdame.exception.Unauthorized;
 import com.deepdame.repository.UserRepository;
 import com.deepdame.service.username.UsernameService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -151,5 +152,54 @@ public class UserServiceImpl implements UserService {
             return userRepository.findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCase(keyword, keyword);
         }
         return userRepository.findAll();
+    }
+
+    @Transactional
+    @Override
+    public void banFromApp(UUID id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+        userRepository.updateAppBanStatus(id, true);
+        userRepository.save(user);
+        evictUserCache(user);
+    }
+
+    @Transactional
+    @Override
+    public void unbanFromApp(UUID id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+        userRepository.updateAppBanStatus(id, false);
+        userRepository.save(user);
+        evictUserCache(user);
+
+    }
+
+    @Transactional
+    @Override
+    public void banFromChat(UUID id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        userRepository.updateChatBanStatus(id, true);
+        userRepository.save(user);
+        evictUserCache(user);
+    }
+
+    @Transactional
+    @Override
+    public void unbanFromChat(UUID id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+        userRepository.updateChatBanStatus(id, false);
+        userRepository.save(user);
+        evictUserCache(user);
+    }
+
+    @Caching(evict = {
+            @CacheEvict(value = "users", key = "#user.id"),
+            @CacheEvict(value = "users", key = "#user.email")
+    })
+    public void evictUserCache(User user) {
     }
 }

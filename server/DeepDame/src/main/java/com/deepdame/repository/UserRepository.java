@@ -45,6 +45,12 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByRefreshToken(String refreshToken);
 
     @Modifying
+    @Query("UPDATE User u SET u.bannedFromApp = :status, u.refreshToken = null WHERE u.id = :id")
+    void updateAppBanStatus(@Param("id") UUID id, @Param("status") boolean status);
+
+    @Modifying
+    @Query("UPDATE User u SET u.bannedFromChat = :status WHERE u.id = :id")
+    void updateChatBanStatus(@Param("id") UUID id, @Param("status") boolean status);
     @Transactional
     @Query("UPDATE User u SET u.password = :newPassword WHERE u.email = :email")
     void changePasswordByEmail(@Param("email") String email, @Param("newPassword") String newPassword);

@@ -6,6 +6,7 @@ import com.deepdame.service.user.UserEntityService;
 import com.deepdame.service.user.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,7 +16,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 import java.util.UUID;
 
-
+@Slf4j
 @Controller
 @RequestMapping("/admin/users")
 @PreAuthorize("hasAnyRole('ADMIN', 'SUPER-ADMIN')")
@@ -72,4 +73,39 @@ public class AdminUserController {
         return "redirect:/admin/users";
     }
 
+    @PostMapping("/{id}/ban-app")
+    @PreAuthorize("@userSecurity.canManage(#id, principal)")
+    public String banFromApp(@PathVariable UUID id, RedirectAttributes redirectAttributes) {
+        log.info("Action: Banning User ID {} from the application", id);
+        userService.banFromApp(id);
+        redirectAttributes.addFlashAttribute("success", "User has been banned from the application.");
+        return "redirect:/admin/users";
+    }
+
+    @PostMapping("/{id}/unban-app")
+    @PreAuthorize("@userSecurity.canManage(#id, principal)")
+    public String unbanFromApp(@PathVariable UUID id, RedirectAttributes redirectAttributes) {
+        log.info("Action: Unbanning User ID {} from the application", id);
+        userService.unbanFromApp(id);
+        redirectAttributes.addFlashAttribute("info", "Application access restored for this user.");
+        return "redirect:/admin/users";
+    }
+
+    @PostMapping("/{id}/ban-chat")
+    @PreAuthorize("@userSecurity.canManage(#id, principal)")
+    public String banFromChat(@PathVariable UUID id, RedirectAttributes redirectAttributes) {
+        log.info("Action: Banning User ID {} from chat", id);
+        userService.banFromChat(id);
+        redirectAttributes.addFlashAttribute("success", "User is now restricted from sending messages.");
+        return "redirect:/admin/users";
+    }
+
+    @PostMapping("/{id}/unban-chat")
+    @PreAuthorize("@userSecurity.canManage(#id, principal)")
+    public String unbanFromChat(@PathVariable UUID id, RedirectAttributes redirectAttributes) {
+        log.info("Action: Restoring chat access for User ID {}", id);
+        userService.unbanFromChat(id);
+        redirectAttributes.addFlashAttribute("info", "User can now use the chat again.");
+        return "redirect:/admin/users";
+    }
 }
