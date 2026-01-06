@@ -40,4 +40,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Transactional
     @Query("UPDATE User u SET u.refreshToken = NULL WHERE u.id = :userId")
     void invalidateRefreshToken(@Param("userId") UUID userId);
+
+    Optional<User> findByRefreshToken(String refreshToken);
 }

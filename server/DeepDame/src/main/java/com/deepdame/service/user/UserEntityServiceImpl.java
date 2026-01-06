@@ -40,6 +40,12 @@ public class UserEntityServiceImpl implements UserEntityService {
     }
 
     @Override
+    public User findByRefreshToken(String refreshToken) {
+        return userRepository.findByRefreshToken(refreshToken)
+                .orElseThrow(() -> new NotFoundException("User not foun"));
+    }
+
+    @Override
     public void updateRefreshToken(String email, String token) {
         User user = findByEmail(email);
         user.setRefreshToken(token);
