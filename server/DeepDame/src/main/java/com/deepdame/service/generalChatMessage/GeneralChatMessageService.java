@@ -7,5 +7,5 @@ import java.util.List;
 import java.util.UUID;
 
 public interface GeneralChatMessageService extends CrudDtoService<UUID, GeneralChatMessageDto> {
-    List<GeneralChatMessageDto> getGeneralChatMessages(Long limit);
+    List<GeneralChatMessageDto> getGeneralChatMessages(Long pageNumber, Long limit);
 }
