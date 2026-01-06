@@ -1,4 +1,4 @@
-name: DeepDame CI
+name: DeepDame CI/CD
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
       - 'server/**'
 
 jobs:
-  build:
+  test-and-build:
     runs-on: ubuntu-latest
     
     defaults:
@@ -82,3 +82,16 @@ jobs:
         SPRING_DATASOURCE_PASSWORD: postgres
         # Mongo Config
         SPRING_DATA_MONGODB_URI: mongodb://admin:password@localhost:27017/deepdame?authSource=admin
+
+  build-and-deploy:
+    needs: test-and-build
+    runs-on: self-hosted
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Execute Deployment Script
+      run: |
+        # Adjust path to where you saved the script
+        /home/ilyass/DeepDame/server/DeepDame/deploy.sh
