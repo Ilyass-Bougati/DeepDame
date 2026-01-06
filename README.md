@@ -13,3 +13,17 @@ This is a checker game application made by FSTS students for JEE module. You can
   <img src="https://contrib.rocks/image?repo=Ilyass-Bougati/DeepDame" />
 </a>
 </p>
+
+### About This Application
+This is a comprehensive checkers platform featuring **friend invites**, **real-time matches against friends**, **single-player AI modes**, and **random matchmaking**.
+
+### Technical Architecture
+This application leverages **WebSockets** over the **STOMP protocol** to handle real-time messaging and game state synchronization. We implemented the architecture below:
+
+![img](/imgs/archi.png)
+
+To ensure performance and scalability, we utilized a polyglot persistence strategy:
+
+* **PostgreSQL:** Serves as the primary relational store for structured data like user profiles, relationships, and authentication.
+* **MongoDB:** Handles unstructured data, specifically for archiving game history and match logs. This allows for flexible storage of game moves without rigid schema constraints.
+* **Redis:** Employed for aggressive caching and session management. By offloading state from the application server's memory to Redis, we ensure the system is stateless, allowing for seamless **horizontal scaling** in the future.

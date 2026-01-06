@@ -2,6 +2,7 @@ package com.deepdame.controller;
 
 import com.deepdame.dto.auth.LoginRequest;
 import com.deepdame.dto.user.RegisterRequest;
+import com.deepdame.properties.JwtProperties;
 import com.deepdame.security.CustomUserDetails;
 import com.deepdame.service.jwt.Token;
 import com.deepdame.service.jwt.TokenService;
@@ -26,15 +27,25 @@ public class AuthController {
     private final TokenService tokenService;
     private final UserService userService;
     private final UsernameService usernameService;
+    private final JwtProperties jwtProperties;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Valid LoginRequest loginRequest) {
         Token token = tokenService.login(loginRequest);
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, CookieUtils.genCookie("access_token", token.getAccess_token(), 7200, "/").toString())
-                .header(HttpHeaders.SET_COOKIE, CookieUtils.genCookie("refresh_token", token.getRefresh_token(), 86400, "/api/auth/refresh").toString())
+                .header(HttpHeaders.SET_COOKIE, CookieUtils.genCookie("access_token", token.getAccess_token(), jwtProperties.accessTokenExpirationDuration(), "/").toString())
+                .header(HttpHeaders.SET_COOKIE, CookieUtils.genCookie("refresh_token", token.getRefresh_token(), jwtProperties.refreshTokenExpirationDuration(), "/api/v1/auth/refresh").toString())
                 .body(Map.of("message", "Logged in successfully"));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(@CookieValue(name = "refresh_token", required = true) String refreshToken) {
+        Token token = tokenService.refreshToken(refreshToken);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, CookieUtils.genCookie("access_token", token.getAccess_token(),  jwtProperties.accessTokenExpirationDuration(), "/").toString())
+                .header(HttpHeaders.SET_COOKIE, CookieUtils.genCookie("refresh_token", token.getRefresh_token(), jwtProperties.refreshTokenExpirationDuration(), "/api/v1/auth/refresh").toString())
+                .body(Map.of("message", "Refresh in successfully"));
     }
 
     @PostMapping("/register")

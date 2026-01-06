@@ -7,5 +7,6 @@ import java.util.UUID;
 
 public interface UserEntityService extends CrudEntityService<User, UUID> {
     User findByEmail(String email);
+    User findByRefreshToken(String refreshToken);
     void updateRefreshToken(String email, String token);
 }
