@@ -4,6 +4,7 @@ import com.deepdame.dto.game.GameDto;
 import com.deepdame.dto.user.UserDto;
 import com.deepdame.engine.core.model.Move;
 import com.deepdame.enums.GameMode;
+import com.deepdame.exception.WsUnauthorized;
 import com.deepdame.security.CustomUserDetails;
 import com.deepdame.service.game.GameService;
 import com.deepdame.service.user.UserService;
@@ -34,22 +35,14 @@ public class GameSocketController {
 
         String username = user.getUsername();
         UUID playerId = user.getUser().getId();
-        log.info("Socket request: User {} wants to create {} game", username, gameMode);
 
-        try{
-            GameDto game = gameService.createGame(playerId, gameMode);
+        GameDto game = gameService.createGame(playerId, gameMode);
 
-            messagingTemplate.convertAndSendToUser(
-                    username,
-                    "/queue/game/created",
-                    new GameCreatedResponse(game.getId())
-            );
-
-            log.info("Game {} created for user {}", game.getId(), username);
-        } catch (Exception e) {
-            log.error("Create Game Error: {}", e.getMessage());
-            sendErrorMessage(username, "CREATE_ERROR", e.getMessage());
-        }
+        messagingTemplate.convertAndSendToUser(
+                username,
+                "/queue/game/created",
+                new GameCreatedResponse(game.getId())
+        );
     }
 
     @MessageMapping("/game/{gameId}/join")
@@ -57,28 +50,22 @@ public class GameSocketController {
         String joinerUsername = user.getUsername();
         UUID joinerId = user.getUser().getId();
 
-        try {
-            GameDto game = gameService.joinGame(gameId, joinerId);
+        GameDto game = gameService.joinGame(gameId, joinerId);
 
-            UserDto hostUser = userService.findById(game.getPlayerBlackId());
-            String hostUsername = hostUser.getUsername();
+        UserDto hostUser = userService.findById(game.getPlayerBlackId());
+        String hostUsername = hostUser.getUsername();
 
-            messagingTemplate.convertAndSendToUser(
-                    joinerUsername,
-                    "/queue/game/joined",
-                    new GameJoinedResponse(gameId, hostUsername, "WHITE")
-            );
+        messagingTemplate.convertAndSendToUser(
+                joinerUsername,
+                "/queue/game/joined",
+                new GameJoinedResponse(gameId, hostUsername, "WHITE")
+        );
 
-            messagingTemplate.convertAndSendToUser(
-                    hostUsername,
-                    "/queue/game/joined",
-                    new GameJoinedResponse(gameId, joinerUsername, "BLACK")
-            );
-
-            log.info("User {} joined game {}", joinerUsername, gameId);
-        } catch (Exception e) {
-            sendErrorMessage(user.getUsername(), "JOIN_ERROR", e.getMessage());
-        }
+        messagingTemplate.convertAndSendToUser(
+                hostUsername,
+                "/queue/game/joined",
+                new GameJoinedResponse(gameId, joinerUsername, "BLACK")
+        );
     }
 
     @MessageMapping("/game/matchmaking")
@@ -87,71 +74,57 @@ public class GameSocketController {
         String username = user.getUsername();
         UUID playerId = user.getUser().getId();
 
-        log.trace("User {} requested matchmaking", username);
+        GameDto game = gameService.findOrStartMatch(playerId);
 
-        try{
-            GameDto game = gameService.findOrStartMatch(playerId);
+        if (game.getPlayerBlackId().equals(playerId) && game.getPlayerWhiteId() == null){
+            messagingTemplate.convertAndSendToUser(
+                    username,
+                    "/queue/game/created",
+                    new GameCreatedResponse(game.getId())
+            );
+        } else {
+            UserDto hostUser = userService.findById(game.getPlayerBlackId());
 
-            if (game.getPlayerBlackId().equals(playerId) && game.getPlayerWhiteId() == null){
-                messagingTemplate.convertAndSendToUser(
-                        username,
-                        "/queue/game/created",
-                        new GameCreatedResponse(game.getId())
-                );
-            } else {
-                UserDto hostUser = userService.findById(game.getPlayerBlackId());
+            messagingTemplate.convertAndSendToUser(
+                    username,
+                    "/queue/game/joined",
+                    new GameJoinedResponse(game.getId(), hostUser.getUsername(), "WHITE")
+            );
 
-                messagingTemplate.convertAndSendToUser(
-                        username,
-                        "/queue/game/joined",
-                        new GameJoinedResponse(game.getId(), hostUser.getUsername(), "WHITE")
-                );
-
-                UserDto me = userService.findById(playerId);
-                messagingTemplate.convertAndSendToUser(
-                        hostUser.getUsername(),
-                        "/queue/game/joined",
-                        new GameJoinedResponse(game.getId(), me.getUsername(), "BLACK")
-                );
-            }
-        } catch (Exception e) {
-            sendErrorMessage(username, "MATCHMAKING_ERROR", e.getMessage());
+            UserDto me = userService.findById(playerId);
+            messagingTemplate.convertAndSendToUser(
+                    hostUser.getUsername(),
+                    "/queue/game/joined",
+                    new GameJoinedResponse(game.getId(), me.getUsername(), "BLACK")
+            );
         }
     }
 
     @MessageMapping("/game/{gameId}/move")
     public void makeMove(@AuthenticationPrincipal CustomUserDetails user, @DestinationVariable UUID gameId, @Payload Move move) {
-        try {
-            UUID playerId = user.getUser().getId();
 
-            GameDto game = gameService.makeMove(gameId, playerId, move);
+        UUID playerId = user.getUser().getId();
 
-            messagingTemplate.convertAndSend("/topic/game/" + gameId, move);
+        GameDto game = gameService.makeMove(gameId, playerId, move);
 
-            if (game.getMode() == GameMode.PVE){
-                broadcastAiMove(game, move);
-            }
+        messagingTemplate.convertAndSend("/topic/game/" + gameId, move);
 
-            if (game.getGameState().isGameOver()){
-                notifyGameOver(game);
-            }
+        if (game.getMode() == GameMode.PVE){
+            broadcastAiMove(game, move);
+        }
 
-        } catch (Exception e) {
-            sendErrorMessage(user.getUsername(), "MOVE_ERROR", e.getMessage());
+        if (game.getGameState().isGameOver()){
+            notifyGameOver(game);
         }
     }
 
     @MessageMapping("/game/{gameId}/surrender")
     public void surrenderGame(@AuthenticationPrincipal CustomUserDetails user, @DestinationVariable UUID gameId){
 
-        try{
-            UUID playerId = user.getUser().getId();
-            GameDto game = gameService.surrenderGame(gameId, playerId);
+        UUID playerId = user.getUser().getId();
+        GameDto game = gameService.surrenderGame(gameId, playerId);
 
-            notifyGameOver(game);
-        } catch (Exception e) {
-            sendErrorMessage(user.getUsername(), "SURRENDER_ERROR", e.getMessage());
-        }
+        notifyGameOver(game);
     }
 
     @MessageMapping("/game/{gameId}/chat")
@@ -160,29 +133,23 @@ public class GameSocketController {
         String username = user.getUsername();
         UUID userId = user.getUser().getId();
 
-        try {
-            GameDto game = gameService.findById(gameId);
+        GameDto game = gameService.findById(gameId);
 
-            boolean isBlack = userId.equals(game.getPlayerBlackId());
-            boolean isWhite = userId.equals(game.getPlayerWhiteId());
+        boolean isBlack = userId.equals(game.getPlayerBlackId());
+        boolean isWhite = userId.equals(game.getPlayerWhiteId());
 
-            if (!isBlack && !isWhite) {
-                log.trace("Security Alert: User {} tried to chat in game {} but is not a player.", username, gameId);
-                sendErrorMessage(username, "CHAT_ERROR", "You are not a participant in this game.");
-                return;
-            }
-
-            ChatMessageResponse response = new ChatMessageResponse(
-                    username,
-                    request.content(),
-                    Instant.now().toString()
-            );
-
-            messagingTemplate.convertAndSend("/topic/game/" + gameId + "/chat", response);
-
-        } catch (Exception e) {
-            sendErrorMessage(username, "CHAT_ERROR", "Game not found or expired.");
+        if (!isBlack && !isWhite) {
+            throw new WsUnauthorized("You are not a participant in this game.");
         }
+
+        ChatMessageResponse response = new ChatMessageResponse(
+                username,
+                request.content(),
+                Instant.now().toString()
+        );
+
+        messagingTemplate.convertAndSend("/topic/game/" + gameId + "/chat", response);
+
     }
 
     private void broadcastAiMove(GameDto game, Move userMove){
