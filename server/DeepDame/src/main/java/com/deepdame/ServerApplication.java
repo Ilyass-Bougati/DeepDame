@@ -1,6 +1,7 @@
 package com.deepdame;
 
 import com.deepdame.properties.JwtProperties;
+import com.deepdame.properties.RateLimitingProperties;
 import com.deepdame.properties.RedisProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -11,7 +12,8 @@ import org.springframework.cache.annotation.EnableCaching;
 @EnableCaching
 @EnableConfigurationProperties({
         JwtProperties.class,
-        RedisProperties.class
+        RedisProperties.class,
+        RateLimitingProperties.class
 })
 @SpringBootApplication
 public class ServerApplication {
