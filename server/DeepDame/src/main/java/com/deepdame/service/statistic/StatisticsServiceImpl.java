@@ -1,73 +1,115 @@
 package com.deepdame.service.statistic;
 
-import com.deepdame.repository.GameRepository;
+import com.deepdame.dto.stats.AdminDashboardStatsDto;
+import com.deepdame.dto.stats.PlayerStatsDto;
+import com.deepdame.entity.mongo.PlayerStatistics;
+import com.deepdame.repository.mongo.GameRepository;
 import com.deepdame.repository.UserRepository;
+import com.deepdame.repository.mongo.PlayerStatisticsRepository;
 import com.deepdame.service.cache.GameCacheService;
+import com.deepdame.listeners.WebSocketPresenceEventListener;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashMap;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class StatisticsServiceImpl implements StatisticsService{
+public class StatisticsServiceImpl implements StatisticsService {
 
     private final GameRepository gameRepository;
-    private final GameCacheService gameCacheService;
     private final UserRepository userRepository;
+    private final PlayerStatisticsRepository playerStatisticsRepository;
+    private final GameCacheService gameCacheService;
+    private final StringRedisTemplate stringRedisTemplate;
 
-    public Map<String, Object> getUserStats(UUID userId){
+    public AdminDashboardStatsDto getAdminDashboardStats() {
 
-        Map<String, Object> stats = new HashMap<>();
-
-        long total = gameRepository.countTotalGamesPlayed(userId);
-        long wins = gameRepository.countByWinnerId(userId);
-        long losses = total - wins;
-
-        stats.put("totalGames", total);
-        stats.put("totalWins", wins);
-        stats.put("totalLosses", losses);
-        stats.put("winRatioAllTime", calculateRatio(wins, total));
-
-        stats.put("winRatioLastMonth", getWinRatioSince(userId, 1));
-        stats.put("winRatioLast6Months", getWinRatioSince(userId, 6));
-        stats.put("winRatioLastYear", getWinRatioSince(userId, 12));
-
-        return stats;
-    }
-
-    public Map<String, Object> getFriendStats(UUID myId, UUID friendId) {
-        long total = gameRepository.countGamesBetween(myId, friendId);
-        long myWins = gameRepository.countWinsAgainst(myId, friendId);
-        long friendWins = gameRepository.countWinsAgainst(friendId, myId);
-
-        return Map.of(
-                "totalMatches", total,
-                "myWins", myWins,
-                "friendWins", friendWins
-        );
-    }
-
-    public Map<String, Object> getGlobalStats(){
-
-        Map<String, Object> globalStats = new HashMap<>();
-
-        globalStats.put("totalUsers", userRepository.count());
-        globalStats.put("totalNewUsersToday", userRepository.countNewUsersToday());
-        globalStats.put("activeUsers", userRepository.countByBannedFromAppFalse());
-        globalStats.put("bannedUsers", userRepository.countByBannedFromAppTrue());
-
-        globalStats.put("activeLobbyGames", gameCacheService.getOpenGames().size());
-
-        globalStats.put("totalGamesFinished", gameRepository.count());
-
+        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
         LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
-        globalStats.put("gamesLast30Days", gameRepository.getGamesPerDay(thirtyDaysAgo));
 
-        return globalStats;
+        long onlineCount = 0;
+        try {
+            Long size = stringRedisTemplate.opsForSet().size(WebSocketPresenceEventListener.KEY_ONLINE_USERS);
+            onlineCount = (size != null) ? size : 0;
+        } catch (Exception e) { /**/}
+
+        List<Map<String, Object>> rawData = gameRepository.getGamesPerDay(thirtyDaysAgo);
+
+        Map<LocalDate, Long> chartMap = rawData.stream()
+                .collect(Collectors.toMap(
+                        entry -> LocalDate.parse((String) entry.get("date")),
+
+                        entry -> ((Number) entry.get("count")).longValue(),
+
+                        (existing, replacement) -> existing
+                ));
+
+        return AdminDashboardStatsDto.builder()
+                .totalUsers(userRepository.count())
+                .newUsersToday(userRepository.countByCreatedAtAfter(startOfDay))
+                .activeUsers(userRepository.countByBannedFromAppFalse())
+                .bannedUsers(userRepository.countByBannedFromAppTrue())
+                .onlinePlayers(onlineCount)
+                .activeLobbyGames(gameCacheService.getOpenGames().size())
+                .totalGamesFinished(gameRepository.count())
+                .gamesPerDayLast30Days(chartMap)
+                .build();
+    }
+
+    public PlayerStatsDto getPlayerStats(UUID userId) {
+
+        PlayerStatistics stats = playerStatisticsRepository.findByUserId(userId)
+                .orElse(PlayerStatistics.builder().userId(userId).build());
+
+        return PlayerStatsDto.builder()
+                .totalPlayed(stats.getTotalGamesPlayed())
+                .totalWins(stats.getTotalWins())
+                .totalLosses(stats.getTotalLosses())
+                .winRatioAllTime(calculateRatio(stats.getTotalWins(), stats.getTotalGamesPlayed()))
+                .winRatioLastMonth(calculateTimeBasedRatio(stats, 1))
+                .winRatioLast6Months(calculateTimeBasedRatio(stats, 6))
+                .winRatioLastYear(calculateTimeBasedRatio(stats, 12))
+                .build();
+    }
+
+    public void updateStatsAfterGame(UUID winnerId, UUID loserId) {
+        if (winnerId != null) updateOneUser(winnerId, true, false, loserId);
+        if (loserId != null) updateOneUser(loserId, false, true, winnerId);
+    }
+
+    private void updateOneUser(UUID userId, boolean isWin, boolean isLoss, UUID opponentId) {
+
+        PlayerStatistics stats = playerStatisticsRepository.findByUserId(userId)
+                .orElse(PlayerStatistics.builder().userId(userId).build());
+
+        stats.setTotalGamesPlayed(stats.getTotalGamesPlayed() + 1);
+        if (isWin) stats.setTotalWins(stats.getTotalWins() + 1);
+        if (isLoss) stats.setTotalLosses(stats.getTotalLosses() + 1);
+
+        String monthKey = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+        PlayerStatistics.MonthlyStat monthStat = stats.getMonthlyStats()
+                .getOrDefault(monthKey, new PlayerStatistics.MonthlyStat());
+
+        if (isWin) monthStat.incrementWin();
+        else if (isLoss) monthStat.incrementLoss();
+
+        stats.getMonthlyStats().put(monthKey, monthStat);
+
+        if (opponentId != null) {
+            String oppKey = opponentId.toString();
+            stats.getGamesAgainstOpponent().merge(oppKey, 1, Integer::sum);
+            if (isWin) stats.getWinsAgainstOpponent().merge(oppKey, 1, Integer::sum);
+        }
+
+        playerStatisticsRepository.save(stats);
     }
 
     private double calculateRatio(long wins, long total) {
@@ -75,10 +117,19 @@ public class StatisticsServiceImpl implements StatisticsService{
         return Math.round((double) wins / total * 100.0) / 100.0;
     }
 
-    private double getWinRatioSince(UUID userId, int months) {
-        LocalDateTime sinceDate = LocalDateTime.now().minusMonths(months);
-        long total = gameRepository.countGamesSince(userId, sinceDate);
-        long wins = gameRepository.countWinsSince(userId, sinceDate);
+    private double calculateTimeBasedRatio(PlayerStatistics stats, int monthsBack) {
+        LocalDate now = LocalDate.now();
+        long wins = 0;
+        long total = 0;
+
+        for (int i = 0; i < monthsBack; i++) {
+            String key = now.minusMonths(i).format(DateTimeFormatter.ofPattern("yyyy-MM"));
+            PlayerStatistics.MonthlyStat m = stats.getMonthlyStats().get(key);
+            if (m != null) {
+                wins += m.getWins();
+                total += m.getGames();
+            }
+        }
         return calculateRatio(wins, total);
     }
 }
