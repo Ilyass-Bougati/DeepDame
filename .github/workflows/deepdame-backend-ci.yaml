@@ -2,11 +2,11 @@ name: DeepDame CI/CD
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "main"]
     paths:
       - 'server/**' 
   pull_request:
-    branches: [ "main", "master" ]
+    branches: [ "main"]
     paths:
       - 'server/**'
 
@@ -86,6 +86,7 @@ jobs:
   build-and-deploy:
     needs: test-and-build
     runs-on: self-hosted
+    if: github.event_name == 'push'
     
     steps:
     - name: Checkout code
