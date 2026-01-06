@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -29,7 +30,8 @@ public class User {
     @EqualsAndHashCode.Include
     private UUID id;
 
-    @Column(unique = true)
+    @Column(unique = true, length = 25)
+    @Size(max = 25)
     @NotEmpty
     private String username;
 
