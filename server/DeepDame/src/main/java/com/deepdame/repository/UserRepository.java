@@ -3,6 +3,7 @@ package com.deepdame.repository;
 import com.deepdame.entity.User;
 import io.lettuce.core.dynamic.annotation.Param;
 import lombok.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -50,4 +51,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Modifying
     @Query("UPDATE User u SET u.bannedFromChat = :status WHERE u.id = :id")
     void updateChatBanStatus(@Param("id") UUID id, @Param("status") boolean status);
+    @Transactional
+    @Query("UPDATE User u SET u.password = :newPassword WHERE u.email = :email")
+    void changePasswordByEmail(@Param("email") String email, @Param("friendId") String newPassword);
 }

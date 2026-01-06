@@ -4,6 +4,7 @@ import com.deepdame.dto.user.RegisterRequest;
 import com.deepdame.dto.user.UserDto;
 import com.deepdame.entity.User;
 import com.deepdame.service.CrudDtoService;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.NonNull;
 
 import java.util.List;
@@ -20,4 +21,6 @@ public interface UserService extends CrudDtoService<UUID, UserDto> {
     void unbanFromApp(UUID id);
     void banFromChat(UUID id);
     void unbanFromChat(UUID id);
+    void changePassword(UUID userId, @NotEmpty String oldPassword, @NotEmpty String newPassword);
+    void changePassword(String email, String newPassword);
 }
