@@ -22,6 +22,31 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="banChoiceModal" tabindex="-1" aria-labelledby="banModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 15px; border: none;">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="banModalLabel">Manage Restrictions</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <p>Manage access for: <strong id="banUserEmail"></strong></p>
+
+                    <div class="d-grid gap-3 mt-4">
+                        <form id="appBanForm" method="post">
+                            <button type="submit" id="appBanBtn" class="btn w-100 py-2 fw-bold">
+                            </button>
+                        </form>
+
+                        <form id="chatBanForm" method="post">
+                            <button type="submit" id="chatBanBtn" class="btn w-100 py-2 fw-bold">
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -37,5 +62,43 @@
                 });
             }
         });
+
+        const banChoiceModal = document.getElementById('banChoiceModal');
+        if (banChoiceModal) {
+            banChoiceModal.addEventListener('show.bs.modal', event => {
+                const button = event.relatedTarget;
+
+                const userId = button.getAttribute('data-bs-id');
+                const username = button.getAttribute('data-bs-username');
+                const isAppBanned = button.getAttribute('data-bs-appbanned') === 'true';
+                const isChatBanned = button.getAttribute('data-bs-chatbanned') === 'true';
+
+                document.getElementById('banUserEmail').textContent = username;
+
+                const appForm = document.getElementById('appBanForm');
+                const appBtn = document.getElementById('appBanBtn');
+                if (isAppBanned) {
+                    appForm.action = `/admin/users/${userId}/unban-app`;
+                    appBtn.textContent = 'RESTORE APP ACCESS';
+                    appBtn.className = 'btn btn-outline-success w-100 py-2 fw-bold';
+                } else {
+                    appForm.action = `/admin/users/${userId}/ban-app`;
+                    appBtn.textContent = 'BAN FROM APPLICATION';
+                    appBtn.className = 'btn btn-danger w-100 py-2 fw-bold';
+                }
+
+                const chatForm = document.getElementById('chatBanForm');
+                const chatBtn = document.getElementById('chatBanBtn');
+                if (isChatBanned) {
+                    chatForm.action = `/admin/users/${userId}/unban-chat`;
+                    chatBtn.textContent = 'RESTORE CHAT ACCESS';
+                    chatBtn.className = 'btn btn-outline-success w-100 py-2 fw-bold';
+                } else {
+                    chatForm.action = `/admin/users/${userId}/ban-chat`;
+                    chatBtn.textContent = 'BAN FROM CHAT ONLY';
+                    chatBtn.className = 'btn btn-warning w-100 py-2 fw-bold';
+                }
+            });
+        }
     </script>
 </div>

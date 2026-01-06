@@ -117,13 +117,26 @@
                         <span th:each="role : ${user.roles}" class="badge badge-role me-1" th:text="${role.name}">ROLE</span>
                     </td>
                     <td>
-                        <span th:if="${user.bannedFromApp}" class="badge rounded-pill" style="background-color: var(--dusty-clay);">BANNED</span>
-                        <span th:unless="${user.bannedFromApp}" class="badge rounded-pill" style="background-color: var(--sage-primary);">ACTIVE</span>
+                        <span th:if="${user.bannedFromApp}" class="badge rounded-pill bg-danger">APP BANNED</span>
+                        <span th:unless="${user.bannedFromApp}" class="badge rounded-pill" style="background-color: var(--sage-primary);">APP ACTIVE</span>
+
+                        <span th:if="${user.bannedFromChat}" class="badge rounded-pill bg-warning text-dark">CHAT BANNED</span>
                     </td>
 
                     <td class="px-4" onclick="event.stopPropagation();">
                         <div class="d-flex justify-content-center gap-2" th:if="${@userSecurity.canManage(user, #authentication.principal)}">
                             <a th:href="@{/admin/users/edit/{id}(id=${user.id})}" class="btn btn-sm btn-outline-primary">Edit</a>
+
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-warning"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#banChoiceModal"
+                                    th:data-bs-id="${user.id}"
+                                    th:data-bs-username="${user.username}"
+                                    th:data-bs-appbanned="${user.bannedFromApp}"
+                                    th:data-bs-chatbanned="${user.bannedFromChat}">
+                               Manage Ban
+                            </button>
 
                             <button type="button"
                                     class="btn btn-sm btn-outline-danger"
