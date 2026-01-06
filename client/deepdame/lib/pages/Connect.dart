@@ -173,7 +173,7 @@ class Connect extends StatelessWidget {
                       await Utils.api_postRequest(
                         request,
                         "auth/login",
-                        api_controller.text,
+                        api_controller.text == "" ? Utils.API_URL : api_controller.text,
                       ).onError((e, stacktrace) {
                         if (context.mounted) {
                           Navigator.pop(context);
@@ -193,7 +193,12 @@ class Connect extends StatelessWidget {
                           Navigator.pop(context);
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (_) => Landing()),
+                            PageRouteBuilder(
+                              pageBuilder: (context, animation1, animation2) =>
+                                  Landing(),
+                              transitionDuration: Duration.zero,
+                              reverseTransitionDuration: Duration.zero,
+                            ),
                           );
                         });
                       } catch (e) {
@@ -297,7 +302,7 @@ class Connect extends StatelessWidget {
                               () async {
                                 return (await Utils.api_getRequest(
                                       "auth/checkUsername/${map['username']!.getController().text}",
-                                      api_controller.text,
+                                      api_controller.text == "" ? Utils.API_URL : api_controller.text,
                                     )
                                     as Map)['message'];
                               },
@@ -451,7 +456,7 @@ class Connect extends StatelessWidget {
                         await Utils.api_postRequest(
                           request,
                           "auth/register",
-                          api_controller.text,
+                          api_controller.text == "" ? Utils.API_URL : api_controller.text,
                         ).onError((e, stacktrace) {
                           if (context.mounted) {
                             Navigator.pop(context);

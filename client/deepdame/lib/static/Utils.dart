@@ -1,15 +1,108 @@
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:deepdame/models/User.dart';
+import 'package:deepdame/pages/Friends.dart';
+import 'package:deepdame/pages/General.dart';
+import 'package:deepdame/pages/Landing.dart';
+import 'package:deepdame/pages/Preferences.dart';
+import 'package:deepdame/prefabs/NavbarButton.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:stomp_dart_client/stomp_dart_client.dart';
 
 PersistCookieJar? persistCookieJar;
 final dio = Dio();
 
 class Utils {
   static User? userDetails;
-  static String API_URL = "http://192.168.1.26:8080/api/v1";
+  static String API = "ilyass-server.taila311b0.ts.net";
+  static String API_URL = "https://$API/api/v1";
+
+  static late StompClient client;
+  static Function(dynamic)? onGeneralChatLoaded;
+
+
+  static Widget getNavbar(BuildContext context, int currentIndex) {
+    return BottomAppBar(
+      color: const Color.fromARGB(255, 235, 229, 222),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          NavbarButton(
+            icon: Icons.home,
+            label: "Home",
+            isSelected: currentIndex == 0,
+            onTap: () {
+              if (currentIndex != 0) {
+                Navigator.pushReplacement(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, a1, a2) => Landing(),
+                    transitionDuration: Duration.zero,
+                    reverseTransitionDuration: Duration.zero,
+                  ),
+                );
+              }
+            },
+          ),
+
+          NavbarButton(
+            icon: Icons.chat,
+            label: "General",
+            isSelected: currentIndex == 1,
+            onTap: () {
+              if (currentIndex != 1) {
+                Navigator.pushReplacement(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, a1, a2) => General(),
+                    transitionDuration: Duration.zero,
+                    reverseTransitionDuration: Duration.zero,
+                  ),
+                );
+              }
+            },
+          ),
+
+          NavbarButton(
+            icon: Icons.person,
+            label: "Friends",
+            isSelected: currentIndex == 2,
+            onTap: () {
+              if (currentIndex != 2) {
+                Navigator.pushReplacement(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, a1, a2) => Friends(),
+                    transitionDuration: Duration.zero,
+                    reverseTransitionDuration: Duration.zero,
+                  ),
+                );
+              }
+            },
+          ),
+
+          NavbarButton(
+            icon: Icons.settings,
+            label: "Settings",
+            isSelected: currentIndex == 3,
+            onTap: () {
+              if (currentIndex != 3) {
+                Navigator.pushReplacement(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, a1, a2) => Preferences(),
+                    transitionDuration: Duration.zero,
+                    reverseTransitionDuration: Duration.zero,
+                  ),
+                );
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
 
   static void showLoadingDialog(BuildContext context) {
     showDialog(
@@ -107,5 +200,10 @@ class Utils {
 
       throw Exception(errorStringGenerator(e));
     }
+  }
+
+  static void clearCookies(Function() fn) async {
+    await persistCookieJar!.deleteAll();
+    fn();
   }
 }
