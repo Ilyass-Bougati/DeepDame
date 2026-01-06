@@ -65,7 +65,7 @@ public class LoginAdminController {
             log.info("Admin {} authenticated successfully", email);
             return "redirect:/admin";
 
-        } catch (AuthenticationException | Unauthorized e) {
+        } catch (Exception e) {
             log.warn("Login failed for {}: {}", email, e.getMessage());
             return "redirect:/admin/login?error=true";
         }

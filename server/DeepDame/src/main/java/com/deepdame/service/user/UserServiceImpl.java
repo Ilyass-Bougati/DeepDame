@@ -133,4 +133,28 @@ public class UserServiceImpl implements UserService {
         }
         return userRepository.findAll();
     }
+
+    @Transactional
+    @Override
+    public void banFromApp(UUID id) {
+        userRepository.updateAppBanStatus(id, true);
+    }
+
+    @Transactional
+    @Override
+    public void unbanFromApp(UUID id) {
+        userRepository.updateAppBanStatus(id, false);
+    }
+
+    @Transactional
+    @Override
+    public void banFromChat(UUID id) {
+        userRepository.updateChatBanStatus(id, true);
+    }
+
+    @Transactional
+    @Override
+    public void unbanFromChat(UUID id) {
+        userRepository.updateChatBanStatus(id, false);
+    }
 }
