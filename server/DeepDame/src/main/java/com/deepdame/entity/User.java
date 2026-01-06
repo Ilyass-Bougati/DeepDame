@@ -94,4 +94,11 @@ public class User {
 
     @Column(length = 1024)
     private String refreshToken;
+
+    @PreRemove
+    private void removeRolesFromUsers() {
+        for (Role role : this.roles) {
+            role.getUsers().remove(this);
+        }
+    }
 }

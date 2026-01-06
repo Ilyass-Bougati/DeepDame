@@ -20,7 +20,7 @@ public class DefaultRolesRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        ArrayList<String> defaultRoles = new ArrayList<>(List.of("USER", "ADMIN", "SUPER_ADMIN"));
+        ArrayList<String> defaultRoles = new ArrayList<>(List.of("USER", "ADMIN", "SUPER-ADMIN"));
         boolean defaultRolesExists = true;
 
         for (String roleName : defaultRoles) {

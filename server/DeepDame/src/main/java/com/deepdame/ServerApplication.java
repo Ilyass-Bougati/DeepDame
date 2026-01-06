@@ -1,5 +1,6 @@
 package com.deepdame;
 
+import com.deepdame.properties.DefaultAdminRunnerProperties;
 import com.deepdame.properties.JwtProperties;
 import com.deepdame.properties.RateLimitingProperties;
 import com.deepdame.properties.RedisProperties;
@@ -13,7 +14,8 @@ import org.springframework.cache.annotation.EnableCaching;
 @EnableConfigurationProperties({
         JwtProperties.class,
         RedisProperties.class,
-        RateLimitingProperties.class
+        RateLimitingProperties.class,
+        DefaultAdminRunnerProperties.class
 })
 @SpringBootApplication
 public class ServerApplication {
