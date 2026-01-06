@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 public class TokenService {
 
     private final JwtEncoder jwtEncoder;
+    private final JwtDecoder jwtDecoder;
     private final JwtProperties jwtProperties;
     private final UserEntityService userEntityService;
     private final CustomUserDetailsService customUserDetailsService;
@@ -83,5 +84,33 @@ public class TokenService {
                 loginRequest.getEmail(), null, userDetails.getAuthorities());
 
         return generateToken(authentication);
+    }
+
+    public String getEmailValidationToken(String email) {
+        Instant now = Instant.now();
+        JwtClaimsSet emailValidationTokenClaims = JwtClaimsSet.builder()
+                .issuer("self")
+                .issuedAt(now)
+                .expiresAt(now.plus(10, ChronoUnit.MINUTES))
+                .subject(email)
+                .build();
+
+        return jwtEncoder.encode(JwtEncoderParameters.from(emailValidationTokenClaims)).getTokenValue();
+    }
+
+    public String passwordChangeToken(String validationToken) {
+        Jwt jwt = jwtDecoder.decode(validationToken);
+        String email = jwt.getClaims().get("sub").toString();
+
+        Instant now = Instant.now();
+        JwtClaimsSet passwordChangeToken = JwtClaimsSet.builder()
+                .claim("scope", "pwchange")
+                .issuer("self")
+                .issuedAt(now)
+                .expiresAt(now.plus(3, ChronoUnit.MINUTES))
+                .subject(email)
+                .build();
+
+        return jwtEncoder.encode(JwtEncoderParameters.from(passwordChangeToken)).getTokenValue();
     }
 }

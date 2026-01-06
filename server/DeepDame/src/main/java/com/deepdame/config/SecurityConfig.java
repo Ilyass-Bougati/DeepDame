@@ -35,6 +35,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/test/**").permitAll()
+                        .requestMatchers("/api/v1/user/forgotPassword/**").permitAll()
+                        // swagger
+                        .requestMatchers("/v3/**").permitAll()
+                        .requestMatchers("/swagger").permitAll()
+                        .requestMatchers("/swagger-ui/*").permitAll()
                         .anyRequest().authenticated()
                 )
                 .userDetailsService(customUserDetailsService)
