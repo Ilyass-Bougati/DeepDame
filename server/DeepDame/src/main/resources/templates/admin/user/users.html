@@ -59,6 +59,33 @@
 
     <div class="table-card shadow-sm">
         <div class="table-responsive">
+            <div class="row justify-content-center mb-5">
+                <div class="col-md-8 col-lg-6">
+                    <form th:action="@{/admin/users}" method="get">
+                        <div class="input-group shadow-sm" style="border-radius: 12px; overflow: hidden; border: 1px solid #dee2e6;">
+                            <input type="text"
+                                   name="keyword"
+                                   th:value="${keyword}"
+                                   class="form-control border-0 py-3 ps-4"
+                                   placeholder="Search by name or email..."
+                                   style="background-color: #ffffff;">
+
+                            <button class="btn px-4 fw-bold"
+                                    type="submit"
+                                    style="background-color: var(--sage-primary); color: white; border-radius: 0;">
+                                SEARCH
+                            </button>
+
+                            <a th:if="${keyword}"
+                               th:href="@{/admin/users}"
+                               class="btn btn-light d-flex align-items-center border-start px-3"
+                               style="color: #666;">
+                                CLEAR
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
             <table class="table mb-0 align-middle">
                 <thead style="background-color: var(--bg-cream);">
                 <tr>
@@ -67,12 +94,15 @@
                     <th>Validated</th>
                     <th>Roles</th>
                     <th>Status</th>
-                    <th class="text-end px-4">Actions</th>
+                    <th class="text-center px-4">Actions</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr th:each="user : ${users}"
-                    th:onclick="|window.location.href='@{/admin/users/details/{id}(id=${user.id})}'|">
+                    th:data-url="@{/admin/users/details/{id}(id=${user.id})}"
+                    th:data-manageable="${@userSecurity.canManage(user, #authentication.principal)}"
+                    onclick="if(this.getAttribute('data-manageable') === 'true') window.location.href=this.getAttribute('data-url');"
+                    th:style="${@userSecurity.canManage(user, #authentication.principal)} ? 'cursor: pointer;' : 'cursor: not-allowed; opacity: 0.6;'">
 
                     <td class="px-4">
                         <span class="fw-bold" th:text="${user.username}">Username</span>
@@ -91,19 +121,19 @@
                         <span th:unless="${user.bannedFromApp}" class="badge rounded-pill" style="background-color: var(--sage-primary);">ACTIVE</span>
                     </td>
 
-                    <td class="d-flex gap-2" onclick="event.stopPropagation();">
-                        <a th:href="@{/admin/users/edit/{id}(id=${user.id})}" class="btn btn-sm btn-outline-primary">Edit</a>
+                    <td class="px-4" onclick="event.stopPropagation();">
+                        <div class="d-flex justify-content-center gap-2" th:if="${@userSecurity.canManage(user, #authentication.principal)}">
+                            <a th:href="@{/admin/users/edit/{id}(id=${user.id})}" class="btn btn-sm btn-outline-primary">Edit</a>
 
-                        <button type="button"
-                                class="btn btn-sm btn-outline-danger"
-                                data-bs-toggle="modal"
-                                data-bs-target="#deleteModal"
-                                th:data-bs-id="${user.id}"
-                                th:data-bs-username="${user.username}"
-                                th:if="${@userSecurity.canManage(user.id, #authentication.principal)}">
-                            Delete
-                        </button>
-
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-danger"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteModal"
+                                    th:data-bs-id="${user.id}"
+                                    th:data-bs-username="${user.username}">
+                                Delete
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 </tbody>

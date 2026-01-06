@@ -1,16 +1,12 @@
 package com.deepdame.controller.admin;
 
 import com.deepdame.dto.user.UserDto;
-import com.deepdame.entity.Role;
 import com.deepdame.entity.User;
-import com.deepdame.exception.NotFoundException;
 import com.deepdame.service.user.UserEntityService;
 import com.deepdame.service.user.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -29,13 +25,15 @@ public class AdminUserController {
     private final UserService userService;
 
     @GetMapping
-    public String listUsers(Model model) {
-        List<User> clients = userEntityService.findAll();
-        model.addAttribute("users", clients);
+    public String listUsers(@RequestParam(name = "keyword", required = false) String keyword, Model model) {
+        List<User> users = userService.searchUsers(keyword);
+        model.addAttribute("users", users);
+        model.addAttribute("keyword", keyword);
         return "admin/user/users";
     }
 
     @GetMapping("/details/{id}")
+    @PreAuthorize("@userSecurity.canManage(#id, principal)")
     public String userDetails(Model model, @PathVariable UUID id) {
         User user = userEntityService.findById(id);
         model.addAttribute("user", user);
@@ -43,6 +41,7 @@ public class AdminUserController {
     }
 
     @GetMapping("/edit/{id}")
+    @PreAuthorize("@userSecurity.canManage(#id, principal)")
     public String editUser(@PathVariable UUID id, Model model) {
         UserDto userDto = userService.findById(id);
         model.addAttribute("user", userDto);
@@ -50,8 +49,14 @@ public class AdminUserController {
     }
 
     @PostMapping("/edit")
-    public String updateUser(@ModelAttribute("user") UserDto userDto) {
-        userService.update(userDto);
+    @PreAuthorize("@userSecurity.canManage(#userDto.id, principal)")
+    public String updateUser(@Valid @ModelAttribute("user") UserDto userDto, RedirectAttributes redirectAttributes) {
+        try {
+            userService.update(userDto);
+            redirectAttributes.addFlashAttribute("success", "User updated successfully");
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("error", ex.getMessage());
+        }
         return "redirect:/admin/users/details/" + userDto.getId();
     }
 
@@ -66,4 +71,5 @@ public class AdminUserController {
         }
         return "redirect:/admin/users";
     }
+
 }

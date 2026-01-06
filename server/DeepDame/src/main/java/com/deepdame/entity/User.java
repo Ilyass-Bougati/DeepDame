@@ -64,6 +64,16 @@ public class User {
     private Set<User> friends = new HashSet<>();
 
     @Builder.Default
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "user_friend_invitations",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "friend_invitations_id")
+    )
+    @JsonIgnore
+    private Set<User> receivedFriendInvitations = new HashSet<>();
+
+    @Builder.Default
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<GeneralChatMessage> messages = new ArrayList<>();

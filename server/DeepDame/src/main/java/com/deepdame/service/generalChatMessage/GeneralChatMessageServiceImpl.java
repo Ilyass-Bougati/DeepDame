@@ -52,8 +52,8 @@ public class GeneralChatMessageServiceImpl implements GeneralChatMessageService 
     }
 
     @Override
-    public List<GeneralChatMessageDto> getGeneralChatMessages(Long limit) {
-        Pageable limitPage = PageRequest.of(0, limit.intValue());
+    public List<GeneralChatMessageDto> getGeneralChatMessages(Long pageNumber, Long limit) {
+        Pageable limitPage = PageRequest.of(pageNumber.intValue(), limit.intValue());
         return generalChatMessageRepository
                 .findByOrderByCreatedAt(limitPage).stream()
                 .map(generalChatMessageMapper::toDTO)
