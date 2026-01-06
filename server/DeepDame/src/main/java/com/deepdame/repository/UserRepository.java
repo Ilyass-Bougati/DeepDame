@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -30,8 +31,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     long countByBannedFromAppTrue();
 
-    @Query("SELECT count(u) FROM User u WHERE u.createdAt >= CURRENT_DATE")
-    long countNewUsersToday();
+    long countByCreatedAtAfter(LocalDateTime date);
 
     @Query("SELECT COUNT(u) > 0 FROM User u JOIN u.friends f WHERE u.id = :userId AND f.id = :friendId")
     boolean areFriends(@Param("userId") UUID userId, @Param("friendId") UUID friendId);
