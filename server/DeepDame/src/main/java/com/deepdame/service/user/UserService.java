@@ -17,6 +17,10 @@ public interface UserService extends CrudDtoService<UUID, UserDto> {
     Boolean areFriends(UUID userId, UUID friendId);
     void sendFriendInvitation(UUID userId, UUID friendId);
     void logout(UUID userId);
+    void banFromApp(UUID id);
+    void unbanFromApp(UUID id);
+    void banFromChat(UUID id);
+    void unbanFromChat(UUID id);
     void changePassword(UUID userId, @NotEmpty String oldPassword, @NotEmpty String newPassword);
     void changePassword(String email, String newPassword);
 }

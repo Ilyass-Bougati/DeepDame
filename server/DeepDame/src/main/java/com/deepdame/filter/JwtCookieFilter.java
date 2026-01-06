@@ -1,5 +1,6 @@
 package com.deepdame.filter;
 
+import com.deepdame.exception.Unauthorized;
 import com.deepdame.service.jwt.JwtAuthConverter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -16,6 +17,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Component
 @RequiredArgsConstructor
@@ -41,21 +44,40 @@ public class JwtCookieFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        String requestURI = request.getRequestURI();
+
+        if (requestURI.contains("/login") || requestURI.startsWith("/css") || requestURI.startsWith("/js")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String token = extractAccessToken(request);
-        Jwt jwt = null;
 
         if (token != null) {
             try {
-                jwt = jwtDecoder.decode(token);
-            } catch (JwtException e) {
+                Jwt jwt = jwtDecoder.decode(token);
+                Authentication auth = jwtAuthConverter.convert(jwt);
+                SecurityContextHolder.getContext().setAuthentication(auth);
+
+            } catch (Unauthorized e) {
+
                 SecurityContextHolder.clearContext();
-                filterChain.doFilter(request, response);
+
+                Cookie cookie = new Cookie("access_token", null);
+                cookie.setPath("/");
+                cookie.setHttpOnly(true);
+                cookie.setMaxAge(0);
+                response.addCookie(cookie);
+
+                String loginPath = requestURI.startsWith("/admin") ? "/admin/login" : "/login";
+                String message = URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8);
+
+                response.sendRedirect(loginPath + "?error=true&message=" + message);
                 return;
+
+            } catch (Exception e) {
+                SecurityContextHolder.clearContext();
             }
-
-            Authentication auth = jwtAuthConverter.convert(jwt);
-
-            SecurityContextHolder.getContext().setAuthentication(auth);
         }
 
         filterChain.doFilter(request, response);

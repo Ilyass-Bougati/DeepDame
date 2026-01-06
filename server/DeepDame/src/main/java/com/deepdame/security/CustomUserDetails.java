@@ -23,6 +23,25 @@ public class CustomUserDetails implements UserDetails {
     }
 
     @Override
+    public boolean isAccountNonLocked() {
+        return !user.getBannedFromApp();
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return !user.getBannedFromApp();
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+    @Override
     public String getPassword() {
         return "";
     }
