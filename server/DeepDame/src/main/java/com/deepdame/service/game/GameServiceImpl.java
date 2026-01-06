@@ -13,6 +13,7 @@ import com.deepdame.exception.NotFoundException;
 import com.deepdame.repository.mongo.GameRepository;
 import com.deepdame.service.ai.AiOrchestrator;
 import com.deepdame.service.cache.GameCacheService;
+import com.deepdame.service.statistic.StatisticsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,7 @@ public class GameServiceImpl implements GameService{
     private final GameEntityService gameEntityService;
     private final GameMapper gameMapper;
     private final AiOrchestrator aiOrchestrator;
+    private final StatisticsService statisticsService;
 
     private final GameEngine gameEngine = new GameEngine();
 
@@ -240,21 +242,29 @@ public class GameServiceImpl implements GameService{
 
         PieceType winner = doc.getGameState().getWinner();
 
+        UUID winnerId = null;
+        UUID loserId = null;
+
         if (winner.equals(PieceType.BLACK)) {
-            doc.setWinnerId(doc.getPlayerBlackId());
+            winnerId = doc.getPlayerBlackId();
+            loserId = doc.getPlayerWhiteId();
         } else {
-            doc.setWinnerId(doc.getPlayerWhiteId());
+            winnerId = doc.getPlayerWhiteId();
+            loserId = doc.getPlayerBlackId();
         }
 
+        doc.setWinnerId(winnerId);
         gameRepository.save(doc);
 
         gameCacheService.deleteGame(doc.getId());
         gameCacheService.removeFromLobby(doc.getId());
 
         gameCacheService.clearUserCurrentGame(doc.getPlayerBlackId());
-        if (doc.getPlayerWhiteId() != null) {
+        if (doc.getPlayerWhiteId() != null && doc.getMode() == GameMode.PVP) {
             gameCacheService.clearUserCurrentGame(doc.getPlayerWhiteId());
         }
+
+        statisticsService.updateStatsAfterGame(winnerId, loserId);
     }
 
 
