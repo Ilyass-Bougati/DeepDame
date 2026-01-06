@@ -3,6 +3,7 @@ package com.deepdame.service.jwt;
 import com.deepdame.dto.auth.LoginRequest;
 import com.deepdame.entity.User;
 import com.deepdame.exception.Unauthorized;
+import com.deepdame.properties.JwtProperties;
 import com.deepdame.security.CustomUserDetails;
 import com.deepdame.security.CustomUserDetailsService;
 import com.deepdame.service.user.UserEntityService;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 public class TokenService {
 
     private final JwtEncoder jwtEncoder;
+    private final JwtProperties jwtProperties;
     private final UserEntityService userEntityService;
     private final CustomUserDetailsService customUserDetailsService;
     private final PasswordEncoder passwordEncoder;
@@ -33,18 +35,23 @@ public class TokenService {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(" "));
 
-        JwtClaimsSet claims = JwtClaimsSet.builder()
+        JwtClaimsSet accessTokenClaims = JwtClaimsSet.builder()
                 .issuer("self")
                 .issuedAt(now)
-                .expiresAt(now.plus(1, ChronoUnit.HOURS))
+                .expiresAt(now.plus(jwtProperties.accessTokenExpirationDuration() * 60 * 60, ChronoUnit.HOURS))
                 .subject(authentication.getName())
                 .claim("scope", scope)
                 .build();
 
-        String accessToken = this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+        JwtClaimsSet refreshTokenClaims = JwtClaimsSet.builder()
+                .issuer("self")
+                .issuedAt(now)
+                .expiresAt(now.plus(jwtProperties.refreshTokenExpirationDuration() * 60 * 60, ChronoUnit.HOURS))
+                .subject(authentication.getName())
+                .build();
 
-        // TODO : on doit configurer un 2ieme encodage pour le refresh
-        String refreshToken =  this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+        String accessToken = this.jwtEncoder.encode(JwtEncoderParameters.from(accessTokenClaims)).getTokenValue();
+        String refreshToken =  this.jwtEncoder.encode(JwtEncoderParameters.from(refreshTokenClaims)).getTokenValue();
 
         userEntityService.updateRefreshToken(authentication.getName(), refreshToken);
 
@@ -52,6 +59,16 @@ public class TokenService {
                 .access_token(accessToken)
                 .refresh_token(refreshToken)
                 .build();
+    }
+
+    public Token refreshToken(String refreshToken) {
+        User user = userEntityService.findByRefreshToken(refreshToken);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), null);
+        Token token = generateToken(authentication);
+
+        // changing the users token
+        userEntityService.updateRefreshToken(user.getEmail(), token.getRefresh_token());
+        return token;
     }
 
     public Token login(LoginRequest loginRequest) {
