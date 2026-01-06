@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:deepdame/dtos/UserDto.dart';
 import 'package:deepdame/pages/Connect.dart';
 import 'package:deepdame/prefabs/SubmitButton.dart';
@@ -5,12 +7,15 @@ import 'package:deepdame/static/Utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:stomp_dart_client/stomp_dart_client.dart';
 
 class Landing extends StatelessWidget {
   const Landing({super.key});
 
   @override
-  Widget build(BuildContext context) => build_temporarly(context);
+  Widget build(BuildContext context) => Utils.userDetails == null
+      ? build_temporarly(context)
+      : build_onConnection(context);
 
   Future<void> initLandingPage(BuildContext context) async {
     bool connected = false;
@@ -26,15 +31,68 @@ class Landing extends StatelessWidget {
       UserDTO dto = UserDTO.fromJson(resp);
       Utils.userDetails = dto.toUser();
 
+      List<Cookie> cookies = await persistCookieJar!.loadForRequest(
+        Uri.parse('https://ilyass-server.taila311b0.ts.net'),
+      );
+
+      Cookie? authCookie = cookies.firstWhere(
+        (c) => c.name == 'access_token',
+        orElse: () => Cookie('dummy', ''),
+      );
+
+      if (authCookie.name == 'dummy') {
+        print("No cookies !");
+      }
+
+      Utils.client = StompClient(
+        config: StompConfig.sockJS(
+          url: 'https://ilyass-server.taila311b0.ts.net/ws',
+          webSocketConnectHeaders: {
+            'Host': 'ilyass-server.taila311b0.ts.net',
+            'Cookie': '${authCookie.name}=${authCookie.value}',
+          },
+
+          onConnect: (StompFrame frame) {
+            Utils.client.subscribe(
+              destination: '/topic/general-chat',
+              callback: (StompFrame frame) {
+                if (frame.body != null) {
+                  print('Received: ${frame.body!}');
+                  Utils.onGeneralChatLoaded?.call(frame.body);
+                }
+              },
+            );
+            //Subscribing to general-chat
+          },
+
+          onStompError: (StompFrame frame) {
+            print('CRITICAL STOMP ERROR: ${frame.body}');
+          },
+          onWebSocketError: (dynamic error) {
+            print('WEBSOCKET ERROR: $error');
+          },
+
+          onUnhandledFrame: (StompFrame frame) {
+            print('UNHANDLED FRAME: ${frame.command}');
+          },
+
+          onDisconnect: (frame) => print('Disconnected'),
+        ),
+      );
+
+      Utils.client.activate();
     } catch (e) {}
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => connected
-            ? build_onConnection(context)
-            : build_offConnection(context),
-      ),
-    );
+    Navigator.pop(context);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => connected
+              ? build_onConnection(context)
+              : build_offConnection(context),
+        ),
+      );
+    });
   }
 
   Widget build_temporarly(BuildContext context) {
@@ -196,10 +254,7 @@ class Landing extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: BottomAppBar(
-        height: MediaQuery.of(context).size.height / 20,
-        color: Color.fromARGB(200, 235, 229, 222),
-      ),
+      bottomNavigationBar: Utils.getNavbar(context, 0),
     );
   }
 }

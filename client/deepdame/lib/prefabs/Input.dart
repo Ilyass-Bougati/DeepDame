@@ -1,6 +1,8 @@
+// ignore_for_file: no_logic_in_create_state
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+// ignore: must_be_immutable
 class Input extends StatefulWidget {
   final TextInputType type;
   final TextEditingController controller;
