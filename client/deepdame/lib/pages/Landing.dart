@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:deepdame/dtos/UserDto.dart';
 import 'package:deepdame/pages/Connect.dart';
@@ -63,6 +62,9 @@ class Landing extends StatelessWidget {
               },
             );
             //Subscribing to general-chat
+          },
+          onDebugMessage: (callback) => {
+            print('DEBUG ERROR: ${callback}')
           },
 
           onStompError: (StompFrame frame) {

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:deepdame/models/User.dart';
 import 'package:deepdame/pages/Friends.dart';
@@ -10,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:stomp_dart_client/stomp_dart_client.dart';
 
+final Random random = Random();
 PersistCookieJar? persistCookieJar;
 final dio = Dio();
 
@@ -21,6 +24,20 @@ class Utils {
   static late StompClient client;
   static Function(dynamic)? onGeneralChatLoaded;
 
+  static String getJavaDate() {
+  DateTime now = DateTime.now();
+  
+  // 1. Get the default Dart string (e.g., "2026-01-06 14:52:20.763456")
+  // Note: toString() uses a space, unlike toIso8601String() which uses 'T'
+  String raw = now.toString();
+
+  // 2. Check if we have microseconds (ends with 6 digits) and truncate to 3
+  if (raw.length > 23) {
+    return raw.substring(0, 23); // Keep "yyyy-MM-dd HH:mm:ss.SSS"
+  }
+  
+  return raw;
+}
 
   static Widget getNavbar(BuildContext context, int currentIndex) {
     return BottomAppBar(
