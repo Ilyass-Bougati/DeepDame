@@ -11,7 +11,6 @@ public class WsExceptionHandler {
     @MessageExceptionHandler
     @SendToUser("/queue/errors")
     public String handleWsUnauthorizedException(WsUnauthorized e) {
-        log.error("CHECKING");
         return "Error: " + e.getMessage();
     }
 }
