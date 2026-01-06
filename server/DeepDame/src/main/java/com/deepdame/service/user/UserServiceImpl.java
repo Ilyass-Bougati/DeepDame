@@ -6,6 +6,7 @@ import com.deepdame.dto.user.UserMapper;
 import com.deepdame.entity.User;
 import com.deepdame.exception.ConflictException;
 import com.deepdame.exception.NotFoundException;
+import com.deepdame.exception.Unauthorized;
 import com.deepdame.repository.UserRepository;
 import com.deepdame.service.username.UsernameService;
 import lombok.NonNull;
@@ -110,6 +111,24 @@ public class UserServiceImpl implements UserService {
     @Override
     public void logout(UUID userId) {
         userRepository.invalidateRefreshToken(userId);
+    }
+
+    @Override
+    public void changePassword(UUID userId, String oldPassword, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new Unauthorized("Invalid Credentials");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
+    @Override
+    public void changePassword(String email, String newPassword) {
+        userRepository.changePasswordByEmail(email, passwordEncoder.encode(newPassword));
     }
 
     @Override

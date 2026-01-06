@@ -56,3 +56,7 @@ If the project looks red or classes are missing, IntelliJ might not recognize th
 2. **Open Maven Plugin**: Open the Maven sidebar on the right side.
 3. **Add Maven Project**: Click the (+) "Add Maven Project" button.
 4. **Select Server**: Navigate to `server` and press OK.
+
+
+## Documentations
+For the **RESTful** APIs you can use Swagger to sift through the route, that's on `/swagger-ui/index.html`
