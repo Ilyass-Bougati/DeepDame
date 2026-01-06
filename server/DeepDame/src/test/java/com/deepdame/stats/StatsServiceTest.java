@@ -1,10 +1,13 @@
 package com.deepdame.stats;
 
+import com.deepdame.dto.stats.AdminDashboardStatsDto;
+import com.deepdame.dto.stats.PlayerStatsDto;
 import com.deepdame.entity.mongo.GameDocument;
 import com.deepdame.entity.User;
 import com.deepdame.enums.GameMode;
 import com.deepdame.repository.mongo.GameRepository;
 import com.deepdame.repository.UserRepository;
+import com.deepdame.repository.mongo.PlayerStatisticsRepository;
 import com.deepdame.service.cache.GameCacheService;
 import com.deepdame.service.statistic.StatisticsServiceImpl;
 import org.junit.jupiter.api.AfterEach;
@@ -18,7 +21,6 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,6 +38,9 @@ class StatsServiceTest {
     private UserRepository userRepository;
 
     @Autowired
+    private PlayerStatisticsRepository playerStatisticsRepository;
+
+    @Autowired
     private GameCacheService gameCacheService;
 
     @Autowired
@@ -51,6 +56,7 @@ class StatsServiceTest {
     void setUp() {
         cleanAllDatabases();
 
+        // 1. Create Users
         hmed = User.builder()
                 .username("hmed").email("hmed@test.com").password("pass")
                 .bannedFromApp(false).emailValidated(true)
@@ -63,11 +69,16 @@ class StatsServiceTest {
 
         userRepository.saveAll(List.of(hmed, bochaab));
 
-        // hmed Wins 1
+        // 2. Create Games AND Trigger Stat Updates
+        // Game 1: Hmed Wins
         createFinishedGame(hmed.getId(), bochaab.getId(), hmed.getId(), LocalDateTime.now());
-        // hmed Loses 1 (bochaab Wins)
-        createFinishedGame(hmed.getId(), bochaab.getId(), bochaab.getId(), LocalDateTime.now().minusDays(1));
+        statisticsService.updateStatsAfterGame(hmed.getId(), bochaab.getId());
 
+        // Game 2: Bochaab Wins (Hmed Loses)
+        createFinishedGame(hmed.getId(), bochaab.getId(), bochaab.getId(), LocalDateTime.now().minusDays(1));
+        statisticsService.updateStatsAfterGame(bochaab.getId(), hmed.getId());
+
+        // 3. Create Active Games (Lobby)
         createActiveGameInRedis();
         createActiveGameInRedis();
         createActiveGameInRedis();
@@ -81,6 +92,7 @@ class StatsServiceTest {
     private void cleanAllDatabases() {
         userRepository.deleteAll();
         gameRepository.deleteAll();
+        playerStatisticsRepository.deleteAll(); // Clean stats too
 
         deleteKeys("game:*");
         deleteKeys("lobby:*");
@@ -97,58 +109,52 @@ class StatsServiceTest {
     @Test
     @DisplayName("GLOBAL: Should return dashboard stats with Chart Data")
     void testGlobalStats() {
-        Map<String, Object> global = statisticsService.getGlobalStats();
 
-        printJson("Global Stats", global);
+        AdminDashboardStatsDto global = statisticsService.getAdminDashboardStats();
 
-        assertEquals(2L, global.get("totalUsers"));
-        assertEquals(2L, global.get("totalGamesFinished"));
-        assertEquals(3, global.get("activeLobbyGames"));
+        printJson("Global Stats DTO", global);
 
-        List<Map<String, Object>> chart = (List<Map<String, Object>>) global.get("gamesLast30Days");
-        assertNotNull(chart);
-        assertFalse(chart.isEmpty());
-        assertNotNull(chart.get(0).get("date"));
+        // Assert Basic Counts
+        assertEquals(2L, global.getTotalUsers());
+        assertEquals(2L, global.getTotalGamesFinished());
+        assertEquals(3, global.getActiveLobbyGames());
+
+        // Assert Chart Data (Lists)
+        assertNotNull(global.getChartDays());
+        assertNotNull(global.getChartCounts());
+        assertEquals(30, global.getChartDays().size()); // Should always have 30 days
+        assertEquals(30, global.getChartCounts().size());
+
+        // Check if data is populated correctly (Total 2 games in the counts)
+        long totalGamesInChart = global.getChartCounts().stream().mapToLong(Long::longValue).sum();
+        assertEquals(2L, totalGamesInChart, "Chart should contain exactly 2 games across all days");
     }
 
     @Test
     @DisplayName("USER: Should calculate Win/Loss ratios correctly")
     void testUserStats() {
-        Map<String, Object> heroStats = statisticsService.getUserStats(hmed.getId());
 
-        printJson("User Stats (hmed)", heroStats);
+        PlayerStatsDto heroStats = statisticsService.getPlayerStats(hmed.getId());
+
+        printJson("Player Stats (hmed)", heroStats);
 
         // hmed played 2 games total
-        assertEquals(2L, heroStats.get("totalGames"));
+        assertEquals(2L, heroStats.getTotalPlayed());
 
         // hmed won 1
-        assertEquals(1L, heroStats.get("totalWins"));
+        assertEquals(1L, heroStats.getTotalWins());
 
         // hmed lost 1
-        assertEquals(1L, heroStats.get("totalLosses"));
+        assertEquals(1L, heroStats.getTotalLosses());
 
         // Ratio should be 0.5 (50%)
-        assertEquals(0.5, heroStats.get("winRatioAllTime"));
+        assertEquals(0.5, heroStats.getWinRatioAllTime());
+
+        // Check Last Month Ratio (Should also be 0.5 since games are recent)
+        assertEquals(0.5, heroStats.getWinRatioLastMonth());
     }
 
-    @Test
-    @DisplayName("FRIEND: Should calculate Head-to-Head stats correctly")
-    void testFriendStats() {
-        // hmed checks stats against bochaab
-        Map<String, Object> friendStats = statisticsService.getFriendStats(hmed.getId(), bochaab.getId());
-
-        printJson("Friend Stats (hmed vs bochaab)", friendStats);
-
-        // They played 2 games in setUp()
-        assertEquals(2L, friendStats.get("totalMatches"));
-
-        // hmed won the 1st game
-        assertEquals(1L, friendStats.get("myWins"));
-
-        // bochaab won the 2nd game
-        assertEquals(1L, friendStats.get("friendWins"));
-    }
-
+    // Helper methods
     private void printJson(String title, Object object) {
         try {
             String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(object);
