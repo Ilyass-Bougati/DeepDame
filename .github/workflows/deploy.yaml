@@ -1,0 +1,18 @@
+name: Deploy to Potato
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: self-hosted
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Execute Deployment Script
+      run: |
+        # Adjust path to where you saved the script
+        /home/ilyass/apps/deploy.sh
