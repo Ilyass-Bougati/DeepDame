@@ -5,6 +5,7 @@ import com.deepdame.service.generalChatMessage.GeneralChatMessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,8 +17,8 @@ import java.util.List;
 public class GeneralChatRestController {
     private final GeneralChatMessageService generalChatMessageService;
 
-    @GetMapping("/")
-    ResponseEntity<List<GeneralChatMessageDto>> getGeneralChatMessages() {
-        return ResponseEntity.ok(generalChatMessageService.getGeneralChatMessages(50L));
+    @GetMapping("/{page}")
+    ResponseEntity<List<GeneralChatMessageDto>> getGeneralChatMessages(@PathVariable Long page) {
+        return ResponseEntity.ok(generalChatMessageService.getGeneralChatMessages(page, 50L));
     }
 }
