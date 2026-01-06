@@ -2,83 +2,83 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>DeepDame Smart Debugger v2.1</title>
+    <title>DeepDame Smart Debugger v2.2</title>
     <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
     <style>
         body { font-family: 'Consolas', 'Segoe UI', monospace; padding: 20px; background: #1e1e1e; color: #c0c0c0; margin: 0; height: 100vh; display: flex; flex-direction: column; }
 
-        /* Layout */
+        /* --- LAYOUT GRID --- */
         .container { display: flex; gap: 20px; flex: 1; min-height: 0; }
-        .controls { width: 360px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
-        .ascii-panel { width: 340px; display: flex; flex-direction: column; background: #151515; border: 1px solid #333; border-radius: 5px; align-items: center; justify-content: center; }
+
+        /* Left Column: Controls */
+        .controls { width: 320px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
+
+        /* Middle Column: Board + Chat */
+        .center-column { width: 380px; display: flex; flex-direction: column; gap: 15px; }
+
+        /* Right Column: Logs */
         .logs-panel { flex: 1; background: #111; border: 1px solid #333; display: flex; flex-direction: column; border-radius: 5px; }
 
-        /* ASCII Board Styling */
+        /* --- COMPONENT STYLING --- */
+
+        /* Boxes */
+        .box { background: #2d2d2d; border: 1px solid #444; padding: 15px; border-radius: 5px; }
+        h2 { border-bottom: 2px solid #007bff; padding-bottom: 5px; margin-top: 0; font-size: 1.2rem; color: #fff; }
+        h3 { margin: 0 0 10px 0; font-size: 1rem; color: #aaa; border-bottom: 1px solid #333; padding-bottom: 5px; }
+
+        /* ASCII Board */
+        .ascii-panel { flex: 0 0 auto; background: #151515; border: 1px solid #333; border-radius: 5px; padding: 15px; display: flex; flex-direction: column; align-items: center; }
         #asciiDisplay {
-            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
-            font-size: 18px;
-            line-height: 1.5;
-            white-space: pre;
-            color: #e0e0e0;
-            background: #0f0f0f;
-            padding: 20px;
-            border: 2px solid #444;
-            border-radius: 4px;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace; font-size: 18px; line-height: 1.5; white-space: pre;
+            color: #e0e0e0; background: #0f0f0f; padding: 15px; border: 2px solid #444; border-radius: 4px;
             box-shadow: 0 0 10px rgba(0,0,0,0.5);
         }
 
-        /* Boxes & Inputs */
-        .box { background: #2d2d2d; border: 1px solid #444; padding: 15px; border-radius: 5px; }
-        h2 { border-bottom: 2px solid #007bff; padding-bottom: 5px; margin-top: 0; font-size: 1.2rem; color: #fff; }
+        /* Chat Window (New!) */
+        .chat-panel { flex: 1; background: #151515; border: 1px solid #333; border-radius: 5px; display: flex; flex-direction: column; overflow: hidden; }
+        #chatHistory { flex: 1; overflow-y: auto; padding: 10px; font-size: 12px; display: flex; flex-direction: column; gap: 8px; }
+        .chat-input-area { padding: 10px; border-top: 1px solid #333; background: #252526; display: flex; gap: 5px; }
+
+        .msg { padding: 5px 8px; border-radius: 4px; max-width: 85%; word-wrap: break-word; }
+        .msg-me { align-self: flex-end; background: #1e4620; color: #cfc; border: 1px solid #2e6b30; }
+        .msg-other { align-self: flex-start; background: #333; color: #ddd; border: 1px solid #444; }
+        .msg-meta { font-size: 10px; opacity: 0.6; margin-bottom: 2px; display: block; }
+
+        /* Form Elements */
         label { display: block; margin-bottom: 5px; font-weight: bold; color: #888; font-size: 0.8rem; }
         input[type="text"], input[type="password"], input[type="email"], textarea { background: #444; color: white; border: 1px solid #555; padding: 8px; width: 100%; box-sizing: border-box; margin-bottom: 8px; font-family: monospace; }
-
-        /* Coord Inputs */
-        .coord-row { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
-        .coord-input { width: 40px !important; text-align: center; margin-bottom: 0 !important; }
 
         /* Buttons */
         button { cursor: pointer; padding: 8px; background: #007bff; color: white; border: none; width: 100%; font-weight: bold; border-radius: 3px; margin-bottom: 5px; }
         button:disabled { background: #444; cursor: not-allowed; color: #888; }
         button:hover:not(:disabled) { background: #0056b3; }
+        .btn-red { background: #dc3545; } .btn-red:hover:not(:disabled) { background: #a71d2a; }
+        .btn-green { background: #28a745; } .btn-green:hover:not(:disabled) { background: #1e7e34; }
+        .btn-purple { background: #6f42c1; } .btn-purple:hover:not(:disabled) { background: #59359a; }
 
-        /* Custom Button Colors */
-        .btn-red { background: #dc3545; }
-        .btn-red:hover:not(:disabled) { background: #a71d2a; }
-        .btn-green { background: #28a745; }
-        .btn-green:hover:not(:disabled) { background: #1e7e34; }
-        .btn-purple { background: #6f42c1; } /* AI Color */
-        .btn-purple:hover:not(:disabled) { background: #59359a; }
-
-        /* Interactive Logs */
+        /* Logs */
         .log-header { padding: 10px; border-bottom: 1px solid #333; background: #252526; display: flex; justify-content: space-between; align-items: center; }
         #logContent { flex: 1; overflow-y: auto; padding: 5px; font-size: 12px; line-height: 1.4; font-family: 'Consolas', monospace; }
         .log-entry { border-bottom: 1px solid #222; }
-        .log-summary { display: flex; align-items: center; padding: 4px; cursor: pointer; user-select: none; }
+        .log-summary { display: flex; align-items: center; padding: 4px; cursor: pointer; }
         .log-summary:hover { background-color: #2a2d2e; }
-        .arrow { display: inline-block; width: 15px; color: #777; transition: transform 0.15s; font-size: 10px; }
-        .expanded .arrow { transform: rotate(90deg); }
-        .time { color: #555; margin-right: 10px; font-size: 11px; min-width: 60px; }
         .json-box { display: none; background: #181818; padding: 10px; margin-left: 20px; border-left: 2px solid #444; color: #a9b7c6; overflow-x: auto; }
-        .expanded .json-box { display: block; animation: fadeIn 0.2s; }
+        .expanded .json-box { display: block; }
 
-        /* Log Colors */
-        .c-sys { color: #dcdcaa; }
-        .c-out { color: #569cd6; }
-        .c-in { color: #6a9955; }
-        .c-err { color: #f44747; }
+        .c-sys { color: #dcdcaa; } .c-out { color: #569cd6; } .c-in { color: #6a9955; } .c-err { color: #f44747; }
     </style>
 </head>
 <body>
 
 <div style="margin-bottom: 10px;">
-    <h1 style="margin:0; font-size: 1.5rem;">♟️ DeepDame Smart Debugger v2.1</h1>
+    <h1 style="margin:0; font-size: 1.5rem;">♟️ DeepDame Smart Debugger v2.2</h1>
 </div>
 
 <div class="container">
+
     <div class="controls">
         <div class="box">
-            <h2>1. Authentication</h2>
+            <h3>1. Authentication</h3>
             <form onsubmit="performLogin(event)">
                 <input type="email" id="email" placeholder="Email" value="test@deepdame.com">
                 <input type="password" id="password" placeholder="Password" value="password123">
@@ -88,7 +88,7 @@
         </div>
 
         <div class="box">
-            <h2>2. Connection</h2>
+            <h3>2. Connection</h3>
             <div style="display: flex; gap: 5px;">
                 <button id="connectBtn" onclick="connect()" disabled>Connect WS</button>
                 <button id="disconnectBtn" onclick="disconnect()" disabled class="btn-red">Disconnect</button>
@@ -96,49 +96,52 @@
         </div>
 
         <div class="box">
-            <h2>3. Lobby & Match</h2>
+            <h3>3. Lobby</h3>
             <div style="display: flex; gap: 5px; margin-bottom: 5px;">
                 <button onclick="createGame('PVP')" id="createBtn" disabled>Create PVP</button>
                 <button onclick="createGame('PVE')" id="createPveBtn" class="btn-purple" disabled>Create PVE 🤖</button>
             </div>
-
             <button onclick="findMatch()" id="matchBtn" class="btn-green" disabled>Auto Match 🎲</button>
-
             <button onclick="refreshLobby()" style="background: #555; font-size: 11px; margin-top: 5px;">Refresh Lobby List</button>
             <div id="lobbyList" style="height:100px; overflow-y:auto; background:#222; border:1px solid #333; margin-top:5px;"></div>
         </div>
 
         <div class="box">
-            <h2>4. Game Actions</h2>
+            <h3>4. Game Actions</h3>
             <label>Target Game ID:</label>
             <input type="text" id="gameIdInput" placeholder="UUID..." readonly />
+            <button id="surrenderBtn" onclick="surrender()" class="btn-red" disabled style="margin-top:5px;">Surrender 🏳️</button>
 
-            <label style="margin-top:10px; color:#fff;">Quick Move Input:</label>
-            <div class="coord-row">
-                <span style="font-size:11px; width:40px;">FROM:</span>
-                <input type="text" class="coord-input" id="fromR" placeholder="R" oninput="updateJson()">
-                <input type="text" class="coord-input" id="fromC" placeholder="C" oninput="updateJson()">
-                <span style="margin:0 5px;">➔</span>
-                <span style="font-size:11px; width:30px;">TO:</span>
-                <input type="text" class="coord-input" id="toR" placeholder="R" oninput="updateJson()">
-                <input type="text" class="coord-input" id="toC" placeholder="C" oninput="updateJson()">
+            <hr style="border:0; border-top:1px solid #444; margin: 10px 0;">
+
+            <label>Make Move (JSON):</label>
+            <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+                <input type="text" id="fromCoord" placeholder="From (0,0)" style="margin:0; text-align:center;">
+                <input type="text" id="toCoord" placeholder="To (1,1)" style="margin:0; text-align:center;">
             </div>
-
-            <label>Generated JSON:</label>
-            <textarea id="movePayload" rows="4" readonly style="background:#222; color:#777;">{
-  "from": { "row": 0, "col": 0 },
-  "to": { "row": 0, "col": 0 }
-}</textarea>
-            <button id="moveBtn" onclick="makeMove()" disabled>Send Move</button>
-            <button id="surrenderBtn" onclick="surrender()" class="btn-red" disabled style="margin-top:10px;">Surrender 🏳️</button>
+            <button onclick="makeMoveFromInputs()" id="moveBtn" disabled>Send Move</button>
         </div>
     </div>
 
-    <div class="ascii-panel">
-        <h3 style="margin-top:0; color:#888;">Client-Side View</h3>
-        <div id="asciiDisplay">Board not initialized</div>
-        <button onclick="initLocalBoard()" style="width:auto; margin-top:10px; background:#444; font-size:11px;">Reset Board</button>
-        <div style="font-size:10px; color:#555; margin-top:5px;">(Updates on server broadcast)</div>
+    <div class="center-column">
+        <div class="ascii-panel">
+            <h3>Board View</h3>
+            <div id="asciiDisplay">Board not initialized</div>
+            <button onclick="initLocalBoard()" style="width:auto; margin-top:10px; background:#444; font-size:11px;">Reset Board</button>
+        </div>
+
+        <div class="chat-panel">
+            <div style="padding: 10px; background: #252526; border-bottom: 1px solid #333; font-weight: bold; font-size: 13px;">
+                💬 Game Chat
+            </div>
+            <div id="chatHistory">
+                <div style="text-align: center; color: #555; font-style: italic;">Join a game to chat</div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" placeholder="Type message..." onkeydown="if(event.key==='Enter') sendChat()" disabled style="margin:0;">
+                <button onclick="sendChat()" id="sendChatBtn" disabled style="width: auto; margin:0;">Send</button>
+            </div>
+        </div>
     </div>
 
     <div class="logs-panel">
@@ -152,26 +155,12 @@
 
 <script>
     let stompClient = null;
+    let currentUserEmail = "";
     const API_BASE = "/api/v1";
     const WS_URL = "ws://" + window.location.host + "/ws/websocket";
 
-    // --- JSON AUTO-UPDATER ---
-    function updateJson() {
-        const fR = document.getElementById('fromR').value || 0;
-        const fC = document.getElementById('fromC').value || 0;
-        const tR = document.getElementById('toR').value || 0;
-        const tC = document.getElementById('toC').value || 0;
-
-        const payload = {
-            from: { row: parseInt(fR), col: parseInt(fC) },
-            to: { row: parseInt(tR), col: parseInt(tC) }
-        };
-        document.getElementById('movePayload').value = JSON.stringify(payload, null, 2);
-    }
-
     // --- ASCII BOARD LOGIC ---
     let localGrid = [];
-
     function initLocalBoard() {
         localGrid = Array(8).fill(null).map(() => Array(8).fill('.'));
         for (let row = 0; row < 8; row++) {
@@ -183,7 +172,6 @@
             }
         }
         renderAscii();
-        log("🖥️ Local Board Reset", 'c-sys');
     }
 
     function renderAscii() {
@@ -205,61 +193,23 @@
             if (move.from && move.to) {
                 const f = move.from;
                 const t = move.to;
-
                 if (!localGrid[f.row] || !localGrid[t.row]) return;
-
                 const piece = localGrid[f.row][f.col];
                 localGrid[t.row][t.col] = piece;
                 localGrid[f.row][f.col] = '.';
-
                 if (Math.abs(f.row - t.row) === 2) {
-                    const midRow = (f.row + t.row) / 2;
-                    const midCol = (f.col + t.col) / 2;
-                    localGrid[midRow][midCol] = '.';
-                    log(`⚔️ Capture at [${midRow},${midCol}]`, 'c-sys');
+                    localGrid[(f.row + t.row) / 2][(f.col + t.col) / 2] = '.';
                 }
                 renderAscii();
             }
-        } catch (e) {
-            console.error("Failed to parse move", e);
-        }
+        } catch (e) { console.error(e); }
     }
-
-    // --- LOGGING ENGINE ---
-    function log(summary, type = 'c-sys', detailObj = null) {
-        const container = document.getElementById('logContent');
-        const time = new Date().toLocaleTimeString().split(' ')[0] + "." + new Date().getMilliseconds();
-        const entryDiv = document.createElement('div');
-        entryDiv.className = 'log-entry';
-        const arrowHtml = detailObj ? '<span class="arrow">▶</span>' : '<span class="arrow" style="opacity:0">▶</span>';
-        const cursorStyle = detailObj ? '' : 'style="cursor:default"';
-        let html = `<div class="log-summary" ${cursorStyle} onclick="toggleLog(this)">
-                    ${arrowHtml}<span class="time">[${time}]</span><span class="${type}">${summary}</span></div>`;
-        if (detailObj) {
-            let jsonStr = "";
-            try {
-                const obj = (typeof detailObj === 'string') ? JSON.parse(detailObj) : detailObj;
-                jsonStr = JSON.stringify(obj, null, 2);
-            } catch(e) { jsonStr = detailObj; }
-            jsonStr = jsonStr.replace(/"(.*?)":/g, '<span style="color:#9cdcfe">"$1"</span>:').replace(/: "(.*?)"/g, ': <span style="color:#ce9178">"$1"</span>').replace(/: (\d+)/g, ': <span style="color:#b5cea8">$1</span>');
-            html += `<div class="json-box"><pre style="margin:0">${jsonStr}</pre></div>`;
-        }
-        entryDiv.innerHTML = html;
-        container.appendChild(entryDiv);
-        container.scrollTop = container.scrollHeight;
-    }
-
-    window.toggleLog = function(element) {
-        const entry = element.parentElement;
-        if(entry.querySelector('.json-box')) entry.classList.toggle('expanded');
-    };
 
     // --- 1. LOGIN ---
     async function performLogin(e) {
         e.preventDefault();
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
-        log("🔐 Attempting HTTP Login...", 'c-sys');
         try {
             const response = await fetch(`${API_BASE}/auth/login`, {
                 method: 'POST',
@@ -267,43 +217,38 @@
                 body: JSON.stringify({ email, password })
             });
             if (response.ok) {
+                currentUserEmail = email; // Store for chat
                 document.getElementById('authStatus').innerHTML = "<span style='color:#28a745'>✅ Logged In</span>";
                 document.getElementById('connectBtn').disabled = false;
                 log("✅ Login Success", 'c-sys');
             } else { throw new Error(response.status); }
-        } catch (err) { log("❌ Login Failed: " + err.message, 'c-err'); }
+        } catch (err) { log("❌ Login Failed", 'c-err'); }
     }
 
     // --- 2. WEBSOCKET ---
     function connect() {
-        log(`🔌 Connecting to ${WS_URL}...`, 'c-sys');
         stompClient = new StompJs.Client({ brokerURL: WS_URL, reconnectDelay: 0 });
-
         stompClient.onConnect = (frame) => {
-            log("✅ <b>STOMP CONNECTED</b>", 'c-sys');
+            log("✅ STOMP CONNECTED", 'c-sys');
             setConnected(true);
             refreshLobby();
             initLocalBoard();
 
-            stompClient.subscribe('/user/queue/errors', (msg) => log(`❌ ERROR RECEIVED`, 'c-err', msg.body));
+            stompClient.subscribe('/user/queue/errors', (msg) => log(`❌ ERROR: ${msg.body}`, 'c-err'));
 
             stompClient.subscribe('/user/queue/game/created', (msg) => {
                 const body = JSON.parse(msg.body);
                 const id = body.gameId || body;
-                document.getElementById('gameIdInput').value = id;
-                log(`🎉 GAME CREATED: ${id}`, 'c-in', msg.body);
+                log(`🎉 GAME CREATED: ${id}`, 'c-in');
                 subscribeToGame(id);
             });
 
             stompClient.subscribe('/user/queue/game/joined', (msg) => {
                 const body = JSON.parse(msg.body);
-                document.getElementById('gameIdInput').value = body.gameId;
-                log(`🤝 JOIN CONFIRMED`, 'c-in', msg.body);
+                log(`🤝 JOINED GAME: ${body.gameId}`, 'c-in');
                 subscribeToGame(body.gameId);
             });
         };
-
-        stompClient.onStompError = (frame) => log("❌ BROKER ERROR", 'c-err', frame.headers['message']);
         stompClient.activate();
     }
 
@@ -313,69 +258,114 @@
         log("🔌 Disconnected", 'c-sys');
     }
 
-    // --- 3. ACTIONS ---
-
-    // UPDATED: Accepts mode (PVP or PVE)
+    // --- 3. GAME LOGIC ---
     function createGame(mode) {
-        if(!stompClient || !stompClient.connected) return;
-
-        // Use argument or default to PVP
-        const payload = mode || "PVP";
-
-        log(`📤 SEND CREATE (${payload})`, 'c-out', payload);
-
+        if(!stompClient?.connected) return;
         stompClient.publish({
             destination: '/app/game/create',
+            body: JSON.stringify(mode),
+            headers: { 'content-type': 'application/json' }
+        });
+    }
+
+    function joinGame(id) {
+        stompClient.publish({ destination: `/app/game/${id}/join` });
+    }
+
+    function makeMoveFromInputs() {
+        const id = document.getElementById('gameIdInput').value;
+        const fromVal = document.getElementById('fromCoord').value.split(','); // "0,1"
+        const toVal = document.getElementById('toCoord').value.split(','); // "1,2"
+
+        if(fromVal.length !== 2 || toVal.length !== 2) { alert("Use format row,col (e.g. 2,1)"); return; }
+
+        const payload = {
+            from: { row: parseInt(fromVal[0]), col: parseInt(fromVal[1]) },
+            to: { row: parseInt(toVal[0]), col: parseInt(toVal[1]) }
+        };
+
+        log(`🚀 SEND MOVE`, 'c-out', JSON.stringify(payload));
+        stompClient.publish({
+            destination: `/app/game/${id}/move`,
             body: JSON.stringify(payload),
             headers: { 'content-type': 'application/json' }
         });
     }
 
-    function findMatch() {
-        if(!stompClient || !stompClient.connected) return;
-        log(`🎲 REQUEST MATCHMAKING`, 'c-out');
-        stompClient.publish({ destination: '/app/game/matchmaking' });
-    }
-
-    function joinGame(id) {
-        log(`📤 SEND JOIN (${id})`, 'c-out');
-        stompClient.publish({ destination: `/app/game/${id}/join` });
-    }
-
-    function makeMove() {
-        const id = document.getElementById('gameIdInput').value;
-        const rawBody = document.getElementById('movePayload').value;
-        log(`🚀 SEND MOVE`, 'c-out', rawBody);
-        stompClient.publish({ destination: `/app/game/${id}/move`, body: rawBody, headers: { 'content-type': 'application/json' } });
-    }
-
     function surrender() {
         const id = document.getElementById('gameIdInput').value;
-        if (!id) { log("❌ No Game ID selected", 'c-err'); return; }
-
-        if (confirm("Are you sure you want to surrender?")) {
-            log(`🏳️ SURRENDER (${id})`, 'c-out');
-            stompClient.publish({ destination: `/app/game/${id}/surrender` });
-        }
+        if (id && confirm("Surrender?")) stompClient.publish({ destination: `/app/game/${id}/surrender` });
     }
 
-    function subscribeToGame(id) {
-        if (stompClient.subscriptions && Object.keys(stompClient.subscriptions).some(k => k.includes(id))) return;
-        log(`📡 Subscribed to game channel`, 'c-sys');
+    // --- 4. CHAT LOGIC ---
+    function sendChat() {
+        const id = document.getElementById('gameIdInput').value;
+        const input = document.getElementById('chatInput');
+        const text = input.value.trim();
+        if(!id || !text) return;
 
+        stompClient.publish({
+            destination: `/app/game/${id}/chat`,
+            body: JSON.stringify({ content: text }),
+            headers: { 'content-type': 'application/json' }
+        });
+        input.value = "";
+    }
+
+    function addChatMessage(msg) {
+        const history = document.getElementById('chatHistory');
+        const div = document.createElement('div');
+        const isMe = msg.sender === currentUserEmail;
+
+        div.className = `msg ${isMe ? 'msg-me' : 'msg-other'}`;
+        div.innerHTML = `<span class="msg-meta">${isMe ? 'You' : msg.sender} • ${new Date(msg.timestamp).toLocaleTimeString()}</span>${msg.content}`;
+
+        history.appendChild(div);
+        history.scrollTop = history.scrollHeight;
+    }
+
+    // --- SUBSCRIPTION MANAGER ---
+    function subscribeToGame(id) {
+        if (document.getElementById('gameIdInput').value === id) return;
+        document.getElementById('gameIdInput').value = id;
+        document.getElementById('chatHistory').innerHTML = ''; // Clear old chat
+
+        // Enable Chat UI
+        document.getElementById('chatInput').disabled = false;
+        document.getElementById('sendChatBtn').disabled = false;
+
+        // 1. Move Updates
         stompClient.subscribe(`/topic/game/${id}`, (msg) => {
-            log(`♟️ BOARD UPDATE`, 'c-in', msg.body);
+            log(`♟️ MOVE`, 'c-in', msg.body);
             handleMoveUpdate(msg.body);
         });
 
+        // 2. Chat Updates (NEW!)
+        stompClient.subscribe(`/topic/game/${id}/chat`, (msg) => {
+            const chatMsg = JSON.parse(msg.body);
+            addChatMessage(chatMsg);
+        });
+
+        // 3. Game Over
         stompClient.subscribe(`/topic/game/${id}/game-over`, (msg) => {
             const data = JSON.parse(msg.body);
-            log(`🏆 GAME OVER! Winner: ${data.winnerColor}`, 'c-sys', msg.body);
-            alert(`GAME OVER\nWinner: ${data.winnerColor} (${data.winnerName})`);
+            log(`🏆 GAME OVER: ${data.winnerColor}`, 'c-sys');
+            alert(`Winner: ${data.winnerColor}`);
         });
     }
 
-    // --- HELPERS ---
+    // --- HELPERS & LOGS ---
+    function log(summary, type, detail) {
+        const c = document.getElementById('logContent');
+        const d = document.createElement('div');
+        d.className = 'log-entry';
+        let h = `<div class="log-summary" onclick="this.parentElement.classList.toggle('expanded')"><span class="time">${new Date().toLocaleTimeString()}</span><span class="${type}">${summary}</span></div>`;
+        if(detail) h += `<div class="json-box"><pre>${detail}</pre></div>`;
+        d.innerHTML = h;
+        c.appendChild(d);
+        c.scrollTop = c.scrollHeight;
+    }
+
     async function refreshLobby() {
         try {
             const res = await fetch(`${API_BASE}/lobby/open`);
@@ -383,24 +373,17 @@
             const list = document.getElementById('lobbyList');
             list.innerHTML = "";
             ids.forEach(id => {
-                list.innerHTML += `<div style="padding:4px; border-bottom:1px solid #333; font-size:11px;">
-                        <span>..${id.slice(-8)}</span>
-                        <button onclick="joinGame('${id}')" style="font-size:10px; padding:1px 5px; float:right;">Join</button></div>`;
+                list.innerHTML += `<div style="padding:4px; border-bottom:1px solid #333; font-size:11px;"><span>..${id.slice(-8)}</span><button onclick="joinGame('${id}')" style="font-size:10px; padding:1px 5px; float:right;">Join</button></div>`;
             });
-        } catch (e) { log("Lobby fetch error", 'c-err'); }
+        } catch (e) {}
     }
 
     function setConnected(connected) {
+        document.querySelectorAll('button').forEach(b => {
+            if(b.id !== 'loginBtn' && b.id !== 'connectBtn' && b.id !== 'disconnectBtn') b.disabled = !connected;
+        });
         document.getElementById('connectBtn').disabled = connected;
         document.getElementById('disconnectBtn').disabled = !connected;
-
-        // Enable both PVP and PVE buttons
-        document.getElementById('createBtn').disabled = !connected;
-        document.getElementById('createPveBtn').disabled = !connected;
-
-        document.getElementById('matchBtn').disabled = !connected;
-        document.getElementById('moveBtn').disabled = !connected;
-        document.getElementById('surrenderBtn').disabled = !connected;
     }
 </script>
 </body>
