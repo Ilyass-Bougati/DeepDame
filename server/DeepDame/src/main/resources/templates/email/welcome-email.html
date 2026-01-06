@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepDame - Welcome Email</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        @media (max-width: 600px) {
+            .features-grid { grid-template-columns: 1fr !important; }
+            .game-options { flex-direction: column !important; }
+            .email-body, .email-header, .email-footer { padding: 20px !important; }
+            .game-option { margin-bottom: 10px; }
+        }
+
+        .feature:hover { transform: translateY(-5px); }
+        .game-option:hover { border-color: #a2b99d !important; transform: translateY(-3px); }
+    </style>
+</head>
+<body style="margin: 0; padding: 20px; background-color: #f5f5f5; line-height: 1.6; color: #646360;">
+
+<div class="email-container" style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 10px; overflow: hidden; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);">
+
+    <div class="email-header" style="background-color: #de5c56; color: white; padding: 25px 30px; text-align: center;">
+        <div class="logo" style="margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 15px;">
+            <div style="display: inline-block; width: 42px; height: 42px; background-color: #f4faf2; border-radius: 50%; vertical-align: middle; margin-right: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+                <div style="width: 30px; height: 30px; margin: 4px auto; background-color: #de5c56; border: 2px solid #f4faf2; border-radius: 50%; text-align: center; line-height: 28px;">
+                    <span style="color: #f4faf2; font-size: 16px; font-weight: bold;">♛</span>
+                </div>
+            </div>
+            <span style="font-size: 32px; font-weight: bold; letter-spacing: 1px; vertical-align: middle;">DeepDame</span>
+        </div>
+        <h1 style="font-size: 24px; margin: 0 0 5px 0; font-weight: 600;">Welcome to DeepDame!</h1>
+        <p style="font-size: 16px; opacity: 0.9; margin: 0;">Your ultimate checkers platform is ready</p>
+    </div>
+
+    <div class="email-body" style="padding: 30px;">
+        <div class="welcome-section" style="margin-bottom: 30px;">
+            <h2 style="color: #de5c56; margin-bottom: 15px; font-size: 22px; margin-top: 0;">Hello <span th:text="${username}">Alex</span>,</h2>
+
+            <p style="margin-bottom: 15px; font-size: 16px;">
+                Welcome to <strong>DeepDame</strong>, the most comprehensive checkers platform where strategy meets fun! We're thrilled to have you on board.
+            </p>
+
+            <p style="margin-bottom: 15px; font-size: 16px;">
+                Your account has been successfully created and you're now ready to dive into the world of checkers.
+            </p>
+
+            <div class="highlight-box" style="background-color: #f4faf2; padding: 20px; margin: 20px 0; border-radius: 8px;">
+                <h3 style="color: #646360; margin-top: 0; margin-bottom: 10px; font-size: 18px;">Get Started Right Away</h3>
+                <p style="margin: 0; font-size: 15px;">Complete your profile, explore different game modes, and start your first match. The board is waiting for you.</p>
+            </div>
+        </div>
+
+        <h3 style="color: #de5c56; margin-bottom: 15px; text-align: center; font-size: 18px;">Discover DeepDame Features</h3>
+
+        <table role="presentation" width="100%" cellspacing="10" cellpadding="0" border="0">
+            <tr>
+                <td width="50%" valign="top" style="background-color: #f4faf2; padding: 20px; border-radius: 8px; text-align: center;">
+                    <div style="width: 50px; height: 50px; margin: 0 auto 15px; border-radius: 50%; background-color: #de5c56; color: white; line-height: 50px; font-size: 24px;">👥</div>
+                    <h4 style="color: #646360; margin: 0 0 10px; font-size: 16px;">Play with Friends</h4>
+                    <p style="font-size: 13px; color: #646360; margin: 0;">Invite friends and challenge them to real-time checkers matches.</p>
+                </td>
+                <td width="50%" valign="top" style="background-color: #f4faf2; padding: 20px; border-radius: 8px; text-align: center;">
+                    <div style="width: 50px; height: 50px; margin: 0 auto 15px; border-radius: 50%; background-color: #ef8d7f; color: white; line-height: 50px; font-size: 24px;">🤖</div>
+                    <h4 style="color: #646360; margin: 0 0 10px; font-size: 16px;">AI Opponents</h4>
+                    <p style="font-size: 13px; color: #646360; margin: 0;">Practice with single-player AI modes against different difficulty levels.</p>
+                </td>
+            </tr>
+            <tr>
+                <td width="50%" valign="top" style="background-color: #f4faf2; padding: 20px; border-radius: 8px; text-align: center;">
+                    <div style="width: 50px; height: 50px; margin: 0 auto 15px; border-radius: 50%; background-color: #a2b99d; color: white; line-height: 50px; font-size: 24px;">🎯</div>
+                    <h4 style="color: #646360; margin: 0 0 10px; font-size: 16px;">Matchmaking</h4>
+                    <p style="font-size: 13px; color: #646360; margin: 0;">Play against players of similar skill level instantly.</p>
+                </td>
+                <td width="50%" valign="top" style="background-color: #f4faf2; padding: 20px; border-radius: 8px; text-align: center;">
+                    <div style="width: 50px; height: 50px; margin: 0 auto 15px; border-radius: 50%; background-color: #fade87; color: white; line-height: 50px; font-size: 24px;">📊</div>
+                    <h4 style="color: #646360; margin: 0 0 10px; font-size: 16px;">Track Progress</h4>
+                    <p style="font-size: 13px; color: #646360; margin: 0;">Monitor your stats and achievements on your dashboard.</p>
+                </td>
+            </tr>
+        </table>
+
+        <div class="game-options" style="display: flex; justify-content: space-between; gap: 10px; margin: 25px 0; flex-wrap: wrap;">
+            <div class="game-option" style="flex: 1; min-width: 100px; background-color: #f4faf2; padding: 15px; border-radius: 8px; text-align: center; border: 2px solid transparent;">
+                <h4 style="color: #de5c56; margin: 0 0 5px; font-size: 14px;">VS Friends</h4>
+            </div>
+            <div class="game-option" style="flex: 1; min-width: 100px; background-color: #f4faf2; padding: 15px; border-radius: 8px; text-align: center; border: 2px solid transparent;">
+                <h4 style="color: #de5c56; margin: 0 0 5px; font-size: 14px;">VS AI</h4>
+            </div>
+            <div class="game-option" style="flex: 1; min-width: 100px; background-color: #f4faf2; padding: 15px; border-radius: 8px; text-align: center; border: 2px solid transparent;">
+                <h4 style="color: #de5c56; margin: 0 0 5px; font-size: 14px;">Random</h4>
+            </div>
+        </div>
+
+        <div class="tips-section" style="margin-top: 30px; padding-top: 25px; border-top: 1px solid #eee;">
+            <h3 style="color: #de5c56; margin-bottom: 15px; font-size: 18px;">Quick Tips to Get You Started</h3>
+            <ul class="tips-list" style="list-style-type: none; padding: 0;">
+                <li style="padding: 10px 0 10px 30px; position: relative;">
+                    <span style="position: absolute; left: 0; color: #ef8d7f; font-size: 18px; width: 24px; text-align: center;">♟</span>
+                    Complete your profile to help friends find you.
+                </li>
+                <li style="padding: 10px 0 10px 30px; position: relative;">
+                    <span style="position: absolute; left: 0; color: #ef8d7f; font-size: 18px; width: 24px; text-align: center;">♟</span>
+                    Try the tutorial if you're new to checkers.
+                </li>
+                <li style="padding: 10px 0 10px 30px; position: relative;">
+                    <span style="position: absolute; left: 0; color: #ef8d7f; font-size: 18px; width: 24px; text-align: center;">♟</span>
+                    Start with AI matches to learn the strategies.
+                </li>
+            </ul>
+        </div>
+
+    </div>
+
+    <div class="email-footer" style="background-color: #f4faf2; padding: 25px 30px; text-align: center; color: #646360; font-size: 14px;">
+        <p style="margin-bottom: 15px;">Happy gaming,<br><strong>The DeepDame Team</strong></p>
+
+        <p style="font-size: 12px; margin-bottom: 15px;">© 2026 DeepDame. All rights reserved.</p>
+
+        <div class="footer-links" style="margin-top: 15px;">
+            <a href="#" style="color: #de5c56; text-decoration: none; margin: 0 10px;">Privacy</a> |
+            <a href="#" style="color: #de5c56; text-decoration: none; margin: 0 10px;">Terms</a> |
+            <a href="#" style="color: #de5c56; text-decoration: none; margin: 0 10px;">Support</a>
+        </div>
+
+        <p style="margin-top: 15px; font-size: 11px; color: #888;">
+            This is an automated message, please do not reply.
+        </p>
+    </div>
+</div>
+</body>
+</html>

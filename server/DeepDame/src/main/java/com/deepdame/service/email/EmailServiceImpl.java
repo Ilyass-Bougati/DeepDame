@@ -67,4 +67,12 @@ public class EmailServiceImpl implements EmailService {
         context.setVariable("validationCode", validationCode);
         sendEmail(email, "DEEPDAME account password recovery", context, "email/password-forgotten.html");
     }
+
+    @Override
+    @Async
+    public void welcomeEmail(String email, String username) {
+        Context context = new Context();
+        context.setVariable("username", username);
+        sendEmail(email, "Bienvenue sur DeepDame !", context, "email/welcome-email.html");
+    }
 }
