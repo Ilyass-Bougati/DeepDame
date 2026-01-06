@@ -18,7 +18,7 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.deepdame.service.email.EmailService;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,6 +31,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final UsernameService usernameService;
+    private final EmailService emailService;
 
     @Override
     @Caching(put = {
@@ -82,7 +83,7 @@ public class UserServiceImpl implements UserService {
 
         User savedUser = userRepository.save(user);
         usernameService.reserveUsername(savedUser.getUsername());
-
+        emailService.welcomeEmail(savedUser.getEmail(), savedUser.getUsername());
         return userMapper.toDTO(savedUser);
     }
 
