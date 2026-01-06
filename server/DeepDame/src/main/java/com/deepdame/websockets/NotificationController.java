@@ -1,5 +1,6 @@
 package com.deepdame.websockets;
 
+import com.deepdame.exception.WsUnauthorized;
 import com.deepdame.security.CustomUserDetails;
 import com.deepdame.service.friendRequest.FriendRequestService;
 import com.deepdame.service.user.UserService;
@@ -39,10 +40,13 @@ public class NotificationController {
     ) {
         log.debug("Received game invitation for user {}", request.userId());
 
+        if (principal.getUser().getId().equals(request.userId())) {
+            throw new WsUnauthorized("You can only invite yourself");
+        }
+
         // Checking if the two are friends
         if (!userService.areFriends(principal.getUser().getId(), request.userId())) {
-            // TODO : Handle this error
-            return;
+            throw new WsUnauthorized("You can only invite your friends");
         }
 
         // Formulating a response
@@ -62,10 +66,17 @@ public class NotificationController {
     ) {
         log.debug("Sending friend invitation to {}", userId);
 
+        if (principal.getUser().getId().equals(userId)) {
+            throw new WsUnauthorized("You can't invite youself");
+        }
+
         // Checking if the two are friends
-        if (!userService.areFriends(principal.getUser().getId(), userId)) {
-            // TODO : Handle this error
-            return;
+        if (userService.areFriends(principal.getUser().getId(), userId)) {
+            throw new WsUnauthorized("You can't invite your friends");
+        }
+
+        if (friendRequestService.friendRequestExists(principal.getUser().getId(), userId)) {
+            throw new WsUnauthorized("You can't invite this person");
         }
 
         friendRequestService.addFriendRequest(principal.getUser().getId(), userId);

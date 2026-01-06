@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepDame - Friend Invite Test</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #e0e0e0; padding: 20px; display: flex; gap: 20px; }
+        .panel { background: #1e1e1e; padding: 20px; border-radius: 8px; width: 45%; }
+        input, button { padding: 10px; width: 100%; margin-bottom: 10px; box-sizing: border-box; border-radius: 4px; border: 1px solid #333; background: #2c2c2c; color: white; }
+        button { background: #007bff; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #555; cursor: not-allowed; }
+        h3 { margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        #logs { height: 350px; overflow-y: auto; background: #000; padding: 10px; font-family: monospace; font-size: 0.9em; border: 1px solid #333; }
+        .log-entry { margin-bottom: 5px; border-bottom: 1px solid #111; padding-bottom: 2px; }
+        .sent { color: #4caf50; }
+        .received { color: #2196f3; }
+        .error { color: #f44336; }
+        .warn { color: #ff9800; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body>
+
+<div class="panel">
+    <h3>1. Authentication</h3>
+    <input type="text" id="username" placeholder="Username" value="akira">
+    <input type="password" id="password" placeholder="Password" value="password">
+    <button onclick="login()">Login (Establish Session)</button>
+
+    <h3>2. WebSocket Connection</h3>
+    <label for="myUserId">My User ID (For Subscriptions)</label>
+    <input type="text" id="myUserId" placeholder="YOUR UUID e.g. 550e84...">
+
+    <div id="connectionStatus" style="margin-bottom: 10px; color: #777;">Status: Disconnected</div>
+    <button id="btnConnect" onclick="connect()" disabled>Connect WebSocket</button>
+    <button id="btnDisconnect" onclick="disconnect()" disabled>Disconnect</button>
+
+    <h3>3. Send Invitation</h3>
+    <label for="targetUserId">Target User ID (Friend to invite)</label>
+    <input type="text" id="targetUserId" placeholder="TARGET UUID">
+    <button id="btnInvite" onclick="sendInvitation()" disabled>Send Invite</button>
+</div>
+
+<div class="panel">
+    <h3>Console Logs</h3>
+    <div id="logs"></div>
+    <button onclick="document.getElementById('logs').innerHTML=''" style="margin-top: 10px; background: #444;">Clear Logs</button>
+</div>
+
+<script>
+    // --- CONFIGURATION ---
+    const API_BASE = 'http://localhost:8080';
+    const LOGIN_URL = `${API_BASE}/api/v1/auth/login`;
+    const WS_ENDPOINT = `${API_BASE}/ws`;
+    const APP_PREFIX = '/app';
+
+    let stompClient = null;
+
+    function log(message, type = '') {
+        const logs = document.getElementById('logs');
+        const entry = document.createElement('div');
+        entry.className = `log-entry ${type}`;
+        entry.innerText = `[${new Date().toLocaleTimeString()}] ${message}`;
+        logs.appendChild(entry);
+        logs.scrollTop = logs.scrollHeight;
+    }
+
+    // 1. LOGIN logic
+    async function login() {
+        const username = document.getElementById('username').value;
+        const pass = document.getElementById('password').value;
+
+        try {
+            log(`Attempting login to ${LOGIN_URL}...`);
+            const response = await fetch(LOGIN_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: username, password: pass })
+            });
+
+            if (response.ok) {
+                log('Login successful! Session cookie set.', 'sent');
+                document.getElementById('btnConnect').disabled = false;
+            } else {
+                log(`Login failed: ${response.status}`, 'error');
+            }
+        } catch (error) {
+            log(`Login error: ${error}`, 'error');
+        }
+    }
+
+    // 2. CONNECT logic
+    function connect() {
+        // Validate that you actually put your ID in
+        const myId = document.getElementById('myUserId').value.trim();
+        if(!myId) {
+            log("ERROR: Enter 'My User ID' before connecting so we can subscribe.", "error");
+            return;
+        }
+
+        const socket = new SockJS(WS_ENDPOINT);
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function (frame) {
+            log('Connected: ' + frame, 'received');
+            document.getElementById('connectionStatus').innerText = 'Status: Connected';
+            document.getElementById('connectionStatus').style.color = '#4caf50';
+
+            document.getElementById('btnConnect').disabled = true;
+            document.getElementById('btnDisconnect').disabled = false;
+            document.getElementById('btnInvite').disabled = false;
+
+            // --- 1. Subscribe to Notifications (Standard Topic) ---
+            const subPath = `/topic/user/${myId}/friend-request-notifications`;
+            stompClient.subscribe(subPath, function (msg) {
+                log(`NOTIFICATION RECEIVED: ${msg.body}`, 'received');
+            });
+            log(`Subscribed to ${subPath}`, 'sent');
+
+            // --- 2. Subscribe to ERRORS (User Queue) ---
+            // This matches @SendToUser("/queue/errors") in Java
+            const errorPath = '/user/queue/errors';
+            stompClient.subscribe(errorPath, function (msg) {
+                log(`SERVER ERROR: ${msg.body}`, 'error');
+                alert(`Backend Error: ${msg.body}`);
+            });
+            log(`Subscribed to ${errorPath} (Exception Listener)`, 'sent');
+
+        }, function (error) {
+            log('STOMP Error: ' + error, 'error');
+        });
+    }
+
+    function disconnect() {
+        if (stompClient !== null) {
+            stompClient.disconnect();
+        }
+        log("Disconnected", 'error');
+        document.getElementById('btnConnect').disabled = false;
+        document.getElementById('btnDisconnect').disabled = true;
+        document.getElementById('btnInvite').disabled = true;
+        document.getElementById('connectionStatus').innerText = 'Status: Disconnected';
+    }
+
+    // 3. SEND logic
+    function sendInvitation() {
+        const targetId = document.getElementById('targetUserId').value.trim();
+
+        if (!targetId) {
+            log("Please enter a Target UUID", 'error');
+            return;
+        }
+
+        const destination = `${APP_PREFIX}/invite/friend/${targetId}`;
+        log(`Sending invite to: ${destination}`, 'sent');
+        stompClient.send(destination, {}, JSON.stringify({}));
+    }
+</script>
+</body>
+</html>
