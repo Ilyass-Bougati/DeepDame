@@ -25,7 +25,7 @@ class NavbarButton extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min, // Shrink to fit content
           children: [
-            Container(
+            SizedBox(
               height: 39,
               width: 50,
               child: Icon(
