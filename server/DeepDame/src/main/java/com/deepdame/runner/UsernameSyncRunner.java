@@ -29,7 +29,7 @@ public class UsernameSyncRunner implements CommandLineRunner {
     public void run(String... args) {
         redisTemplate.delete(KEY);
 
-        System.out.println("Beginning username synchronization to Redis...");
+        log.info("Beginning username synchronization to Redis...");
         long start = System.currentTimeMillis();
         List<Object> results = redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
             try (Stream<String> usernameStream = userRepository.findAllUsernames()) {
