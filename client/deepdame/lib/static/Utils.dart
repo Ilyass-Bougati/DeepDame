@@ -8,13 +8,19 @@ import 'package:deepdame/prefabs/NavbarButton.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:stomp_dart_client/stomp_dart_client.dart';
 
 PersistCookieJar? persistCookieJar;
 final dio = Dio();
 
 class Utils {
   static User? userDetails;
-  static String API_URL = "http://192.168.1.188:8080/api/v1";
+  static String API = "ilyass-server.taila311b0.ts.net";
+  static String API_URL = "https://$API/api/v1";
+
+  static late StompClient client;
+  static Function(dynamic)? onGeneralChatLoaded;
+
 
   static Widget getNavbar(BuildContext context, int currentIndex) {
     return BottomAppBar(
@@ -194,5 +200,10 @@ class Utils {
 
       throw Exception(errorStringGenerator(e));
     }
+  }
+
+  static void clearCookies(Function() fn) async {
+    await persistCookieJar!.deleteAll();
+    fn();
   }
 }

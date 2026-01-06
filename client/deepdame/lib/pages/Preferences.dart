@@ -1,4 +1,6 @@
+import 'package:deepdame/pages/Landing.dart';
 import 'package:deepdame/prefabs/SubmitButton.dart';
+import 'package:deepdame/requests/EmptyRequest.dart';
 import 'package:deepdame/static/Utils.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -168,7 +170,20 @@ class _preferencesCreateState extends State<Preferences> {
                       Color.fromARGB(255, 216, 157, 143),
                       Color.fromARGB(255, 142, 102, 93),
                       () {
-                        print("button2 test");
+                        Utils.api_postRequest(
+                          EmptyRequest(),
+                          "/auth/logout",
+                          Utils.API_URL,
+                        );
+                        Utils.userDetails = null;
+                        Utils.clearCookies(() {
+                          Utils.client.deactivate();
+                          Navigator.of(context).popUntil((route) => route.isFirst);
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => Landing()),
+                          );
+                        });
                       },
                     ),
                   ],
