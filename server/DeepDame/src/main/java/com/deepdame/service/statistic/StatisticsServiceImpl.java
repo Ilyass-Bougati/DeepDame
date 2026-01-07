@@ -11,6 +11,7 @@ import com.deepdame.listeners.WebSocketPresenceEventListener;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -98,6 +99,7 @@ public class StatisticsServiceImpl implements StatisticsService {
                 .build();
     }
 
+    @Async("taskExecutor")
     public void updateStatsAfterGame(UUID winnerId, UUID loserId) {
         if (winnerId != null) updateOneUser(winnerId, true, false, loserId);
         if (loserId != null) updateOneUser(loserId, false, true, winnerId);
