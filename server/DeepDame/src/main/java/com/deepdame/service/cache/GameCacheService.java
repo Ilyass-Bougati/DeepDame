@@ -32,6 +32,9 @@ public class GameCacheService {
         String key = KEY_GAME + game.getId();
 
         gameTemplate.opsForValue().set(key, game, gameTtlMillis, TimeUnit.MILLISECONDS);
+
+        refreshUserGameTtl(game.getPlayerBlackId());
+        refreshUserGameTtl(game.getPlayerWhiteId());
     }
 
 
@@ -78,7 +81,7 @@ public class GameCacheService {
     // user game stuff
     public void setUserCurrentGame(UUID userId, UUID gameId){
         String key = String.format(KEY_USER_GAME, userId);
-        stringTemplate.opsForValue().set(key, gameId.toString());
+        stringTemplate.opsForValue().set(key, gameId.toString(), gameTtlMillis, TimeUnit.MILLISECONDS);
     }
 
     public UUID getUserCurrentGameId(UUID userId){
@@ -88,11 +91,27 @@ public class GameCacheService {
     }
 
     public boolean isUserPlaying(UUID userId){
-        return stringTemplate.hasKey(String.format(KEY_USER_GAME, userId));
+
+        UUID gameId = getUserCurrentGameId(userId);
+
+        Boolean gameExists = gameTemplate.hasKey(KEY_GAME + gameId);
+
+        if (Boolean.FALSE.equals(gameExists)) {
+            clearUserCurrentGame(userId);
+            removeFromLobby(gameId);
+            return false;
+        }
+        return true;
     }
 
     public void clearUserCurrentGame(UUID userId){
         stringTemplate.delete(String.format(KEY_USER_GAME, userId));
+    }
+
+    private void refreshUserGameTtl(UUID userId) {
+
+        String key = String.format(KEY_USER_GAME, userId);
+        stringTemplate.expire(key, gameTtlMillis, TimeUnit.MILLISECONDS);
     }
 
 
