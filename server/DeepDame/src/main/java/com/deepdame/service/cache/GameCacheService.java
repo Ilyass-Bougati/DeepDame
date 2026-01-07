@@ -56,6 +56,9 @@ public class GameCacheService {
     }
 
     public void removeFromLobby(UUID gameId){
+        if (gameId == null){
+            return;
+        }
         stringTemplate.opsForSet().remove(KEY_LOBBY, gameId.toString());
     }
 
