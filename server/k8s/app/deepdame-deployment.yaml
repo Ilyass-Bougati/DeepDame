@@ -29,3 +29,5 @@ spec:
               value: "mongodb://admin:password@mongo:27017/deepdame?authSource=admin"
             - name: SPRING_DATA_REDIS_URI
               value: "redis"
+            - name: LOKI_URL
+              value: "http://loki:3100/loki/api/v1/push"
