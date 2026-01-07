@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:deepdame/dtos/UserDto.dart';
 import 'package:deepdame/pages/Connect.dart';
+import 'package:deepdame/pages/General.dart';
 import 'package:deepdame/prefabs/SubmitButton.dart';
 import 'package:deepdame/static/Utils.dart';
 import 'package:flutter/material.dart';
@@ -57,32 +58,33 @@ class Landing extends StatelessWidget {
               callback: (StompFrame frame) {
                 if (frame.body != null) {
                   print('Received: ${frame.body!}');
-                  Utils.onGeneralChatLoaded?.call(frame.body);
+                  Utils.onGeneralChatMessage?.call(frame.body);
                 }
               },
             );
             //Subscribing to general-chat
           },
-          onDebugMessage: (callback) => {
-            print('DEBUG ERROR: ${callback}')
-          },
 
-          onStompError: (StompFrame frame) {
-            print('CRITICAL STOMP ERROR: ${frame.body}');
-          },
-          onWebSocketError: (dynamic error) {
-            print('WEBSOCKET ERROR: $error');
-          },
+          // onDebugMessage: (callback) => {
+          //   print('DEBUG ERROR: ${callback}')
+          // },
 
-          onUnhandledFrame: (StompFrame frame) {
-            print('UNHANDLED FRAME: ${frame.command}');
-          },
+          // onStompError: (StompFrame frame) {
+          //   print('CRITICAL STOMP ERROR: ${frame.body}');
+          // },
+          // onWebSocketError: (dynamic error) {
+          //   print('WEBSOCKET ERROR: $error');
+          // },
 
+          // onUnhandledFrame: (StompFrame frame) {
+          //   print('UNHANDLED FRAME: ${frame.command}');
+          // },
           onDisconnect: (frame) => print('Disconnected'),
         ),
       );
 
       Utils.client.activate();
+      Utils.onGeneralChatMessage = General.initOnMessageFunction();
     } catch (e) {}
     Navigator.pop(context);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -170,7 +172,7 @@ class Landing extends StatelessWidget {
                         );
                       },
                     ),
-                    SizedBox(height: 19)
+                    SizedBox(height: 19),
                   ],
                 ),
                 Column(
@@ -198,63 +200,90 @@ class Landing extends StatelessWidget {
       extendBody: true,
       backgroundColor: Color.fromARGB(255, 253, 251, 247),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Stack(
-              alignment: AlignmentDirectional.center,
-              children: [
-                Divider(
-                  height: 20,
-                  thickness: 2,
-                  indent: 20,
-                  endIndent: 20,
-                  color: Color.fromARGB(255, 119, 133, 127),
-                ),
-                Column(
-                  children: [
-                    Text(
-                      "Deep Dame",
-                      style: GoogleFonts.lora(
-                        fontSize: 50,
-                        fontWeight: FontWeight.bold,
-                        color: Color.fromARGB(255, 170, 188, 180),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Stack(
+                alignment: AlignmentDirectional.center,
+                children: [
+                  Divider(
+                    height: 20,
+                    thickness: 2,
+                    indent: 20,
+                    endIndent: 20,
+                    color: Color.fromARGB(255, 119, 133, 127),
+                  ),
+                  Column(
+                    children: [
+                      Text(
+                        "Deep Dame",
+                        style: GoogleFonts.lora(
+                          fontSize: 50,
+                          fontWeight: FontWeight.bold,
+                          color: Color.fromARGB(255, 170, 188, 180),
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 50),
-                  ],
-                ),
-                Column(
-                  children: [
-                    SizedBox(height: 50),
-                    Text(
-                      "Hi, ${Utils.userDetails!.username} !",
-                      style: GoogleFonts.lora(
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold,
-                        color: Color.fromARGB(255, 170, 188, 180),
+                      SizedBox(height: 50),
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      SizedBox(height: 50),
+                      Center(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Align(
+                                alignment: AlignmentGeometry.centerRight,
+                                child: Text(
+                                  "Hi, ",
+                                  style: GoogleFonts.lora(
+                                    fontSize: 25,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color.fromARGB(255, 170, 188, 180),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                "${Utils.userDetails!.username} !",
+                                style: GoogleFonts.lora(
+                                  fontSize: 25,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color.fromARGB(255, 170, 188, 180),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                    ],
+                  ),
+                ],
+              ),
 
-            SvgPicture.asset('assets/vectors/Board.svg'),
-            Submitbutton(
-              "Play Online",
-              Color.fromARGB(255, 232, 208, 153),
-              Color.fromARGB(255, 155, 138, 101),
-              () => print("Load Pvp"),
-            ),
-            SizedBox(height: 10),
-            Submitbutton(
-              "Play vs Ai",
-              Color.fromARGB(255, 216, 157, 143),
-              Color.fromARGB(255, 142, 102, 93),
-              () => print("Load Pve"),
-            ),
-          ],
+              SvgPicture.asset('assets/vectors/Board.svg'),
+              Submitbutton(
+                "Play Online",
+                Color.fromARGB(255, 232, 208, 153),
+                Color.fromARGB(255, 155, 138, 101),
+                () => print("Load Pvp"),
+              ),
+              SizedBox(height: 10),
+              Submitbutton(
+                "Play vs Ai",
+                Color.fromARGB(255, 216, 157, 143),
+                Color.fromARGB(255, 142, 102, 93),
+                () => print("Load Pve"),
+              ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: Utils.getNavbar(context, 0),

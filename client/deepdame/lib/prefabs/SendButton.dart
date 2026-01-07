@@ -47,6 +47,14 @@ class _SendButtonCreateState extends State<SendButton> {
         decoration: BoxDecoration(
           color: _color,
           borderRadius: BorderRadius.circular(50),
+          boxShadow: [
+            BoxShadow(
+              color: const Color.fromARGB(20, 0, 0, 0), // Shadow color
+              spreadRadius: 2, // How much the shadow spreads
+              blurRadius: 10, // Softness of the shadow
+              offset: const Offset(0, 5), // Changes position (dx, dy)
+            ),
+          ],
         ),
         child: child,
       ),

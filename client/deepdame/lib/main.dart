@@ -6,6 +6,7 @@ import 'package:deepdame/pages/Landing.dart';
 import 'package:deepdame/static/Utils.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 
 bool? connected;
@@ -27,9 +28,13 @@ Future<void> initCookies() async {
     print(e);
   }
 
-  runApp(const MyApp());
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]).then((_) {
+    runApp(const MyApp());
+  });
 }
-
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
