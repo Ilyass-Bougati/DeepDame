@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:cookie_jar/cookie_jar.dart';
-import 'package:deepdame/pages/Game.dart';
 import 'package:deepdame/pages/Landing.dart';
 import 'package:deepdame/static/Utils.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
@@ -55,7 +54,7 @@ class MyApp extends StatelessWidget {
       ),
       debugShowCheckedModeBanner: false,
       title: 'Deep Dame',
-      home: Game(),
+      home: Landing(),
     );
   }
 }
