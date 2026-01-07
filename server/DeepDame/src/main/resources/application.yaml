@@ -1,34 +1,119 @@
-#spring:
-#  application:
-#    name: deepdame
-#
-#  datasource:
-#    driver-class-name: org.postgresql.Driver
-#    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/deepdame}
-#    username: ${SPRING_DATASOURCE_USERNAME:postgres}
-#    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
-#    hikari:
-#      connection-test-query: SELECT 1
-#
-#  data:
-#    redis:
-#      host: localhost
-#      port: 6379
-#
-#  cache:
-#    type: redis
-#    redis:
-#      time-to-live: 1800000
-#
-#  jpa:
-#    hibernate:
-#      ddl-auto: update
-#    show-sql: true
-#    open-in-view: true
-#    properties:
-#      hibernate:
-#        format_sql=true:
-#
-#jwt:
-#    access-token-private-key: classpath:certs/private.pem
-#    access-token-public-key: classpath:certs/public.pem
+spring:
+  application:
+    name: deepdame
+
+  mail:
+    properties:
+      mail:
+        smtp:
+          ssl:
+            trust: '*'
+          starttls:
+            enable: 'true'
+            required: 'true'
+          auth: 'true'
+    username: ${SMTP_USERNAME:deepdame.contact@gmail.com}
+    host: ${SMTP_HOST:smtp.gmail.com}
+    password: ${SMTP_PASSWORD:moyp sifr jfch aouj}
+    port: ${SMTP_PORT:587}
+
+  data:
+    redis:
+      lettuce:
+        pool:
+          max-active: '8'
+          enabled: 'true'
+          max-wait: 1ms
+      port: '6379'
+      host: ${SPRING_DATA_REDIS_URI:localhost}
+    mongodb:
+      auto-index-creation: 'true'
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: 'true'
+    show-sql: 'true'
+    open-in-view: 'true'
+
+  datasource:
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/deepdame}
+    driver-class-name: org.postgresql.Driver
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    hikari:
+      connection-test-query: SELECT 1
+
+  mongodb:
+    representation:
+      uuid: standard
+    data:
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://admin:password@localhost:27017/deepdame?authSource=admin}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, prometheus
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http:
+          server:
+            requests: 'true'
+      percentiles:
+        http:
+          server:
+            requests: 0.5, 0.95, 0.99
+
+ai:
+  ollama:
+    model: ${AI_MODEL_NAME:llama3.2}
+    url: ${AI_MODEL_URL:http://localhost:11434/api/generate}
+  gemini:
+    api-key: ${GEMINI_API_KEY}
+    url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=
+  provider: ollama
+
+jwt:
+  access-token-expiration-duration: '2592000'
+  access-token-public-key: classpath:certs/public.pem
+  refresh-token-expiration-duration: '2592000'
+  access-token-private-key: classpath:certs/private.pem
+
+logging:
+  level:
+    org:
+      springframework:
+        web:
+          socket: DEBUG
+        messaging: DEBUG
+    com:
+      deepdame: DEBUG
+
+rate-limiting:
+  capacity: '100'
+  refill-tokens: '50'
+
+springdoc:
+  api-docs:
+    enabled: 'true'
+
+default-admin:
+  email: admin@gmail.com
+  password: admin
+  username: super.admin
+
+game:
+  cache:
+    ttl-in-millis: '300000'
+
+smtp:
+  sending-email: DEEPDAME <${SMTP_USERNAME:email@email.com}>
+
+deepdame:
+  cache:
+    redis:
+      time-to-live: '180000'
