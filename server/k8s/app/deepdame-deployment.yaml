@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deepdame
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: deepdame
+  template:
+    metadata:
+      labels:
+        app: deepdame
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/actuator/prometheus"
+    spec:
+      containers:
+        - name: deepdame
+          image: deepdame
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://postgres:5432/deepdame"
+            - name: SPRING_DATA_MONGODB_URI
+              value: "mongodb://admin:password@mongo:27017/deepdame?authSource=admin"
+            - name: SPRING_DATA_REDIS_URI
+              value: "redis"

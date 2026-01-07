@@ -23,7 +23,7 @@ spec:
             - name: POSTGRES_PASSWORD
               value: postgres
             - name: POSTGRES_DB
-              value: users
+              value: deepdame
           volumeMounts:
             - mountPath: /var/lib/postgresql/data
               name: postgres-storage
