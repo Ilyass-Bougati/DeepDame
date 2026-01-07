@@ -1,7 +1,3 @@
-# DeepDame README
-
----
-
 ### 🟦 DeepDame Client
 
 A cross-platform **mobile client** for the **DeepDame** checkers game, built with **Flutter**.
