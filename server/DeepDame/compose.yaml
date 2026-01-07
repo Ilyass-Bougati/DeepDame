@@ -1,28 +1,28 @@
 services:
-  backend:
-    container_name: deepdame-backend
-    build:
-      context: ../
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/deepdame
-      SPRING_DATA_MONGODB_URI: mongodb://admin:password@mongodb:27017/deepdame?authSource=admin
-      SPRING_DATA_REDIS_HOST: redis
-
-      RSA_PUBLIC_KEY_LOCATION: file:/app/certs/public.pem
-      RSA_PRIVATE_KEY_LOCATION: file:/app/certs/private.pem
-      AI_MODEL_URL: http://ollama:11434/api/generate
-      AI_MODEL_NAME: llama3.2
-    volumes:
-      - ./src/main/resources/certs:/app/certs
-    depends_on:
-      - postgres
-      - mongodb
-      - redis
-      - ollama
-    restart: unless-stopped
+#  backend:
+#    container_name: deepdame-backend
+#    build:
+#      context: ../
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8080:8080"
+#    environment:
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/deepdame
+#      SPRING_DATA_MONGODB_URI: mongodb://admin:password@mongodb:27017/deepdame?authSource=admin
+#      SPRING_DATA_REDIS_HOST: redis
+#
+#      RSA_PUBLIC_KEY_LOCATION: file:/app/certs/public.pem
+#      RSA_PRIVATE_KEY_LOCATION: file:/app/certs/private.pem
+#      AI_MODEL_URL: http://ollama:11434/api/generate
+#      AI_MODEL_NAME: llama3.2
+#    volumes:
+#      - ./src/main/resources/certs:/app/certs
+#    depends_on:
+#      - postgres
+#      - mongodb
+#      - redis
+##      - ollama
+#    restart: unless-stopped
 
   postgres:
     image: postgres:15-alpine
