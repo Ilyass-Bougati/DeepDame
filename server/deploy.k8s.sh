@@ -8,7 +8,8 @@ git pull origin main
 
 # building the image
 eval $(minikube docker-env)
-docker build -t deepdame .
+
+docker build -t deepdame $APP_DIR
 
 # applying the deployment
-kubectl apply -R -f k8s/
+kubectl apply -R -f $APP_DIR/k8s/
