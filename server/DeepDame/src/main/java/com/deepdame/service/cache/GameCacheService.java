@@ -94,6 +94,10 @@ public class GameCacheService {
 
         UUID gameId = getUserCurrentGameId(userId);
 
+        if (gameId == null) {
+            return false;
+        }
+
         Boolean gameExists = gameTemplate.hasKey(KEY_GAME + gameId);
 
         if (Boolean.FALSE.equals(gameExists)) {
