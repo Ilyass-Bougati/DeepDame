@@ -2,23 +2,80 @@ import 'dart:convert';
 import 'package:chat_bubbles/bubbles/bubble_normal.dart';
 import 'package:deepdame/dtos/MessageDto.dart';
 import 'package:deepdame/prefabs/Input.dart';
+import 'package:deepdame/prefabs/SendButton.dart';
 import 'package:deepdame/static/Utils.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class General extends StatefulWidget {
+  static String _lastUser = "";
+
   const General({super.key});
   @override
   State<StatefulWidget> createState() => _GeneralCreateState();
+
+  static void emptyChatData() {
+    _GeneralCreateState._messages.clear();
+    _GeneralCreateState._messages.add(SizedBox(height: 40));
+    _GeneralCreateState._userColorMap.clear();
+  }
+
+  static Function(dynamic) initOnMessageFunction() {
+    return (json) {
+      var claimMap = jsonDecode(json);
+      _GeneralCreateState._messages.insert(
+        _GeneralCreateState._messages.length - 1,
+        Column(
+          children: [
+            SizedBox(
+              width: double.infinity,
+              child: Align(
+                alignment:
+                    Utils.userDetails!.username == claimMap['user']['username']
+                    ? AlignmentGeometry.centerRight
+                    : Alignment.centerLeft,
+                child: (General._lastUser != claimMap['user']['username']
+                    ? Text(
+                        "${claimMap['user']['username']} :",
+                        style: GoogleFonts.nunito(
+                          color:
+                              _GeneralCreateState._userColorMap.containsKey(
+                                claimMap['user']['username'],
+                              )
+                              ? _GeneralCreateState
+                                    ._userColorMap[claimMap['user']['username']]
+                              : _GeneralCreateState.addNewUserToMap(
+                                  claimMap['user']['username'],
+                                ),
+                        ),
+                      )
+                    : SizedBox()),
+              ),
+            ),
+            BubbleNormal(
+              text: " ${claimMap['message']}",
+              isSender:
+                  Utils.userDetails!.username == claimMap['user']['username'],
+              color: _GeneralCreateState
+                  ._userColorMap[claimMap['user']['username']]!,
+              tail: !(General._lastUser == claimMap['user']['username']),
+              textStyle: GoogleFonts.nunito(color: Colors.white, fontSize: 16),
+            ),
+          ],
+        ),
+      );
+      General._lastUser = claimMap['user']['username'];
+    };
+  }
 }
 
 class _GeneralCreateState extends State<General> {
-  static List<Widget> _Messages = [SizedBox(height: 40)];
-  static Map<String, Color> _userColorMap = {};
+  static final List<Widget> _messages = [SizedBox(height: 40)];
+  static final Map<String, Color> _userColorMap = {};
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _messageInputController = TextEditingController();
 
-  Color addNewUserToMap(String username) {
+  static Color addNewUserToMap(String username) {
     _userColorMap.addAll({
       username: Color.fromARGB(
         255,
@@ -34,53 +91,15 @@ class _GeneralCreateState extends State<General> {
   @override
   void initState() {
     super.initState();
-    Utils.onGeneralChatLoaded = (json) {
+    Utils.onGeneralChatMessage = (json) {
       setState(() {
-        var claimMap = jsonDecode(json);
-        _Messages.insert(
-          _Messages.length - 1,
-          Column(
-            children: [
-              SizedBox(
-                width: double.infinity,
-                child: Align(
-                  alignment:
-                      Utils.userDetails!.username ==
-                          claimMap['user']['username']
-                      ? AlignmentGeometry.centerRight
-                      : Alignment.centerLeft,
-                  child: Text(
-                    "${claimMap['user']['username']} :",
-                    style: GoogleFonts.nunito(
-                      color:
-                          _userColorMap.containsKey(
-                            claimMap['user']['username'],
-                          )
-                          ? _userColorMap[claimMap['user']['username']]
-                          : addNewUserToMap(claimMap['user']['username']),
-                    ),
-                  ),
-                ),
-              ),
-              BubbleNormal(
-                text: " ${claimMap['message']}",
-                isSender:
-                    Utils.userDetails!.username == claimMap['user']['username'],
-                color: _userColorMap[claimMap['user']['username']]!,
-                tail: true,
-                textStyle: GoogleFonts.nunito(
-                  color: Colors.white,
-                  fontSize: 16,
-                ),
-              ),
-            ],
-          ),
-        );
+        General.initOnMessageFunction()(json);
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
           duration: Duration(milliseconds: 300),
           curve: Curves.easeIn,
         );
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
       });
     };
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -93,34 +112,7 @@ class _GeneralCreateState extends State<General> {
   @override
   void dispose() {
     super.dispose();
-    Utils.onGeneralChatLoaded = (json) {
-      var claimMap = jsonDecode(json);
-      _Messages.insert(
-        _Messages.length - 1,
-        Row(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            Text(
-              "${claimMap['user']['username']} :",
-              style: GoogleFonts.nunito(
-                color: _userColorMap.containsKey(claimMap['user']['username'])
-                    ? _userColorMap[claimMap['user']['username']]
-                    : addNewUserToMap(claimMap['user']['username']),
-              ),
-            ),
-            Expanded(
-              child: Text(
-                softWrap: true,
-                " ${claimMap['message']}",
-                style: GoogleFonts.nunito(
-                  color: _userColorMap[claimMap['user']['username']],
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    };
+    Utils.onGeneralChatMessage = General.initOnMessageFunction();
   }
 
   @override
@@ -162,7 +154,7 @@ class _GeneralCreateState extends State<General> {
                 width: double.infinity,
                 child: SingleChildScrollView(
                   controller: _scrollController,
-                  child: Column(children: _Messages),
+                  child: Column(children: _messages),
                 ),
               ),
             ),
@@ -170,17 +162,24 @@ class _GeneralCreateState extends State<General> {
           Align(
             alignment: AlignmentGeometry.bottomCenter,
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              decoration: BoxDecoration(
-                color: Color.fromARGB(255, 253, 251, 247),
-              ),
+              decoration: BoxDecoration(),
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               child: SizedBox(
                 width: double.infinity,
                 child: Row(
                   children: [
-                    SizedBox(
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
                       width: MediaQuery.of(context).size.width - 80,
-                      child: Input(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Color.fromARGB(255, 170, 188, 180),
+                          width: 2.0,
+                        ),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      child: Input.noBorder(
                         "message",
                         TextInputType.multiline,
                         _messageInputController,
@@ -189,9 +188,9 @@ class _GeneralCreateState extends State<General> {
                       ),
                     ),
                     SizedBox(width: 10),
-                    //TODO: Make your own simple send button prefab
-                    InkWell(
-                      onTap: () {
+                    SendButton(
+                      Icon(Icons.send, color: Colors.white),
+                      () {
                         String json = jsonEncode(
                           MessageDTO(_messageInputController.text).toJson(),
                         );
@@ -202,12 +201,8 @@ class _GeneralCreateState extends State<General> {
                         );
                         _messageInputController.text = "";
                       },
-                      borderRadius: BorderRadius.circular(50),
-                      child: SizedBox(
-                        height: 50,
-                        width: 50,
-                        child: Icon(Icons.send),
-                      ),
+                      Color.fromARGB(255, 170, 188, 180),
+                      Color.fromARGB(255, 108, 121, 115),
                     ),
                   ],
                 ),

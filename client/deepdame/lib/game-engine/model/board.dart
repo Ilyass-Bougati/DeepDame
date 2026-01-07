@@ -4,14 +4,11 @@ import 'position.dart';
 
 class Board {
   static const int size = 8;
-  
+
   late final List<List<Piece?>> grid;
 
   Board() {
-    grid = List.generate(
-      size, 
-      (_) => List<Piece?>.filled(size, null),
-    );
+    grid = List.generate(size, (_) => List<Piece?>.filled(size, null));
     _initializeBoard();
   }
 
@@ -54,10 +51,10 @@ class Board {
     return grid;
   }
 
-  // Debug printing
-  void printBoard() {
+  @override
+  String toString() {
+    var lineBuffer = StringBuffer();
     for (int i = 0; i < size; i++) {
-      var lineBuffer = StringBuffer();
       for (int j = 0; j < size; j++) {
         Piece? p = grid[i][j];
         if (p == null) {
@@ -68,7 +65,13 @@ class Board {
           lineBuffer.write(p.isKing ? "W " : "w ");
         }
       }
-      print(lineBuffer.toString());
+      lineBuffer.write("\n");
     }
+    return lineBuffer.toString();
+  }
+
+  // Debug printing
+  void printBoard() {
+    print(toString());
   }
 }

@@ -1,3 +1,4 @@
+import 'package:deepdame/pages/General.dart';
 import 'package:deepdame/pages/Landing.dart';
 import 'package:deepdame/prefabs/SubmitButton.dart';
 import 'package:deepdame/requests/EmptyRequest.dart';
@@ -58,14 +59,19 @@ class _preferencesCreateState extends State<Preferences> {
                     child: SizedBox(height: 80, width: 80),
                   ),
                   SizedBox(width: 30),
-                  Text(
-                    Utils.userDetails!.username!,
-                    style: GoogleFonts.lora(
-                      decoration: TextDecoration.underline,
-                      decorationColor: Color.fromARGB(255, 170, 188, 180),
-                      color: Color.fromARGB(255, 170, 188, 180),
-                      fontSize: 40,
-                      fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: Text(
+                      softWrap: false,
+                      maxLines: 1,
+                      overflow: TextOverflow.clip,
+                      Utils.userDetails!.username!,
+                      style: GoogleFonts.lora(
+                        decoration: TextDecoration.underline,
+                        decorationColor: Color.fromARGB(255, 170, 188, 180),
+                        color: Color.fromARGB(255, 170, 188, 180),
+                        fontSize: 40,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
@@ -178,7 +184,10 @@ class _preferencesCreateState extends State<Preferences> {
                         Utils.userDetails = null;
                         Utils.clearCookies(() {
                           Utils.client.deactivate();
-                          Navigator.of(context).popUntil((route) => route.isFirst);
+                          General.emptyChatData();
+                          Navigator.of(
+                            context,
+                          ).popUntil((route) => route.isFirst);
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(builder: (context) => Landing()),
