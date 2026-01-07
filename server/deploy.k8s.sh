@@ -1,5 +1,8 @@
 #!/usr/bin/bash
 
+APP_DIR=/home/ilyass/DeepDame/server/
+cd $APP_DIR
+
 # pulling main
 git pull origin main
 
