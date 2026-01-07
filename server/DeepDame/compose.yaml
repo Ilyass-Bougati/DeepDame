@@ -13,12 +13,15 @@ services:
 
       RSA_PUBLIC_KEY_LOCATION: file:/app/certs/public.pem
       RSA_PRIVATE_KEY_LOCATION: file:/app/certs/private.pem
+      AI_MODEL_URL: http://ollama:11434/api/generate
+      AI_MODEL_NAME: llama3.2
     volumes:
       - ./src/main/resources/certs:/app/certs
     depends_on:
       - postgres
       - mongodb
       - redis
+      - ollama
     restart: unless-stopped
 
   postgres:
@@ -72,6 +75,32 @@ services:
       timeout: 3s
       retries: 5
 
+#  ollama:
+#    image: ollama/ollama:latest
+#    container_name: deepdame-ai
+#    ports:
+#      - "11434:11434"
+#    environment:
+#      - OLLAMA_HOST=0.0.0.0
+#      #This allows 4 requests to be processed at the same exact time
+#      - OLLAMA_NUM_PARALLEL=4
+#      - OLLAMA_MAX_QUEUE=8
+#      - OLLAMA_KEEP_ALIVE=24h
+#    volumes:
+#      - ollama_data:/root/.ollama
+#      - ./ollama-entrypoint.sh:/entrypoint.sh
+#    entrypoint: [ "/usr/bin/bash", "/entrypoint.sh" ]
+#    # Enable GPU support if you have an NVIDIA card (Uncomment below)
+#    # deploy:
+#    #   resources:
+#    #     reservations:
+#    #       devices:
+#    #         - driver: nvidia
+#    #           count: 1
+#    #           capabilities: [gpu]
+#    restart: unless-stopped
+
 volumes:
   postgres_data:
   mongo_data:
+#  ollama_data:
