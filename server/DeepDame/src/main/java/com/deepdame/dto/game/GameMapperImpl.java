@@ -1,6 +1,6 @@
 package com.deepdame.dto.game;
 
-import com.deepdame.entity.GameDocument;
+import com.deepdame.entity.mongo.GameDocument;
 import org.springframework.stereotype.Component;
 
 @Component

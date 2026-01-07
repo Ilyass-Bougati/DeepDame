@@ -1,7 +1,7 @@
 package com.deepdame.config;
 
 import com.deepdame.engine.core.model.GameState;
-import com.deepdame.entity.GameDocument;
+import com.deepdame.entity.mongo.GameDocument;
 import com.deepdame.enums.GameMode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

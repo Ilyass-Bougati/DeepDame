@@ -60,3 +60,14 @@ If the project looks red or classes are missing, IntelliJ might not recognize th
 
 ## Documentations
 For the **RESTful** APIs you can use Swagger to sift through the route, that's on `/swagger-ui/index.html`
+
+# K8s
+before deploying the application using k8s. You'll need to build the docker image, while on the `/server` directory run the ccommand
+```bash
+eval $(minikube docker-env)
+docker build -t deepdame .
+```
+Then to run the project
+```bash
+kubectl apply -R -f k8s/
+```

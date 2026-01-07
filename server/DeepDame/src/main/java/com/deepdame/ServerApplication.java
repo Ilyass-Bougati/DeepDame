@@ -1,5 +1,9 @@
 package com.deepdame;
 
+import com.deepdame.properties.DefaultAdminRunnerProperties;
+import com.deepdame.properties.JwtProperties;
+import com.deepdame.properties.RateLimitingProperties;
+import com.deepdame.properties.RedisProperties;
 import com.deepdame.properties.*;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -21,5 +25,4 @@ public class ServerApplication {
     public static void main(String[] args) {
         SpringApplication.run(ServerApplication.class, args);
     }
-
 }

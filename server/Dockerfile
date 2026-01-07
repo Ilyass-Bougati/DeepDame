@@ -1,0 +1,27 @@
+FROM maven:3.9-eclipse-temurin-17 AS build
+WORKDIR /app
+
+
+COPY pom.xml .
+
+COPY game-engine/pom.xml game-engine/pom.xml
+COPY DeepDame/pom.xml DeepDame/pom.xml
+
+RUN mvn dependency:go-offline -B
+
+COPY game-engine/src game-engine/src
+COPY DeepDame/src DeepDame/src
+
+RUN mvn clean package -DskipTests
+
+FROM eclipse-temurin:17-jre
+WORKDIR /app
+
+COPY keygen.sh .
+COPY --from=build /app/DeepDame/target/deepdame-backend-1.0.0-SNAPSHOT.jar app.jar
+
+RUN ./keygen.sh
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "app.jar"]

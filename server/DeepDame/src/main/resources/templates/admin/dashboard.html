@@ -6,39 +6,245 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | DeepDame Admin</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <link th:href="@{/css/admin.css}" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
 
     <style>
-        /* Forces vertical stacking to fix the layout issue seen in your previous screenshot */
         body {
             display: block !important;
-            background-color: #f8f9fa;
+            background-color: var(--bg-cream);
         }
+
         .deepdame-container {
             width: 100%;
-            max-width: 1200px;
+            max-width: 1200px; /* Consistent width */
             margin: 0 auto;
         }
+
+        .stat-card {
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(115, 147, 126, 0.15);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--sage-dark);
+            font-weight: 600;
+            opacity: 0.8;
+        }
+
+        .stat-value {
+            font-family: 'Georgia', serif;
+            font-size: 2.2rem;
+            color: var(--sage-dark);
+            font-weight: bold;
+        }
+
+        .text-sage { color: var(--sage-primary) !important; }
+        .text-clay { color: var(--dusty-clay) !important; }
+        .text-gold { color: var(--soft-gold) !important; }
+
+        .border-sage-primary { border-left: 4px solid var(--sage-primary) !important; }
+        .border-sage-dark    { border-left: 4px solid var(--sage-dark) !important; }
+        .border-sage-light   { border-left: 4px solid var(--sage-light) !important; }
     </style>
 </head>
 <body>
 
 <div th:replace="~{admin/fragments/header :: adminHeader}"></div>
 
-<main class="deepdame-container px-4">
-    <div class="mb-4">
-        <h2 style="font-family: 'Georgia', serif; color: #4a5d51; font-weight: bold;">
-            DeepDame Administration Interface
-        </h2>
+<main class="deepdame-container px-4 pb-5">
 
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 style="font-family: 'Georgia', serif; color: var(--sage-dark); font-weight: bold;">
+                Dashboard Overview
+            </h2>
+            <p class="text-muted mb-0">Real-time statistics and platform activity.</p>
+        </div>
     </div>
 
-    <div class="p-5 text-center bg-white rounded shadow-sm border">
-        <h4 style="color: #73937e; font-family: 'Georgia', serif;">DeepDame Data</h4>
-        <p class="text-muted mb-0">The dashboard is ready to display your dynamic statistics.</p>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 mb-4">
+        <div class="col">
+            <div class="stat-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-label mb-1">Total Users</div>
+                        <div class="stat-value" th:text="${stats.totalUsers}">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="stat-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-label mb-1">New Today</div>
+                        <div class="stat-value text-sage" th:text="${stats.newUsersToday}">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="stat-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-label mb-1">Active Accounts</div>
+                        <div class="stat-value" th:text="${stats.activeUsers}">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="stat-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-label mb-1">Banned</div>
+                        <div class="stat-value text-clay" th:text="${stats.bannedUsers}">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
+        <div class="col">
+            <div class="stat-card p-4 h-100 border-sage-primary">
+                <div class="stat-label mb-1">Currently Online</div>
+                <div class="stat-value" th:text="${stats.onlinePlayers}">0</div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="stat-card p-4 h-100 border-sage-dark">
+                <div class="stat-label mb-1">Active Lobbies</div>
+                <div class="stat-value" th:text="${stats.activeLobbyGames}">0</div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="stat-card p-4 h-100 border-sage-light">
+                <div class="stat-label mb-1">Total Games Finished</div>
+                <div class="stat-value" th:text="${stats.totalGamesFinished}">0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="stat-card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 style="font-family: 'Georgia', serif; color: var(--sage-dark); margin:0;">
+                        Game Activity <span class="text-muted" style="font-size: 0.9rem; font-family: 'Segoe UI', sans-serif;">(Last 30 Days)</span>
+                    </h5>
+                </div>
+                <div style="height: 350px; width: 100%;">
+                    <canvas id="gamesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </main>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function() {
+        /*<![CDATA[*/
+
+        const chartLabels = /*[[${stats.chartDays}]]*/ [];
+        const chartData = /*[[${stats.chartCounts}]]*/ [];
+
+        console.log("Chart Dates:", chartLabels);
+        console.log("Chart Counts:", chartData);
+
+        const ctx = document.getElementById('gamesChart').getContext('2d');
+
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(115, 147, 126, 0.5)');
+        gradient.addColorStop(1, 'rgba(115, 147, 126, 0.0)');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Games Finished',
+                    data: chartData,
+                    borderColor: '#73937E',
+                    backgroundColor: gradient,
+                    borderWidth: 2,
+                    pointBackgroundColor: '#5E7A68',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: '#5E7A68',
+                        titleFont: { family: 'Georgia' },
+                        bodyFont: { family: 'Segoe UI' },
+                        padding: 10,
+                        cornerRadius: 8,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.y + ' Games Finished';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        suggestedMax: 5,
+                        grid: {
+                            color: 'rgba(0,0,0,0.05)',
+                            borderDash: [5, 5]
+                        },
+                        ticks: {
+                            precision: 0,
+                            font: { family: 'Segoe UI' },
+                            color: '#73937E'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            maxTicksLimit: 10,
+                            font: { family: 'Segoe UI' },
+                            color: '#73937E'
+                        }
+                    }
+                }
+            }
+        });
+        /*]]>*/
+    });
+</script>
 </body>
 </html>

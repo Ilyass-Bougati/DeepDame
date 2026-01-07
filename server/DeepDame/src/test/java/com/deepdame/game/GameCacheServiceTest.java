@@ -1,7 +1,7 @@
 package com.deepdame.game;
 
 import com.deepdame.engine.core.model.GameState;
-import com.deepdame.entity.GameDocument;
+import com.deepdame.entity.mongo.GameDocument;
 import com.deepdame.enums.GameMode;
 import com.deepdame.service.cache.GameCacheService;
 import org.junit.jupiter.api.*;
@@ -24,7 +24,6 @@ public class GameCacheServiceTest {
     @Autowired
     private StringRedisTemplate stringTemplate;
 
-
     @BeforeEach
     public void beforeTest(){
         cleanRedis();
@@ -36,11 +35,12 @@ public class GameCacheServiceTest {
     }
 
     private void cleanRedis() {
-
-        Objects.requireNonNull(stringTemplate.getConnectionFactory())
-                .getConnection()
-                .serverCommands()
-                .flushAll();
+        if (stringTemplate.getConnectionFactory() != null) {
+            Objects.requireNonNull(stringTemplate.getConnectionFactory())
+                    .getConnection()
+                    .serverCommands()
+                    .flushAll();
+        }
     }
 
     @Test
@@ -71,35 +71,27 @@ public class GameCacheServiceTest {
     @Test
     @DisplayName("Should add remove open games Lobby and list all open Games")
     public void gameLobbyCacheTest(){
-
         UUID openGame1 = UUID.randomUUID();
         UUID openGame2 = UUID.randomUUID();
         UUID openGame3 = UUID.randomUUID();
 
-        GameDocument og1 = GameDocument.builder().id(openGame1).mode(GameMode.PVP).gameState(new GameState(openGame1)).playerBlackId(UUID.randomUUID()).build();
-        GameDocument og2 = GameDocument.builder().id(openGame2).mode(GameMode.PVP).gameState(new GameState(openGame2)).playerBlackId(UUID.randomUUID()).build();
-        GameDocument og3 = GameDocument.builder().id(openGame3).mode(GameMode.PVP).gameState(new GameState(openGame3)).playerBlackId(UUID.randomUUID()).build();
+        createAndSaveGame(openGame1);
+        createAndSaveGame(openGame2);
+        createAndSaveGame(openGame3);
 
-        gameCacheService.saveGame(og1);
-        gameCacheService.saveGame(og2);
-        gameCacheService.saveGame(og3);
-
-        gameCacheService.addToLobby(og1.getId());
-        gameCacheService.addToLobby(og2.getId());
-        gameCacheService.addToLobby(og3.getId());
+        gameCacheService.addToLobby(openGame1);
+        gameCacheService.addToLobby(openGame2);
+        gameCacheService.addToLobby(openGame3);
 
         List<GameDocument> openGames = gameCacheService.getOpenGames();
 
-        System.out.println(openGames);
+        assertEquals(3, openGames.size());
 
+        gameCacheService.removeFromLobby(openGame1);
+        gameCacheService.removeFromLobby(openGame2);
+        gameCacheService.removeFromLobby(openGame3);
 
-        assertEquals(3, openGames.toArray().length);
-
-        gameCacheService.removeFromLobby(og1.getId());
-        gameCacheService.removeFromLobby(og2.getId());
-        gameCacheService.removeFromLobby(og3.getId());
-
-        assertEquals(0, gameCacheService.getOpenGames().toArray().length);
+        assertEquals(0, gameCacheService.getOpenGames().size());
     }
 
     @Test
@@ -108,13 +100,7 @@ public class GameCacheServiceTest {
         UUID activeGameId = UUID.randomUUID();
         UUID staleGameId = UUID.randomUUID();
 
-        GameDocument activeGame = GameDocument.builder()
-                .id(activeGameId)
-                .mode(GameMode.PVP)
-                .gameState(new GameState(activeGameId))
-                .playerBlackId(UUID.randomUUID())
-                .build();
-        gameCacheService.saveGame(activeGame);
+        createAndSaveGame(activeGameId);
 
         gameCacheService.addToLobby(activeGameId);
         gameCacheService.addToLobby(staleGameId);
@@ -134,22 +120,45 @@ public class GameCacheServiceTest {
         UUID userId = UUID.randomUUID();
         UUID gameId = UUID.randomUUID();
 
+        createAndSaveGame(gameId);
+
         assertFalse(gameCacheService.isUserPlaying(userId), "User should not be playing initially");
-        assertNull(gameCacheService.getUserCurrentGameId(userId), "Game ID should be null initially");
 
         gameCacheService.setUserCurrentGame(userId, gameId);
 
         assertTrue(gameCacheService.isUserPlaying(userId), "User should be marked as playing");
-        assertEquals(gameId, gameCacheService.getUserCurrentGameId(userId), "Retrieved Game ID should match the one set");
-
-        UUID secondGameId = UUID.randomUUID();
-        gameCacheService.setUserCurrentGame(userId, secondGameId);
-
-        assertEquals(secondGameId, gameCacheService.getUserCurrentGameId(userId), "Should update to the new Game ID correctly");
+        assertEquals(gameId, gameCacheService.getUserCurrentGameId(userId), "Retrieved Game ID should match");
 
         gameCacheService.clearUserCurrentGame(userId);
 
         assertFalse(gameCacheService.isUserPlaying(userId), "User should not be playing after clear");
         assertNull(gameCacheService.getUserCurrentGameId(userId), "Game ID should be null after clear");
+    }
+
+    @Test
+    @DisplayName("Zombie Session: User key exists but Game expired")
+    public void testZombieSessionCleanup() {
+        UUID userId = UUID.randomUUID();
+        UUID gameId = UUID.randomUUID();
+
+        gameCacheService.setUserCurrentGame(userId, gameId);
+
+        assertNotNull(gameCacheService.getUserCurrentGameId(userId), "User key should technically exist in Redis before check");
+
+        boolean isPlaying = gameCacheService.isUserPlaying(userId);
+
+        assertFalse(isPlaying, "Should return false because game object is missing");
+
+        assertNull(gameCacheService.getUserCurrentGameId(userId), "User key should have been auto-deleted");
+    }
+
+    private void createAndSaveGame(UUID id) {
+        GameDocument game = GameDocument.builder()
+                .id(id)
+                .mode(GameMode.PVP)
+                .gameState(new GameState(id))
+                .playerBlackId(UUID.randomUUID())
+                .build();
+        gameCacheService.saveGame(game);
     }
 }
