@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:chat_bubbles/bubbles/bubble_normal.dart';
 import 'package:deepdame/dtos/MessageDto.dart';
 import 'package:deepdame/prefabs/Input.dart';
+import 'package:deepdame/prefabs/SendButton.dart';
 import 'package:deepdame/static/Utils.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -189,9 +190,9 @@ class _GeneralCreateState extends State<General> {
                       ),
                     ),
                     SizedBox(width: 10),
-                    //TODO: Make your own simple send button prefab
-                    InkWell(
-                      onTap: () {
+                    SendButton(
+                      Icon(Icons.send, color: Colors.white),
+                      () {
                         String json = jsonEncode(
                           MessageDTO(_messageInputController.text).toJson(),
                         );
@@ -202,12 +203,8 @@ class _GeneralCreateState extends State<General> {
                         );
                         _messageInputController.text = "";
                       },
-                      borderRadius: BorderRadius.circular(50),
-                      child: SizedBox(
-                        height: 50,
-                        width: 50,
-                        child: Icon(Icons.send),
-                      ),
+                      Color.fromARGB(255, 170, 188, 180),
+                      Color.fromARGB(255, 108, 121, 115),
                     ),
                   ],
                 ),

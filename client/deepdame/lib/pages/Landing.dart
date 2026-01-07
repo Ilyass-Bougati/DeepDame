@@ -170,6 +170,7 @@ class Landing extends StatelessWidget {
                         );
                       },
                     ),
+                    SizedBox(height: 19)
                   ],
                 ),
                 Column(
