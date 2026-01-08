@@ -22,22 +22,22 @@ class Utils {
   static String API_URL = "https://$API/api/v1";
 
   static late StompClient client;
-  static Function(dynamic)? onGeneralChatLoaded;
+  static Function(dynamic)? onGeneralChatMessage;
 
   static String getJavaDate() {
-  DateTime now = DateTime.now();
-  
-  // 1. Get the default Dart string (e.g., "2026-01-06 14:52:20.763456")
-  // Note: toString() uses a space, unlike toIso8601String() which uses 'T'
-  String raw = now.toString();
+    DateTime now = DateTime.now();
 
-  // 2. Check if we have microseconds (ends with 6 digits) and truncate to 3
-  if (raw.length > 23) {
-    return raw.substring(0, 23); // Keep "yyyy-MM-dd HH:mm:ss.SSS"
+    // 1. Get the default Dart string (e.g., "2026-01-06 14:52:20.763456")
+    // Note: toString() uses a space, unlike toIso8601String() which uses 'T'
+    String raw = now.toString();
+
+    // 2. Check if we have microseconds (ends with 6 digits) and truncate to 3
+    if (raw.length > 23) {
+      return raw.substring(0, 23); // Keep "yyyy-MM-dd HH:mm:ss.SSS"
+    }
+
+    return raw;
   }
-  
-  return raw;
-}
 
   static Widget getNavbar(BuildContext context, int currentIndex) {
     return BottomAppBar(

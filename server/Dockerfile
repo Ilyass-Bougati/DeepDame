@@ -17,7 +17,10 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:17-jre
 WORKDIR /app
 
+COPY keygen.sh .
 COPY --from=build /app/DeepDame/target/deepdame-backend-1.0.0-SNAPSHOT.jar app.jar
+
+RUN ./keygen.sh
 
 EXPOSE 8080
 

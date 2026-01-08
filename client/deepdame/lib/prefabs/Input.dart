@@ -10,6 +10,7 @@ class Input extends StatefulWidget {
   final bool Function() verification;
   Future<bool> Function()? onLostFocus;
   String? onLostFocusErrorMessage;
+  bool noBorder = false;
 
   final String errorMessage;
 
@@ -33,6 +34,16 @@ class Input extends StatefulWidget {
     super.key,
   });
 
+  Input.noBorder(
+    this.placeholder,
+    this.type,
+    this.controller,
+    this.errorMessage,
+    this.verification,
+  ) {
+    noBorder = true;
+  }
+
   @override
   State<Input> createState() => _createState(
     placeholder: placeholder,
@@ -42,6 +53,7 @@ class Input extends StatefulWidget {
     errorMessage: errorMessage,
     onLostFocus: this.onLostFocus,
     onLostFocusErrorMessage: this.onLostFocusErrorMessage,
+    noBorder: noBorder,
   );
 }
 
@@ -52,6 +64,7 @@ class _createState extends State<Input> {
   final bool Function() verification;
   Future<bool> Function()? onLostFocus;
   String? onLostFocusErrorMessage;
+  bool noBorder;
 
   //The String passed through the constructor ,
   //it is a constant and should hold the value of the text only
@@ -68,10 +81,13 @@ class _createState extends State<Input> {
     required this.errorMessage,
     this.onLostFocus,
     this.onLostFocusErrorMessage,
+    required this.noBorder,
   });
 
   @override
-  Widget build(BuildContext context) => onLostFocus == null ? buildFocusUnnecessary(context) : buildFocusNecessary(context);
+  Widget build(BuildContext context) => onLostFocus == null
+      ? buildFocusUnnecessary(context)
+      : buildFocusNecessary(context);
 
   Widget buildFocusUnnecessary(BuildContext context) {
     return TextField(
@@ -106,7 +122,7 @@ class _createState extends State<Input> {
 
         enabledBorder: UnderlineInputBorder(
           borderSide: BorderSide(
-            color: Color.fromARGB(255, 170, 188, 180),
+            color: Color.fromARGB(!noBorder ? 255 : 0, 170, 188, 180),
             strokeAlign: BorderSide.strokeAlignOutside,
             width: 2.0,
           ),
@@ -114,7 +130,7 @@ class _createState extends State<Input> {
 
         focusedBorder: UnderlineInputBorder(
           borderSide: BorderSide(
-            color: Color.fromARGB(255, 123, 152, 166),
+            color: Color.fromARGB(!noBorder ? 255 : 0, 123, 152, 166),
             strokeAlign: BorderSide.strokeAlignOutside,
             width: 3.0,
           ),
@@ -124,7 +140,6 @@ class _createState extends State<Input> {
   }
 
   Widget buildFocusNecessary(BuildContext context) {
-    
     return Focus(
       onFocusChange: (focus) async {
         if (!focus && _errorMessage == null) {
@@ -171,7 +186,7 @@ class _createState extends State<Input> {
 
           enabledBorder: UnderlineInputBorder(
             borderSide: BorderSide(
-              color: Color.fromARGB(255, 170, 188, 180),
+              color: Color.fromARGB(!noBorder ? 255 : 0, 170, 188, 180),
               strokeAlign: BorderSide.strokeAlignOutside,
               width: 2.0,
             ),
@@ -179,7 +194,7 @@ class _createState extends State<Input> {
 
           focusedBorder: UnderlineInputBorder(
             borderSide: BorderSide(
-              color: Color.fromARGB(255, 123, 152, 166),
+              color: Color.fromARGB(!noBorder ? 255 : 0, 123, 152, 166),
               strokeAlign: BorderSide.strokeAlignOutside,
               width: 3.0,
             ),
