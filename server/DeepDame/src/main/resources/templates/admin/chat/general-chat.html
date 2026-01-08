@@ -161,27 +161,43 @@
     }
 
     function appendMessage(msg) {
-        const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-
-        const html = `
-            <div class="message-card" id="message-${msg.id}">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div style="flex: 1;">
-                        <div class="mb-1">
-                            <span class="fw-bold" style="color: #6a994e;">${msg.user.username}</span>
-                            <small class="text-muted ms-2">${time}</small>
-                        </div>
-                        <p class="mb-0 text-dark">${msg.message}</p>
-                    </div>
-                    <div class="admin-actions ms-3 text-end" style="min-width: 120px;">
-                        <button onclick="showModerationModal('${msg.id}', 'chat')" class="btn btn-sm btn-sage mb-1 w-100">Ban Chat</button>
-                        <button onclick="showModerationModal('${msg.id}', 'app')" class="btn btn-sm btn-clay w-100">Ban App</button>
-                    </div>
-                </div>
-            </div>`;
-
         const chatWindow = document.getElementById('chat-window');
-        chatWindow.insertAdjacentHTML('beforeend', html);
+        if (!chatWindow) return;
+
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message-card';
+        messageDiv.id = `message-${msg.id}`;
+        messageDiv.setAttribute('data-message-id', msg.id);
+
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        messageDiv.innerHTML = `
+        <div class="d-flex justify-content-between align-items-start">
+            <div style="flex: 1;">
+                <div class="mb-1">
+                    <span class="fw-bold user-name-label" style="color: #6a994e;"></span>
+                    <small class="text-muted ms-2">${time}</small>
+                </div>
+                <p class="mb-0 text-dark user-message-content"></p>
+            </div>
+            <div class="admin-actions ms-3 text-end" style="min-width: 120px;">
+                <button class="btn btn-sm btn-sage mb-1 w-100 btn-ban-chat">Ban Chat</button>
+                <button class="btn btn-sm btn-clay w-100 btn-ban-app">Ban App</button>
+            </div>
+        </div>
+    `;
+
+        messageDiv.querySelector('.user-name-label').textContent = msg.user.username;
+        messageDiv.querySelector('.user-message-content').textContent = msg.message;
+
+        messageDiv.querySelector('.btn-ban-chat').addEventListener('click', () => {
+            showModerationModal(msg.id, 'chat');
+        });
+        messageDiv.querySelector('.btn-ban-app').addEventListener('click', () => {
+            showModerationModal(msg.id, 'app');
+        });
+
+        chatWindow.appendChild(messageDiv);
         chatWindow.scrollTop = chatWindow.scrollHeight;
     }
 
