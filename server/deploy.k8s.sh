@@ -7,7 +7,7 @@ cd $APP_DIR
 git pull origin main
 
 # renaming logback-spring
-mv /DeepDame/src/main/resources/slogback-spring.xml /DeepDame/src/main/resources/logback-spring.xml
+mv ./DeepDame/src/main/resources/slogback-spring.xml ./DeepDame/src/main/resources/logback-spring.xml
 
 # building the image
 eval $(minikube docker-env)
