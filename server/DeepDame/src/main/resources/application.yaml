@@ -83,6 +83,8 @@ jwt:
   access-token-private-key: classpath:certs/private.pem
 
 logging:
+  pattern:
+    level: "[${spring.application.name:},%X{traceId:-},%X{spanId:-}] "
   level:
     org:
       springframework:
