@@ -129,6 +129,7 @@ public class GameServiceImpl implements GameService{
         }
 
         for (int i = 0; i < 3; i++) {
+
             UUID openGameId = gameCacheService.getRandomOpenGameId();
 
             if (openGameId != null) {
