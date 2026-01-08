@@ -49,7 +49,6 @@ spring:
   mongodb:
     representation:
       uuid: standard
-    data:
     uri: ${SPRING_DATA_MONGODB_URI:mongodb://admin:password@localhost:27017/deepdame?authSource=admin}
 
 management:
