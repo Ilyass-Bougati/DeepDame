@@ -12,6 +12,7 @@ import com.deepdame.service.username.UsernameService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -33,6 +34,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final UsernameService usernameService;
     private final EmailService emailService;
+    private final CacheManager cacheManager;
 
     @Override
     @Caching(put = {
@@ -160,9 +162,10 @@ public class UserServiceImpl implements UserService {
     public void banFromApp(UUID id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
+
         userRepository.updateAppBanStatus(id, true);
-        userRepository.save(user);
-        evictUserCache(user);
+
+        this.manualCacheEvict(user);
     }
 
     @Transactional
@@ -170,10 +173,10 @@ public class UserServiceImpl implements UserService {
     public void unbanFromApp(UUID id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
-        userRepository.updateAppBanStatus(id, false);
-        userRepository.save(user);
-        evictUserCache(user);
 
+        userRepository.updateAppBanStatus(id, false);
+
+        this.manualCacheEvict(user);
     }
 
     @Transactional
@@ -183,8 +186,8 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
         userRepository.updateChatBanStatus(id, true);
-        userRepository.save(user);
-        evictUserCache(user);
+
+        this.manualCacheEvict(user);
     }
 
     @Transactional
@@ -192,15 +195,19 @@ public class UserServiceImpl implements UserService {
     public void unbanFromChat(UUID id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
+
         userRepository.updateChatBanStatus(id, false);
-        userRepository.save(user);
-        evictUserCache(user);
+
+        this.manualCacheEvict(user);
     }
 
-    @Caching(evict = {
-            @CacheEvict(value = "users", key = "#user.id"),
-            @CacheEvict(value = "users", key = "#user.email")
-    })
-    public void evictUserCache(User user) {
+    private void manualCacheEvict(User user) {
+        if (cacheManager != null) {
+            var emailCache = cacheManager.getCache("users.email");
+            var idCache = cacheManager.getCache("users.id");
+
+            if (emailCache != null) emailCache.evict(user.getEmail());
+            if (idCache != null) idCache.evict(user.getId());
+        }
     }
 }
