@@ -134,6 +134,28 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Caching(put = {
+            @CachePut(value = "users.email", key = "#result.email"),
+            @CachePut(value = "users.id", key = "#result.id")
+    })
+    public UserDto changeUsername(UUID id, String newUsername) {
+        // checking if the username is unique
+        if (usernameService.isTaken(newUsername)) {
+            throw new ConflictException("Username already taken");
+        }
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        usernameService.releaseUsername(user.getUsername());
+        user.setUsername(newUsername);
+        userRepository.save(user);
+        usernameService.reserveUsername(newUsername);
+
+        return userMapper.toDTO(user);
+    }
+
+    @Override
     public void delete(UUID uuid) {
         userRepository.deleteById(uuid);
     }

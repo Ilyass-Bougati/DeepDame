@@ -8,7 +8,9 @@ import com.deepdame.security.CustomUserDetails;
 import com.deepdame.service.jwt.TokenService;
 import com.deepdame.service.user.PasswordForgottenService;
 import com.deepdame.service.user.UserService;
+import com.deepdame.service.username.UniqueUsername;
 import com.deepdame.utils.CookieUtils;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -37,10 +39,16 @@ public class UserController {
         return ResponseEntity.ok(principal.getUser());
     }
 
-    @GetMapping("/changepw")
+    @PostMapping("/changepw")
     @ResponseStatus(HttpStatus.OK)
-    public void changePassword(@AuthenticationPrincipal CustomUserDetails principal, @RequestBody ChangePasswordRequest request) {
+    public void changePassword(@AuthenticationPrincipal CustomUserDetails principal, @RequestBody @Valid ChangePasswordRequest request) {
         userService.changePassword(principal.getUser().getId(), request.oldPassword(), request.newPassword());
+    }
+
+    @PostMapping("/change-username")
+    @ResponseStatus(HttpStatus.OK)
+    public void changeUsername(@AuthenticationPrincipal CustomUserDetails principal, @RequestParam String newUsername) {
+        userService.changeUsername(principal.getUser().getId(), newUsername);
     }
 
     @PostMapping("/forgotPassword/")
