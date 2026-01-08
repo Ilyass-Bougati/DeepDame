@@ -2,6 +2,7 @@ package com.deepdame.controller.admin;
 
 import com.deepdame.dto.user.UserDto;
 import com.deepdame.entity.User;
+import com.deepdame.service.statistic.StatisticsService;
 import com.deepdame.service.user.UserEntityService;
 import com.deepdame.service.user.UserService;
 import jakarta.validation.Valid;
@@ -22,8 +23,10 @@ import java.util.UUID;
 @PreAuthorize("hasAnyRole('ADMIN', 'SUPER-ADMIN')")
 @RequiredArgsConstructor
 public class AdminUserController {
+
     private final UserEntityService userEntityService;
     private final UserService userService;
+    private final StatisticsService statisticsService;
 
     @GetMapping
     public String listUsers(@RequestParam(name = "keyword", required = false) String keyword, Model model) {
@@ -38,6 +41,7 @@ public class AdminUserController {
     public String userDetails(Model model, @PathVariable UUID id) {
         User user = userEntityService.findById(id);
         model.addAttribute("user", user);
+        model.addAttribute("stats", statisticsService.getPlayerStats(id));
         return "admin/user/user_details";
     }
 

@@ -84,37 +84,40 @@
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <div class="stat-label mb-1">Total Users</div>
-                        <div class="stat-value" th:text="${stats.totalUsers}">0</div>
+                        <div class="stat-value" id="total-users" th:text="${stats.totalUsers}">0</div>
                     </div>
                 </div>
             </div>
         </div>
+
         <div class="col">
             <div class="stat-card p-4 h-100">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <div class="stat-label mb-1">New Today</div>
-                        <div class="stat-value text-sage" th:text="${stats.newUsersToday}">0</div>
+                        <div class="stat-value text-sage" id="new-users" th:text="${stats.newUsersToday}">0</div>
                     </div>
                 </div>
             </div>
         </div>
+
         <div class="col">
             <div class="stat-card p-4 h-100">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <div class="stat-label mb-1">Active Accounts</div>
-                        <div class="stat-value" th:text="${stats.activeUsers}">0</div>
+                        <div class="stat-value" id="active-users" th:text="${stats.activeUsers}">0</div>
                     </div>
                 </div>
             </div>
         </div>
+
         <div class="col">
             <div class="stat-card p-4 h-100">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <div class="stat-label mb-1">Banned</div>
-                        <div class="stat-value text-clay" th:text="${stats.bannedUsers}">0</div>
+                        <div class="stat-value text-clay" id="banned-users" th:text="${stats.bannedUsers}">0</div>
                     </div>
                 </div>
             </div>
@@ -125,19 +128,21 @@
         <div class="col">
             <div class="stat-card p-4 h-100 border-sage-primary">
                 <div class="stat-label mb-1">Currently Online</div>
-                <div class="stat-value" th:text="${stats.onlinePlayers}">0</div>
+                <div class="stat-value" id="online-players" th:text="${stats.onlinePlayers}">0</div>
             </div>
         </div>
+
         <div class="col">
             <div class="stat-card p-4 h-100 border-sage-dark">
                 <div class="stat-label mb-1">Active Lobbies</div>
-                <div class="stat-value" th:text="${stats.activeLobbyGames}">0</div>
+                <div class="stat-value" id="active-lobbies" th:text="${stats.activeLobbyGames}">0</div>
             </div>
         </div>
+
         <div class="col">
             <div class="stat-card p-4 h-100 border-sage-light">
                 <div class="stat-label mb-1">Total Games Finished</div>
-                <div class="stat-value" th:text="${stats.totalGamesFinished}">0</div>
+                <div class="stat-value" id="total-games" th:text="${stats.totalGamesFinished}">0</div>
             </div>
         </div>
     </div>
@@ -159,38 +164,32 @@
 
 </main>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 
 <script th:inline="javascript">
     document.addEventListener("DOMContentLoaded", function() {
         /*<![CDATA[*/
 
-        const chartLabels = /*[[${stats.chartDays}]]*/ [];
-        const chartData = /*[[${stats.chartCounts}]]*/ [];
-
-        console.log("Chart Dates:", chartLabels);
-        console.log("Chart Counts:", chartData);
+        const initialLabels = /*[[${stats.chartDays}]]*/ [];
+        const initialData = /*[[${stats.chartCounts}]]*/ [];
 
         const ctx = document.getElementById('gamesChart').getContext('2d');
-
         const gradient = ctx.createLinearGradient(0, 0, 0, 400);
         gradient.addColorStop(0, 'rgba(115, 147, 126, 0.5)');
         gradient.addColorStop(1, 'rgba(115, 147, 126, 0.0)');
 
-        new Chart(ctx, {
+        const myChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: chartLabels,
+                labels: initialLabels,
                 datasets: [{
                     label: 'Games Finished',
-                    data: chartData,
+                    data: initialData,
                     borderColor: '#73937E',
                     backgroundColor: gradient,
                     borderWidth: 2,
                     pointBackgroundColor: '#5E7A68',
-                    pointBorderColor: '#ffffff',
-                    pointBorderWidth: 2,
-                    pointRadius: 5,
-                    pointHoverRadius: 7,
                     fill: true,
                     tension: 0.3
                 }]
@@ -198,51 +197,59 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        backgroundColor: '#5E7A68',
-                        titleFont: { family: 'Georgia' },
-                        bodyFont: { family: 'Segoe UI' },
-                        padding: 10,
-                        cornerRadius: 8,
-                        displayColors: false,
-                        callbacks: {
-                            label: function(context) {
-                                return context.parsed.y + ' Games Finished';
-                            }
-                        }
-                    }
-                },
+                animation: false,
+                plugins: { legend: { display: false } },
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        suggestedMax: 5,
-                        grid: {
-                            color: 'rgba(0,0,0,0.05)',
-                            borderDash: [5, 5]
-                        },
-                        ticks: {
-                            precision: 0,
-                            font: { family: 'Segoe UI' },
-                            color: '#73937E'
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        },
-                        ticks: {
-                            maxTicksLimit: 10,
-                            font: { family: 'Segoe UI' },
-                            color: '#73937E'
-                        }
-                    }
+                    y: { beginAtZero: true, suggestedMax: 5, ticks: { precision: 0 } },
+                    x: { grid: { display: false }, ticks: { maxTicksLimit: 10 } }
                 }
             }
         });
+
+        function connect() {
+            var socket = new SockJS('/ws');
+            var stompClient = Stomp.over(socket);
+
+            stompClient.debug = null;
+
+            stompClient.connect({}, function (frame) {
+                console.log('Connected to Admin Dashboard Stats');
+
+                stompClient.subscribe('/topic/admin/stats', function (message) {
+
+                    const data = JSON.parse(message.body);
+                    updateDashboard(data);
+
+                });
+            }, function(error) {
+                console.error('WebSocket Error:', error);
+                setTimeout(connect, 5000);
+            });
+        }
+
+        function updateDashboard(data) {
+            updateText('total-users', data.totalUsers);
+            updateText('new-users', data.newUsersToday);
+            updateText('active-users', data.activeUsers);
+            updateText('banned-users', data.bannedUsers);
+            updateText('online-players', data.onlinePlayers);
+            updateText('active-lobbies', data.activeLobbyGames);
+            updateText('total-games', data.totalGamesFinished);
+
+            if (JSON.stringify(myChart.data.datasets[0].data) !== JSON.stringify(data.chartCounts)) {
+                myChart.data.labels = data.chartDays;
+                myChart.data.datasets[0].data = data.chartCounts;
+                myChart.update();
+            }
+        }
+
+        function updateText(id, value) {
+            const el = document.getElementById(id);
+            if(el) el.textContent = value;
+        }
+
+        connect();
+
         /*]]>*/
     });
 </script>
