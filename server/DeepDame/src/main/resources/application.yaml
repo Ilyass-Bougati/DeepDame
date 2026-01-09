@@ -101,8 +101,8 @@ logging:
       deepdame: DEBUG
 
 rate-limiting:
-  capacity: '100'
-  refill-tokens: '50'
+  capacity: '10000000'
+  refill-tokens: '5000000'
 
 springdoc:
   api-docs:
