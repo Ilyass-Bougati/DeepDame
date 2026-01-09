@@ -3,10 +3,12 @@ package com.deepdame.service.user;
 import com.deepdame.dto.user.RegisterRequest;
 import com.deepdame.dto.user.UserDto;
 import com.deepdame.dto.user.UserMapper;
+import com.deepdame.entity.Role;
 import com.deepdame.entity.User;
 import com.deepdame.exception.ConflictException;
 import com.deepdame.exception.NotFoundException;
 import com.deepdame.exception.Unauthorized;
+import com.deepdame.repository.RoleRepository;
 import com.deepdame.repository.UserRepository;
 import com.deepdame.service.username.UsernameService;
 import jakarta.persistence.EntityNotFoundException;
@@ -17,11 +19,15 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.deepdame.service.email.EmailService;
+
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -35,6 +41,7 @@ public class UserServiceImpl implements UserService {
     private final UsernameService usernameService;
     private final EmailService emailService;
     private final CacheManager cacheManager;
+    private final RoleRepository roleRepository;
 
     @Override
     @Caching(put = {
@@ -209,5 +216,29 @@ public class UserServiceImpl implements UserService {
             if (emailCache != null) emailCache.evict(user.getEmail());
             if (idCache != null) idCache.evict(user.getId());
         }
+    }
+
+    @Override
+    @Transactional
+    public void updateUserRoles(UUID userId, List<UUID> roleIds) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        Set<Role> newRoles = new HashSet<>(roleRepository.findAllById(roleIds));
+        boolean hasSuperBefore = user.getRoles().stream()
+                .anyMatch(r -> r.getName().equals("SUPER-ADMIN"));
+        boolean wantsSuperNow = newRoles.stream()
+                .anyMatch(r -> r.getName().equals("SUPER-ADMIN"));
+
+        if (!hasSuperBefore && wantsSuperNow) {
+            throw new IllegalStateException("Security Violation: The SUPER-ADMIN role cannot be granted to new users.");
+        }
+
+        if (hasSuperBefore && !wantsSuperNow) {
+            throw new IllegalStateException("System Integrity: The SUPER-ADMIN role is permanent and cannot be revoked.");
+        }
+
+        user.setRoles(newRoles);
+        userRepository.save(user);
     }
 }
