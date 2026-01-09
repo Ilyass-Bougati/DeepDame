@@ -14,4 +14,6 @@ eval $(minikube docker-env)
 docker build -t deepdame .
 
 # applying the deployment
-kubectl apply -R -f k8s/app/ k8s/cache/ k8s/db/ 
+kubectl apply -R -f k8s/app/
+kubectl apply -R -f k8s/cache/
+kubectl apply -R -f k8s/db/ 

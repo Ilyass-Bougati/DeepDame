@@ -1,11 +1,13 @@
 package com.deepdame.websockets;
 
 import com.deepdame.dto.game.GameDto;
+import com.deepdame.dto.game.GameMoveMessageDto;
 import com.deepdame.dto.user.UserDto;
 import com.deepdame.engine.core.model.Move;
 import com.deepdame.enums.GameMode;
 import com.deepdame.exception.WsUnauthorized;
 import com.deepdame.security.CustomUserDetails;
+import com.deepdame.service.cache.RedisNotificationService;
 import com.deepdame.service.game.GameService;
 import com.deepdame.service.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,7 @@ public class GameSocketController {
     private final GameService gameService;
     private final UserService userService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final RedisNotificationService redisNotificationService;
 
     @MessageMapping("/game/create")
     public void createGame(@AuthenticationPrincipal CustomUserDetails user, @Payload GameMode gameMode){
@@ -107,7 +110,8 @@ public class GameSocketController {
 
         GameDto game = gameService.makeMove(gameId, playerId, move);
 
-        messagingTemplate.convertAndSend("/topic/game/" + gameId, move);
+//        messagingTemplate.convertAndSend("/topic/game/" + gameId, move);
+        redisNotificationService.sendMessage(GameMoveMessageDto.builder().gameId(gameId).move(move).build(), "game-updates");
 
         if (game.getMode() == GameMode.PVE){
             broadcastAiMove(game, move);

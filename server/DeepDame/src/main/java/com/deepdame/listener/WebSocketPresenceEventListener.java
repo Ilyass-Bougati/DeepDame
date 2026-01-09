@@ -1,6 +1,5 @@
-package com.deepdame.listeners;
+package com.deepdame.listener;
 
-import com.deepdame.dto.game.GameDto;
 import com.deepdame.entity.mongo.GameDocument;
 import com.deepdame.security.CustomUserDetails;
 import com.deepdame.service.cache.GameCacheService;
