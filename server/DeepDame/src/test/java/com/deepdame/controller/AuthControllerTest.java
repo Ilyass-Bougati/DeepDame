@@ -93,7 +93,7 @@ public class AuthControllerTest {
     @Test
     void shouldLoginSuccessfully() throws Exception {
         RegisterRequest request = new RegisterRequest(
-                "login.test.user",
+                "login.test.sender",
                 "login.test@example.com",
                 "password123"
         );

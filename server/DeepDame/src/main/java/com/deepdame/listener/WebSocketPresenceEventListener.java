@@ -69,7 +69,7 @@ public class WebSocketPresenceEventListener {
                 }
             }
         } catch (Exception e) {
-            log.trace("Auto-surrender skipped for user {}: {}", userId, e.getMessage());
+            log.trace("Auto-surrender skipped for sender {}: {}", userId, e.getMessage());
         }
     }
 }

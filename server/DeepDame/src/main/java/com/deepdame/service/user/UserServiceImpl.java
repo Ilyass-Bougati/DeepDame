@@ -55,8 +55,8 @@ public class UserServiceImpl implements UserService {
 
     /**
      * Note that this method doesn't update the email or the password
-     * @param userDto the new user data
-     * @return the new registered user data
+     * @param userDto the new sender data
+     * @return the new registered sender data
      */
     @Override
     @Caching(put = {

@@ -13,7 +13,7 @@ public class UserMapperImpl implements UserMapper {
     private final RoleMapper roleMapper;
 
     /**
-     * This function doesn't set the roles of the user
+     * This function doesn't set the roles of the sender
      * TODO : fix that
      * @param user
      * @return
