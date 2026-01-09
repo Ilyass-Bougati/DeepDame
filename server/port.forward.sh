@@ -6,6 +6,9 @@ echo "Starting port forwards..."
 nohup kubectl port-forward --address 0.0.0.0 service/redis 6379:6379 > logs/redis.log 2>&1 &
 PID_REDIS=$!
 
+nohup kubectl port-forward service/redisinsight-service 5540:5540 > logs/redis_insight.log 2>&1 &
+PID_REDIS_INSIGHT=$!
+
 nohup kubectl port-forward --address 0.0.0.0 service/postgres 5432:5432 > logs/postgres.log 2>&1 &
 PID_PG=$!
 
