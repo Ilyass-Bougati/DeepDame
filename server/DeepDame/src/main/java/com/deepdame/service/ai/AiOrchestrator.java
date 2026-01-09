@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Slf4j
 @Service
@@ -17,21 +18,56 @@ import java.util.List;
 public class AiOrchestrator {
 
     private final AiBotService aiBotService;
+    private static final long MIN_THINK_TIME_MS = 1500; // 1.5 seconds delay
 
     public Move getAiMove(Board board, List<Move> legalMoves, AiDifficulty difficulty) {
         if (legalMoves.isEmpty()) return null;
 
         if (difficulty == AiDifficulty.EASY) {
-            Collections.shuffle(legalMoves);
-            return legalMoves.get(0);
+            simulateThinking();
+            return getRandomMove(legalMoves);
         }
 
+        long startTime = System.currentTimeMillis();
+        Move selectedMove;
+
         try {
-            return aiBotService.getAiMove(board, legalMoves, difficulty);
+            selectedMove = aiBotService.getAiMove(board, legalMoves, difficulty);
+
+            if (selectedMove == null) {
+                throw new IllegalStateException("AI Provider returned null");
+            }
+
         } catch (Exception e) {
-            log.trace("AI Service failed: {}. Falling back to random move.", e.getMessage());
-            Collections.shuffle(legalMoves);
-            return legalMoves.get(0);
+            log.warn("AI Generation failed [Reason: {}]. Fallback to random move.", e.getMessage());
+            selectedMove = getRandomMove(legalMoves);
+        }
+
+        ensureMinimumDelay(startTime);
+
+        return selectedMove;
+    }
+
+    private Move getRandomMove(List<Move> moves) {
+        return moves.get(ThreadLocalRandom.current().nextInt(moves.size()));
+    }
+
+    private void ensureMinimumDelay(long startTime) {
+        long elapsed = System.currentTimeMillis() - startTime;
+        if (elapsed < MIN_THINK_TIME_MS) {
+            try {
+                Thread.sleep(MIN_THINK_TIME_MS - elapsed);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    private void simulateThinking() {
+        try {
+            Thread.sleep(MIN_THINK_TIME_MS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 }
