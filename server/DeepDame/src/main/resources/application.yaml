@@ -69,6 +69,7 @@ management:
 
 ai:
   provider: ollama
+  min-think-time-ms: '0'
   ollama:
     model: ${AI_MODEL_NAME:llama3.2}
     url: ${AI_MODEL_URL:http://localhost:11434/api/generate}

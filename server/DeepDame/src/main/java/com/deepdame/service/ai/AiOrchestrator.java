@@ -6,6 +6,7 @@ import com.deepdame.enums.AiDifficulty;
 import com.deepdame.service.ai.provider.AiBotService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -18,7 +19,9 @@ import java.util.concurrent.ThreadLocalRandom;
 public class AiOrchestrator {
 
     private final AiBotService aiBotService;
-    private static final long MIN_THINK_TIME_MS = 1500; // 1.5 seconds delay
+
+    @Value("${ai.min-think-time-ms:0}")
+    private long minThinkTimeMs;
 
     public Move getAiMove(Board board, List<Move> legalMoves, AiDifficulty difficulty) {
         if (legalMoves.isEmpty()) return null;
@@ -54,9 +57,9 @@ public class AiOrchestrator {
 
     private void ensureMinimumDelay(long startTime) {
         long elapsed = System.currentTimeMillis() - startTime;
-        if (elapsed < MIN_THINK_TIME_MS) {
+        if (elapsed < minThinkTimeMs) {
             try {
-                Thread.sleep(MIN_THINK_TIME_MS - elapsed);
+                Thread.sleep(minThinkTimeMs - elapsed);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
@@ -65,7 +68,7 @@ public class AiOrchestrator {
 
     private void simulateThinking() {
         try {
-            Thread.sleep(MIN_THINK_TIME_MS);
+            Thread.sleep(minThinkTimeMs);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
