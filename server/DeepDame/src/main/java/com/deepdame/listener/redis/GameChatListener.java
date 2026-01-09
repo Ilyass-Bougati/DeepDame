@@ -1,7 +1,7 @@
-package com.deepdame.listener;
+package com.deepdame.listener.redis;
 
-import com.deepdame.dto.game.GameMoveMessageDto;
-import com.deepdame.engine.core.model.Move;
+import com.deepdame.dto.redis.GameChatMessage;
+import com.deepdame.dto.redis.GameMoveMessageDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
@@ -14,14 +14,14 @@ import tools.jackson.databind.ObjectMapper;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class RedisGameListener implements MessageListener {
+public class GameChatListener implements MessageListener {
     private final SimpMessagingTemplate messagingTemplate;
     private final ObjectMapper objectMapper;
 
     @Override
     public void onMessage(Message message, byte @Nullable [] pattern) {
-        log.debug("Game message received: {}", message);
-        GameMoveMessageDto move = objectMapper.readValue(message.getBody(), GameMoveMessageDto.class);
-        messagingTemplate.convertAndSend("/topic/game/" + move.getGameId(), move.getMove());
+        log.debug("Game chat received: {}", message);
+        GameChatMessage chatMessage = objectMapper.readValue(message.getBody(), GameChatMessage.class);
+        messagingTemplate.convertAndSend("/topic/game/" + chatMessage.gameId() + "/chat", chatMessage);
     }
 }

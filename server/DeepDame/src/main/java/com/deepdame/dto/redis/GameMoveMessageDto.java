@@ -1,4 +1,4 @@
-package com.deepdame.dto.game;
+package com.deepdame.dto.redis;
 
 import com.deepdame.engine.core.model.Move;
 import lombok.AllArgsConstructor;

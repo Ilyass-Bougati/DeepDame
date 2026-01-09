@@ -1,6 +1,5 @@
 package com.deepdame.service.cache;
 
-import com.deepdame.dto.game.GameMoveMessageDto;
 import com.deepdame.exception.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;

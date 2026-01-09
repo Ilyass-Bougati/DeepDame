@@ -1,7 +1,9 @@
 package com.deepdame.config;
 
 import com.deepdame.entity.mongo.GameDocument;
-import com.deepdame.listener.RedisGameListener;
+import com.deepdame.listener.redis.GameChatListener;
+import com.deepdame.listener.redis.GameMoveListener;
+import com.deepdame.listener.redis.GameOverListener;
 import com.deepdame.properties.RedisProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -99,15 +101,30 @@ public class RedisConfig {
     }
 
     @Bean
-    RedisMessageListenerContainer container(RedisConnectionFactory connectionFactory, MessageListenerAdapter listenerAdapter) {
+    RedisMessageListenerContainer container(RedisConnectionFactory connectionFactory,
+                                            MessageListenerAdapter gameMoveAdapter,
+                                            MessageListenerAdapter gameChatAdapter,
+                                            MessageListenerAdapter gameOverAdapter) {
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
-        container.addMessageListener(listenerAdapter, new PatternTopic("game-updates"));
+        container.addMessageListener(gameMoveAdapter, new PatternTopic("game-updates"));
+        container.addMessageListener(gameChatAdapter, new PatternTopic("game-chat"));
+        container.addMessageListener(gameOverAdapter, new PatternTopic("game-over"));
         return container;
     }
 
     @Bean
-    MessageListenerAdapter listenerAdapter(RedisGameListener receiver) {
+    MessageListenerAdapter gameMoveAdapter(GameMoveListener receiver) {
+        return new MessageListenerAdapter(receiver, "onMessage");
+    }
+
+    @Bean
+    MessageListenerAdapter gameChatAdapter(GameChatListener receiver) {
+        return new MessageListenerAdapter(receiver, "onMessage");
+    }
+
+    @Bean
+    MessageListenerAdapter gameOverAdapter(GameOverListener receiver) {
         return new MessageListenerAdapter(receiver, "onMessage");
     }
 }

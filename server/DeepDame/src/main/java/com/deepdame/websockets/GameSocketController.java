@@ -1,7 +1,9 @@
 package com.deepdame.websockets;
 
 import com.deepdame.dto.game.GameDto;
-import com.deepdame.dto.game.GameMoveMessageDto;
+import com.deepdame.dto.redis.GameChatMessage;
+import com.deepdame.dto.redis.GameMoveMessageDto;
+import com.deepdame.dto.redis.GameOverMessage;
 import com.deepdame.dto.user.UserDto;
 import com.deepdame.engine.core.model.Move;
 import com.deepdame.enums.GameMode;
@@ -146,13 +148,15 @@ public class GameSocketController {
             throw new WsUnauthorized("You are not a participant in this game.");
         }
 
-        ChatMessageResponse response = new ChatMessageResponse(
+        GameChatMessage response = new GameChatMessage(
                 username,
                 request.content(),
-                Instant.now().toString()
+                Instant.now().toString(),
+                gameId
         );
 
-        messagingTemplate.convertAndSend("/topic/game/" + gameId + "/chat", response);
+//        messagingTemplate.convertAndSend("/topic/game/" + gameId + "/chat", response);
+        redisNotificationService.sendMessage(response, "game-chat");
 
     }
 
@@ -167,7 +171,8 @@ public class GameSocketController {
 
             if (!isSameMove){
                 log.debug("Broadcasting AI Move for Game {}", game.getId());
-                messagingTemplate.convertAndSend("/topic/game/" + game.getId(), lastMove);
+//                messagingTemplate.convertAndSend("/topic/game/" + game.getId(), lastMove);
+                redisNotificationService.sendMessage(GameMoveMessageDto.builder().gameId(game.getId()).move(lastMove).build(), "game-updates");
             }
         }
     }
@@ -186,8 +191,9 @@ public class GameSocketController {
                 winnerName = "Unknown";
             }
         }
-        GameOverResponse response = new GameOverResponse(winnerColor, winnerName, winnerId);
-        messagingTemplate.convertAndSend("/topic/game/" + gameDto.getId() + "/game-over", response);
+        GameOverMessage response = new GameOverMessage(winnerColor, winnerName, winnerId, gameDto.getId());
+//        messagingTemplate.convertAndSend("/topic/game/" + gameDto.getId() + "/game-over", response);
+        redisNotificationService.sendMessage(response, "game-over");
     }
 
     private void sendErrorMessage(String username, String type, String message) {
@@ -198,7 +204,5 @@ public class GameSocketController {
     public record ErrorDto(String type, String message) {}
     public record GameCreatedResponse(UUID gameId) {}
     public record GameJoinedResponse(UUID gameId, String opponentName, String yourColor) {}
-    public record GameOverResponse(String winnerColor, String winnerName, UUID winnerId) {}
     public record ChatRequest(String content) {}
-    public record ChatMessageResponse(String sender, String content, String timestamp) {}
 }
