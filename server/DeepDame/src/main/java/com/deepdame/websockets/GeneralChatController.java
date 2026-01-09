@@ -2,6 +2,7 @@ package com.deepdame.websockets;
 
 import com.deepdame.dto.generalChatMessage.ChatUserData;
 import com.deepdame.dto.generalChatMessage.GeneralChatMessageDto;
+import com.deepdame.exception.WsUnauthorized;
 import com.deepdame.security.CustomUserDetails;
 import com.deepdame.service.cache.RedisNotificationService;
 import com.deepdame.service.generalChatMessage.GeneralChatMessageService;
@@ -27,6 +28,10 @@ public class GeneralChatController {
             @AuthenticationPrincipal CustomUserDetails principal,
             @Valid @Payload GeneralChatMessageDto message
     ) {
+        if (principal.getUser().getBannedFromChat() || principal.getUser().getBannedFromApp()) {
+            throw new WsUnauthorized("Banned users can't chat");
+        }
+
         message.setUser(ChatUserData.builder().id(principal.getUser().getId()).build());
         message.setId(null);
 
