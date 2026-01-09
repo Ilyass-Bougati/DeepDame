@@ -1,6 +1,5 @@
-package com.deepdame.listeners;
+package com.deepdame.listener;
 
-import com.deepdame.dto.game.GameDto;
 import com.deepdame.entity.mongo.GameDocument;
 import com.deepdame.security.CustomUserDetails;
 import com.deepdame.service.cache.GameCacheService;
@@ -70,7 +69,7 @@ public class WebSocketPresenceEventListener {
                 }
             }
         } catch (Exception e) {
-            log.trace("Auto-surrender skipped for user {}: {}", userId, e.getMessage());
+            log.trace("Auto-surrender skipped for sender {}: {}", userId, e.getMessage());
         }
     }
 }

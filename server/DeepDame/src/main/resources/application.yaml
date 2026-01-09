@@ -12,9 +12,9 @@ spring:
             enable: 'true'
             required: 'true'
           auth: 'true'
-    username: ${SMTP_USERNAME:deepdame.contact@gmail.com}
+    username: ${SMTP_USERNAME:email@email.com}
     host: ${SMTP_HOST:smtp.gmail.com}
-    password: ${SMTP_PASSWORD:moyp sifr jfch aouj}
+    password: ${SMTP_PASSWORD:password}
     port: ${SMTP_PORT:587}
 
   data:
@@ -68,13 +68,19 @@ management:
             requests: 0.5, 0.95, 0.99
 
 ai:
+  provider: ollama
+  min-think-time-ms: '0'
   ollama:
     model: ${AI_MODEL_NAME:llama3.2}
     url: ${AI_MODEL_URL:http://localhost:11434/api/generate}
   gemini:
     api-key: ${GEMINI_API_KEY}
     url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=
-  provider: ollama
+  huggingface:
+    base-url: https://router.huggingface.co/v1
+    model: meta-llama/Llama-3.2-3B-Instruct:sambanova
+    api-key: ${HUGGINGFACE_API_KEY}
+
 
 jwt:
   access-token-expiration-duration: '2592000'
@@ -95,8 +101,8 @@ logging:
       deepdame: DEBUG
 
 rate-limiting:
-  capacity: '100'
-  refill-tokens: '50'
+  capacity: '10000000'
+  refill-tokens: '5000000'
 
 springdoc:
   api-docs:

@@ -32,7 +32,7 @@ public class WebsocketSecurityConfig implements WebSocketMessageBrokerConfigurer
 
         AuthorizationManager<Message<?>> manager = new MessageMatcherDelegatingAuthorizationManager.Builder()
                 .nullDestMatcher().permitAll()
-                .simpSubscribeDestMatchers("/topic/**", "/queue/**", "/user/**").authenticated()
+                .simpSubscribeDestMatchers("/topic/**", "/queue/**", "/sender/**").authenticated()
                 .simpDestMatchers("/app/**").authenticated()
                 .anyMessage().denyAll()
                 .build();

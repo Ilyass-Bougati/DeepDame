@@ -23,14 +23,11 @@ import java.util.Map;
 public class GeminiBotService implements AiBotService {
 
     private final PromptBuilder promptBuilder;
-    private final RestClient restClient = RestClient.create();
+    private final RestClient restClient;
     private final ObjectMapper objectMapper;
 
-    @Value("${ai.gemini.api-key}")
+    @Value("${ai.gemini.api-key:}")
     private String apiKey;
-
-    @Value("${ai.gemini.url}")
-    private String GEMINI_URL;
 
     @Override
     public Move getAiMove(Board board, List<Move> legalMoves, AiDifficulty difficulty) {
@@ -45,23 +42,11 @@ public class GeminiBotService implements AiBotService {
                 "generationConfig", Map.of("responseMimeType", "application/json")
         );
 
-        try {
-            log.info("Sending Request to Gemini: {}", objectMapper.writeValueAsString(requestBody));
-        } catch (Exception e) {
-            log.warn("Failed to serialize request body for logging", e);
-        }
-
-        String response;
-        try {
-            response = restClient.post()
-                    .uri(GEMINI_URL + apiKey)
+        String response = restClient.post()
+                    .uri(uriBuilder -> uriBuilder.queryParam("key", apiKey).build())
                     .body(requestBody)
                     .retrieve()
                     .body(String.class);
-
-        } catch (Exception e) {
-            return legalMoves.get(0);
-        }
 
         return parseResponse(response, legalMoves);
     }
@@ -69,19 +54,27 @@ public class GeminiBotService implements AiBotService {
     private Move parseResponse(String jsonResponse, List<Move> moves) {
         try {
             JsonNode root = objectMapper.readTree(jsonResponse);
-            String text = root.path("candidates").get(0)
-                    .path("content").path("parts").get(0)
-                    .path("text").asText();
+
+            JsonNode candidate = root.path("candidates").path(0);
+            if (candidate.isMissingNode()) {
+                throw new IllegalStateException("Gemini response missing 'candidates'");
+            }
+
+            String text = candidate.path("content").path("parts").path(0).path("text").asText();
+            if (text.isEmpty()) {
+                throw new IllegalStateException("Gemini response text is empty");
+            }
 
             JsonNode aiDecision = objectMapper.readTree(text);
             int index = aiDecision.get("moveIndex").asInt();
 
             if (index >= 0 && index < moves.size()) {
                 return moves.get(index);
+            } else {
+                throw new IllegalStateException("Gemini returned invalid move index: " + index);
             }
         } catch (Exception e) {
-            log.error("Failed to parse Gemini response", e);
+            throw new IllegalStateException("Failed to parse Gemini response", e);
         }
-        return moves.get(0);
     }
 }

@@ -23,4 +23,6 @@ public interface UserService extends CrudDtoService<UUID, UserDto> {
     void unbanFromChat(UUID id);
     void changePassword(UUID userId, @NotEmpty String oldPassword, @NotEmpty String newPassword);
     void changePassword(String email, String newPassword);
+    void updateUserRoles(UUID userId, List<UUID> roleIds);
+    UserDto changeUsername(UUID id, String newUsername);
 }

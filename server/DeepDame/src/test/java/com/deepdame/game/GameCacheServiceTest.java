@@ -115,7 +115,7 @@ public class GameCacheServiceTest {
     }
 
     @Test
-    @DisplayName("manage user active game session")
+    @DisplayName("manage sender active game session")
     public void userGameSessionTest() {
         UUID userId = UUID.randomUUID();
         UUID gameId = UUID.randomUUID();

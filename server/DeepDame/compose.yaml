@@ -88,8 +88,7 @@ services:
 #      - OLLAMA_KEEP_ALIVE=24h
 #    volumes:
 #      - ollama_data:/root/.ollama
-#      - ./ollama-entrypoint.sh:/entrypoint.sh
-#    entrypoint: [ "/usr/bin/bash", "/entrypoint.sh" ]
+#    entrypoint: ["/bin/bash", "-c", "/bin/ollama serve & pid=$$!; sleep 5; ollama pull llama3.2; wait $$pid"]
 #    # Enable GPU support if you have an NVIDIA card (Uncomment below)
 #    # deploy:
 #    #   resources:

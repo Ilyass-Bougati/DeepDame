@@ -9,6 +9,7 @@ import com.deepdame.engine.core.model.PieceType;
 import com.deepdame.entity.mongo.GameDocument;
 import com.deepdame.enums.AiDifficulty;
 import com.deepdame.enums.GameMode;
+import com.deepdame.exception.IllegalMoveException;
 import com.deepdame.exception.NotFoundException;
 import com.deepdame.repository.mongo.GameRepository;
 import com.deepdame.service.ai.AiOrchestrator;
@@ -34,7 +35,7 @@ public class GameServiceImpl implements GameService{
     private final AiOrchestrator aiOrchestrator;
     private final StatisticsService statisticsService;
 
-    private final GameEngine gameEngine = new GameEngine();
+    private final GameEngine gameEngine;
 
     @Override
     public GameDto findById(UUID id){
@@ -129,6 +130,7 @@ public class GameServiceImpl implements GameService{
         }
 
         for (int i = 0; i < 3; i++) {
+
             UUID openGameId = gameCacheService.getRandomOpenGameId();
 
             if (openGameId != null) {
@@ -156,7 +158,13 @@ public class GameServiceImpl implements GameService{
 
         validatePlayerTurn(gameDoc, playerId, currentState.getCurrentTurn());
 
-        GameState newState = gameEngine.applyMove(currentState, move);
+        GameState newState;
+
+        try {
+            newState = gameEngine.applyMove(currentState, move);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalMoveException(e.getMessage());
+        }
 
         gameDoc.setGameState(newState);
         gameDoc.getHistory().add(move);

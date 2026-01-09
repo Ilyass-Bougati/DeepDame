@@ -2,11 +2,11 @@ name: DeepDame CI/CD
 
 on:
   push:
-    branches: [ "main"]
+    branches: [ "main", "staging"]
     paths:
       - 'server/**' 
   pull_request:
-    branches: [ "main"]
+    branches: [ "main", "staging"]
     paths:
       - 'server/**'
 
@@ -86,7 +86,7 @@ jobs:
   deploy-k8s:
     needs: test-and-build
     runs-on: self-hosted
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
     - name: Checkout code

@@ -3,24 +3,31 @@ package com.deepdame.service.user;
 import com.deepdame.dto.user.RegisterRequest;
 import com.deepdame.dto.user.UserDto;
 import com.deepdame.dto.user.UserMapper;
+import com.deepdame.entity.Role;
 import com.deepdame.entity.User;
 import com.deepdame.exception.ConflictException;
 import com.deepdame.exception.NotFoundException;
 import com.deepdame.exception.Unauthorized;
+import com.deepdame.repository.RoleRepository;
 import com.deepdame.repository.UserRepository;
 import com.deepdame.service.username.UsernameService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.deepdame.service.email.EmailService;
+
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -33,6 +40,8 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final UsernameService usernameService;
     private final EmailService emailService;
+    private final CacheManager cacheManager;
+    private final RoleRepository roleRepository;
 
     @Override
     @Caching(put = {
@@ -46,8 +55,8 @@ public class UserServiceImpl implements UserService {
 
     /**
      * Note that this method doesn't update the email or the password
-     * @param userDto the new user data
-     * @return the new registered user data
+     * @param userDto the new sender data
+     * @return the new registered sender data
      */
     @Override
     @Caching(put = {
@@ -134,6 +143,28 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Caching(put = {
+            @CachePut(value = "users.email", key = "#result.email"),
+            @CachePut(value = "users.id", key = "#result.id")
+    })
+    public UserDto changeUsername(UUID id, String newUsername) {
+        // checking if the username is unique
+        if (usernameService.isTaken(newUsername)) {
+            throw new ConflictException("Username already taken");
+        }
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        usernameService.releaseUsername(user.getUsername());
+        user.setUsername(newUsername);
+        userRepository.save(user);
+        usernameService.reserveUsername(newUsername);
+
+        return userMapper.toDTO(user);
+    }
+
+    @Override
     public void delete(UUID uuid) {
         userRepository.deleteById(uuid);
     }
@@ -160,9 +191,10 @@ public class UserServiceImpl implements UserService {
     public void banFromApp(UUID id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
+
         userRepository.updateAppBanStatus(id, true);
-        userRepository.save(user);
-        evictUserCache(user);
+
+        this.manualCacheEvict(user);
     }
 
     @Transactional
@@ -170,10 +202,10 @@ public class UserServiceImpl implements UserService {
     public void unbanFromApp(UUID id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
-        userRepository.updateAppBanStatus(id, false);
-        userRepository.save(user);
-        evictUserCache(user);
 
+        userRepository.updateAppBanStatus(id, false);
+
+        this.manualCacheEvict(user);
     }
 
     @Transactional
@@ -183,8 +215,8 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
         userRepository.updateChatBanStatus(id, true);
-        userRepository.save(user);
-        evictUserCache(user);
+
+        this.manualCacheEvict(user);
     }
 
     @Transactional
@@ -192,15 +224,43 @@ public class UserServiceImpl implements UserService {
     public void unbanFromChat(UUID id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
+
         userRepository.updateChatBanStatus(id, false);
-        userRepository.save(user);
-        evictUserCache(user);
+
+        this.manualCacheEvict(user);
     }
 
-    @Caching(evict = {
-            @CacheEvict(value = "users", key = "#user.id"),
-            @CacheEvict(value = "users", key = "#user.email")
-    })
-    public void evictUserCache(User user) {
+    private void manualCacheEvict(User user) {
+        if (cacheManager != null) {
+            var emailCache = cacheManager.getCache("users.email");
+            var idCache = cacheManager.getCache("users.id");
+
+            if (emailCache != null) emailCache.evict(user.getEmail());
+            if (idCache != null) idCache.evict(user.getId());
+        }
+    }
+
+    @Override
+    @Transactional
+    public void updateUserRoles(UUID userId, List<UUID> roleIds) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        Set<Role> newRoles = new HashSet<>(roleRepository.findAllById(roleIds));
+        boolean hasSuperBefore = user.getRoles().stream()
+                .anyMatch(r -> r.getName().equals("SUPER-ADMIN"));
+        boolean wantsSuperNow = newRoles.stream()
+                .anyMatch(r -> r.getName().equals("SUPER-ADMIN"));
+
+        if (!hasSuperBefore && wantsSuperNow) {
+            throw new IllegalStateException("Security Violation: The SUPER-ADMIN role cannot be granted to new users.");
+        }
+
+        if (hasSuperBefore && !wantsSuperNow) {
+            throw new IllegalStateException("System Integrity: The SUPER-ADMIN role is permanent and cannot be revoked.");
+        }
+
+        user.setRoles(newRoles);
+        userRepository.save(user);
     }
 }
