@@ -1,4 +1,4 @@
-package com.deepdame.listener.redis;
+package com.deepdame.listener.redis.game;
 
 import com.deepdame.dto.redis.GameMoveMessageDto;
 import lombok.RequiredArgsConstructor;

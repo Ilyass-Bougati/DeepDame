@@ -1,15 +1,9 @@
 package com.deepdame.config;
 
 import com.deepdame.entity.mongo.GameDocument;
-import com.deepdame.listener.redis.GameChatListener;
-import com.deepdame.listener.redis.GameMoveListener;
-import com.deepdame.listener.redis.GameOverListener;
 import com.deepdame.properties.RedisProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.listener.PatternTopic;
-import org.springframework.data.redis.listener.RedisMessageListenerContainer;
-import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.JacksonJsonRedisSerializer;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;

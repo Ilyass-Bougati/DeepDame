@@ -1,7 +1,7 @@
-package com.deepdame.listener.redis;
+package com.deepdame.listener.redis.chat;
 
-import com.deepdame.dto.redis.GameMoveMessageDto;
-import com.deepdame.dto.redis.GameOverMessage;
+import com.deepdame.dto.generalChatMessage.GeneralChatMessageDto;
+import com.deepdame.dto.redis.GameChatMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
@@ -14,14 +14,14 @@ import tools.jackson.databind.ObjectMapper;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class GameOverListener implements MessageListener {
+public class GeneralChatListener implements MessageListener {
     private final SimpMessagingTemplate messagingTemplate;
     private final ObjectMapper objectMapper;
 
     @Override
     public void onMessage(Message message, byte @Nullable [] pattern) {
-        log.debug("Game over received: {}", message);
-        GameOverMessage gameOverMessage = objectMapper.readValue(message.getBody(), GameOverMessage.class);
-        messagingTemplate.convertAndSend("/topic/game/" + gameOverMessage.gameId() + "/game-over", gameOverMessage);
+        log.debug("General chat received: {}", message);
+        GeneralChatMessageDto chatMessage = objectMapper.readValue(message.getBody(), GeneralChatMessageDto.class);
+        messagingTemplate.convertAndSend("/topic/general-chat", chatMessage);
     }
 }
