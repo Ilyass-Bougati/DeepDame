@@ -36,9 +36,9 @@ class Gamepiece extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: const Color.fromARGB(51, 0, 0, 0), // Shadow color
-                spreadRadius: 2, // How much the shadow spreads
-                blurRadius: 10, // Softness of the shadow
-                offset: const Offset(0, 5), // Changes position (dx, dy)
+                spreadRadius: 2,
+                blurRadius: 10,
+                offset: const Offset(0, 0),
               ),
             ],
           ),

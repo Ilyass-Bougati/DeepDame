@@ -57,7 +57,15 @@ class _preferencesCreateState extends State<Preferences> {
                       color: Color.fromARGB(255, 123, 152, 166),
                       borderRadius: BorderRadius.circular(80),
                     ),
-                    child: SizedBox(height: 80, width: 80),
+                    child: SizedBox(
+                      height: 80,
+                      width: 80,
+                      child: Icon(
+                        Icons.person_rounded,
+                        color: Color.fromARGB(255, 64, 79, 87),
+                        size: 40
+                      ),
+                    ),
                   ),
                   SizedBox(width: 30),
                   Expanded(

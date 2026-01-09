@@ -5,6 +5,7 @@ import 'package:deepdame/pages/Connect.dart';
 import 'package:deepdame/pages/Game.dart';
 import 'package:deepdame/pages/General.dart';
 import 'package:deepdame/prefabs/SubmitButton.dart';
+import 'package:deepdame/requests/EmptyRequest.dart';
 import 'package:deepdame/static/Utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -70,25 +71,27 @@ class Landing extends StatelessWidget {
 
             //Subscribing to the "game created"
             Utils.client.subscribe(
-              destination: '/user/queue/game/created',
+              destination: '/sender/queue/game/created',
               callback: (StompFrame frame) {
                 if (frame.body != null) {
                   print('GAME CREATED: ${frame.body!}');
                   Game.currentGameId = jsonDecode(frame.body!)['gameId'];
-                  Utils.currentGame!.value = Game();
+                  Utils.currentGame!.value = Game(true);
                 }
               },
             );
 
             //Subscribing to the "game joined"
             Utils.client.subscribe(
-              destination: '/user/queue/game/joined',
+              destination: '/sender/queue/game/joined',
               callback: (StompFrame frame) {
                 if (frame.body != null) {
                   print('GAME JOINED: ${frame.body!}');
 
+                  Game.opponent = jsonDecode(frame.body!)['opponentName'];
+                  print(jsonDecode(frame.body!)['opponentName']);
                   Game.currentGameId = jsonDecode(frame.body!)['gameId'];
-                  Utils.currentGame!.value = Game();
+                  Utils.currentGame!.value = Game(false);
                 }
               },
             );
@@ -159,7 +162,7 @@ class Landing extends StatelessWidget {
 
           //Subscribing to the "game created"
           Utils.client.subscribe(
-            destination: '/user/queue/game/created',
+            destination: '/sender/queue/game/created',
             callback: (StompFrame frame) {
               if (frame.body != null) {
                 print('GAME CREATED: ${frame.body!}');
@@ -169,7 +172,7 @@ class Landing extends StatelessWidget {
 
           //Subscribing to the "game joined"
           Utils.client.subscribe(
-            destination: '/user/queue/game/joined',
+            destination: '/sender/queue/game/joined',
             callback: (StompFrame frame) {
               if (frame.body != null) {
                 print('GAME JOINED: ${frame.body!}');
@@ -333,30 +336,16 @@ class Landing extends StatelessWidget {
                         child: Row(
                           children: [
                             Expanded(
-                              child: Align(
-                                alignment: AlignmentGeometry.centerRight,
+                              child: Center(
                                 child: Text(
-                                  "Hi, ",
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  "Hi, ${Utils.userDetails!.username} !",
                                   style: GoogleFonts.lora(
                                     fontSize: 25,
                                     fontWeight: FontWeight.bold,
                                     color: Color.fromARGB(255, 170, 188, 180),
                                   ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              flex: Utils.userDetails!.username!.length > 10
-                                  ? 2
-                                  : 1,
-                              child: Text(
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                                "${Utils.userDetails!.username} !",
-                                style: GoogleFonts.lora(
-                                  fontSize: 25,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color.fromARGB(255, 170, 188, 180),
                                 ),
                               ),
                             ),
@@ -374,7 +363,6 @@ class Landing extends StatelessWidget {
                 Color.fromARGB(255, 232, 208, 153),
                 Color.fromARGB(255, 155, 138, 101),
                 () {
-                  print(jsonEncode({"mode": 'PVP'}));
                   createGame('PVP', context);
                   print("Load Pvp");
                 },
@@ -385,8 +373,8 @@ class Landing extends StatelessWidget {
                 Color.fromARGB(255, 216, 157, 143),
                 Color.fromARGB(255, 142, 102, 93),
                 () {
+                  Game.opponent = 'Ai';
                   createGame('PVE', context);
-                  print("Load Pve");
                 },
               ),
             ],
@@ -398,11 +386,22 @@ class Landing extends StatelessWidget {
   }
 
   void createGame(String mode, BuildContext context) {
-    Utils.client.send(
-      headers: {'content-type': 'application/json'},
-      destination: "/app/game/create",
-      body: jsonEncode(mode),
-    );
+    switch (mode) {
+      case 'PVE':
+        Utils.client.send(
+          headers: {'content-type': 'application/json'},
+          destination: "/app/game/create",
+          body: jsonEncode(mode),
+        );
+        break;
+
+      case 'PVP':
+        Utils.client.send(
+          headers: {'content-type': 'application/json'},
+          destination: "/app/game/matchmaking",
+        );
+        break;
+    }
     Utils.currentGame!.addListener(() {
       Navigator.pushReplacement(
         context,

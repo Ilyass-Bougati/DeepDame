@@ -18,20 +18,27 @@ import 'package:stomp_dart_client/stomp_dart_client.dart';
 
 class Game extends StatefulWidget {
   static late String? currentGameId;
-  static String? opponent;
+  static String opponent = "waiting..";
 
-  const Game({super.key});
+  //Did the player create OR join the game ?
+  final bool created;
+
+  const Game(this.created, {super.key});
 
   @override
-  State<StatefulWidget> createState() => _GameCreateState();
+  State<StatefulWidget> createState() => _GameCreateState(created);
 }
 
 class _GameCreateState extends State<Game> {
+  final bool created;
+
   late final GameEngine engine;
   late GameState currentState;
 
   Position? selectedPos;
   List<Move> currentLegalMoves = [];
+
+  _GameCreateState(this.created);
 
   @override
   void initState() {
@@ -105,6 +112,12 @@ class _GameCreateState extends State<Game> {
         }
       },
     );
+  }
+
+  @override
+  void dispose() {
+    Game.opponent = "waiting";
+    super.dispose();
   }
 
   void _onPieceTap(Position pos) {
@@ -195,9 +208,9 @@ class _GameCreateState extends State<Game> {
             width: 40,
             height: 40,
             child: Gamepiece(
-              isBlack,
+              created ? isBlack : !isBlack,
               !isBlack,
-              piece.isKing, // simple light/dark logic for now
+              piece.isKing,
               onTap: () => _onPieceTap(currentPos),
             ),
           );
@@ -245,7 +258,8 @@ class _GameCreateState extends State<Game> {
                     width: 2,
                   ),
                   color: Color(
-                    (currentState.currentTurn == PieceType.black)
+                    (currentState.currentTurn ==
+                            (created ? PieceType.black : PieceType.white))
                         ? 0XFFFDFBF7
                         : 0xFFAABCB4,
                   ),
@@ -259,20 +273,25 @@ class _GameCreateState extends State<Game> {
                         style: GoogleFonts.lora(
                           fontSize: 25,
                           color: Color(
-                            (currentState.currentTurn != PieceType.black)
+                            (currentState.currentTurn !=
+                                    (created
+                                        ? PieceType.black
+                                        : PieceType.white))
                                 ? 0XFFFDFBF7
                                 : 0xFFAABCB4,
                           ),
                         ),
                       ),
 
-                      //TODO: replace with opponent name
                       Text(
-                        Game.opponent ?? "AI",
+                        Game.opponent,
                         style: GoogleFonts.lora(
                           fontSize: 25,
                           color: Color(
-                            (currentState.currentTurn != PieceType.black)
+                            (currentState.currentTurn !=
+                                    (created
+                                        ? PieceType.black
+                                        : PieceType.white))
                                 ? 0XFFFDFBF7
                                 : 0xFFAABCB4,
                           ),
@@ -289,9 +308,12 @@ class _GameCreateState extends State<Game> {
                 alignment: Alignment.center,
                 children: [
                   Gameboard(),
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: _buildGridRows(),
+                  RotatedBox(
+                    quarterTurns: created ? 0 : 2,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: _buildGridRows(),
+                    ),
                   ),
                 ],
               ),
@@ -306,7 +328,8 @@ class _GameCreateState extends State<Game> {
                     width: 2,
                   ),
                   color: Color(
-                    (currentState.currentTurn != PieceType.black)
+                    (currentState.currentTurn !=
+                            (created ? PieceType.black : PieceType.white))
                         ? 0XFFFDFBF7
                         : 0xFFAABCB4,
                   ),
@@ -320,7 +343,10 @@ class _GameCreateState extends State<Game> {
                         style: GoogleFonts.lora(
                           fontSize: 25,
                           color: Color(
-                            (currentState.currentTurn == PieceType.black)
+                            (currentState.currentTurn ==
+                                    (created
+                                        ? PieceType.black
+                                        : PieceType.white))
                                 ? 0XFFFDFBF7
                                 : 0xFFAABCB4,
                           ),
@@ -331,7 +357,10 @@ class _GameCreateState extends State<Game> {
                         style: GoogleFonts.lora(
                           fontSize: 25,
                           color: Color(
-                            (currentState.currentTurn == PieceType.black)
+                            (currentState.currentTurn ==
+                                    (created
+                                        ? PieceType.black
+                                        : PieceType.white))
                                 ? 0XFFFDFBF7
                                 : 0xFFAABCB4,
                           ),
