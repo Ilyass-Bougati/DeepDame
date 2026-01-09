@@ -5,7 +5,6 @@ import 'package:deepdame/pages/Connect.dart';
 import 'package:deepdame/pages/Game.dart';
 import 'package:deepdame/pages/General.dart';
 import 'package:deepdame/prefabs/SubmitButton.dart';
-import 'package:deepdame/requests/EmptyRequest.dart';
 import 'package:deepdame/static/Utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
