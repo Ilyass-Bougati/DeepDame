@@ -36,7 +36,7 @@ import java.time.Duration;
 @Configuration
 @EnableCaching
 @RequiredArgsConstructor
-public class RedisConfig {
+public class RedisCacheConfig {
     private final RedisProperties redisProperties;
 
     private ObjectMapper createObjectMapper() {
@@ -72,7 +72,7 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<String, GameDocument> gameRedisTemplate(RedisConnectionFactory connectionFactory){
+    public RedisTemplate<String, GameDocument> gameRedisTemplate(RedisConnectionFactory connectionFactory) {
 
         RedisTemplate<String, GameDocument> template = new RedisTemplate<>();
 
@@ -98,33 +98,5 @@ public class RedisConfig {
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(config)
                 .build();
-    }
-
-    @Bean
-    RedisMessageListenerContainer container(RedisConnectionFactory connectionFactory,
-                                            MessageListenerAdapter gameMoveAdapter,
-                                            MessageListenerAdapter gameChatAdapter,
-                                            MessageListenerAdapter gameOverAdapter) {
-        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
-        container.setConnectionFactory(connectionFactory);
-        container.addMessageListener(gameMoveAdapter, new PatternTopic("game-updates"));
-        container.addMessageListener(gameChatAdapter, new PatternTopic("game-chat"));
-        container.addMessageListener(gameOverAdapter, new PatternTopic("game-over"));
-        return container;
-    }
-
-    @Bean
-    MessageListenerAdapter gameMoveAdapter(GameMoveListener receiver) {
-        return new MessageListenerAdapter(receiver, "onMessage");
-    }
-
-    @Bean
-    MessageListenerAdapter gameChatAdapter(GameChatListener receiver) {
-        return new MessageListenerAdapter(receiver, "onMessage");
-    }
-
-    @Bean
-    MessageListenerAdapter gameOverAdapter(GameOverListener receiver) {
-        return new MessageListenerAdapter(receiver, "onMessage");
     }
 }

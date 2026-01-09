@@ -112,7 +112,6 @@ public class GameSocketController {
 
         GameDto game = gameService.makeMove(gameId, playerId, move);
 
-//        messagingTemplate.convertAndSend("/topic/game/" + gameId, move);
         redisNotificationService.sendMessage(GameMoveMessageDto.builder().gameId(gameId).move(move).build(), "game-updates");
 
         if (game.getMode() == GameMode.PVE){
@@ -155,7 +154,6 @@ public class GameSocketController {
                 gameId
         );
 
-//        messagingTemplate.convertAndSend("/topic/game/" + gameId + "/chat", response);
         redisNotificationService.sendMessage(response, "game-chat");
 
     }
@@ -171,7 +169,6 @@ public class GameSocketController {
 
             if (!isSameMove){
                 log.debug("Broadcasting AI Move for Game {}", game.getId());
-//                messagingTemplate.convertAndSend("/topic/game/" + game.getId(), lastMove);
                 redisNotificationService.sendMessage(GameMoveMessageDto.builder().gameId(game.getId()).move(lastMove).build(), "game-updates");
             }
         }
@@ -192,7 +189,6 @@ public class GameSocketController {
             }
         }
         GameOverMessage response = new GameOverMessage(winnerColor, winnerName, winnerId, gameDto.getId());
-//        messagingTemplate.convertAndSend("/topic/game/" + gameDto.getId() + "/game-over", response);
         redisNotificationService.sendMessage(response, "game-over");
     }
 
