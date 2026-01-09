@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redisinsight
+  labels:
+    app: redisinsight
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redisinsight
+  template:
+    metadata:
+      labels:
+        app: redisinsight
+    spec:
+      containers:
+        - name: redisinsight
+          image: redis/redisinsight:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5540
+          securityContext:
+            runAsUser: 1000 # Required to avoid permission issues with the image
+          volumeMounts:
+            - name: db-data
+              mountPath: /data
+      volumes:
+        - name: db-data
+          emptyDir: {} # Ephemeral storage. If you restart the pod, you re-add the connection.
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redisinsight-service
+spec:
+  type: ClusterIP # We will port-forward to this
+  selector:
+    app: redisinsight
+  ports:
+    - protocol: TCP
+      port: 5540
+      targetPort: 5540

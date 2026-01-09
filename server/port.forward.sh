@@ -11,6 +11,9 @@ echo "PostgreSQL..."
 nohup kubectl port-forward --address 0.0.0.0 service/postgres 5432:5432 > logs/postgres.log 2>&1 &
 PID_PG=$!
 
+echo "Redis insight..."
+nohup kubectl port-forward --address 0.0.0.0 service/redisinsight-service 5540:5540 > logs/redis_insight.log 2>&1 &
+PID_REDIS_INSIGHT=$!
 
 echo "MongoDB..."
 nohup kubectl port-forward --address 0.0.0.0 service/mongo 27017:27017 > logs/mongo.log 2>&1 &
