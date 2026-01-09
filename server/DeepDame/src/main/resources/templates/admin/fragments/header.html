@@ -22,6 +22,19 @@
                 <li class="nav-item" sec:authorize="hasAnyRole('ADMIN', 'SUPER-ADMIN')">
                     <a class="nav-link" th:href="@{/admin/users}" style="color: #4a5d51; font-weight: 500;">Users</a>
                 </li>
+
+                <li class="nav-item" sec:authorize="hasAnyRole('SUPER-ADMIN')">
+                    <a class="nav-link" th:href="@{/admin/roles}" style="color: #4a5d51; font-weight: 500;">Roles</a>
+                </li>
+
+                <li class="nav-item" sec:authorize="hasAnyRole('ADMIN', 'SUPER-ADMIN')">
+                    <a class="nav-link d-flex align-items-center" th:href="@{/admin/chat}" style="color: #4a5d51; font-weight: 500;">
+                        General Chat
+                        <span class="ms-2 d-inline-block"
+                              style="width: 8px; height: 8px; background-color: #73937e; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px #73937e;">
+                        </span>
+                    </a>
+                </li>
             </ul>
 
             <div class="d-flex align-items-center" sec:authorize="isAuthenticated()">

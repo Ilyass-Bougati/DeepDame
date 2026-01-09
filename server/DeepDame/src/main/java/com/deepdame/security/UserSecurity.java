@@ -18,7 +18,6 @@ public class UserSecurity {
         if (targetUser == null || principal == null) return false;
         String currentUserEmail;
 
-
         if (principal instanceof CustomUserDetails userDetails) {
             currentUserEmail = userDetails.getUsername();
         } else {
