@@ -3,6 +3,7 @@ package com.deepdame.game;
 import com.deepdame.dto.game.GameDto;
 import com.deepdame.engine.core.model.*;
 import com.deepdame.enums.GameMode;
+import com.deepdame.exception.IllegalMoveException;
 import com.deepdame.repository.mongo.GameRepository;
 import com.deepdame.service.game.GameService;
 import org.junit.jupiter.api.BeforeEach;
@@ -122,11 +123,11 @@ public class GameServiceTest {
         UUID p1 = UUID.randomUUID();
         GameDto game = gameService.createGame(p1, GameMode.PVE);
 
-        Exception exception1 = assertThrows(IllegalArgumentException.class, ()->{
+        Exception exception1 = assertThrows(IllegalMoveException.class, ()->{
             gameService.makeMove(game.getId(), p1,  new Move(new Position(5 , 0), new Position(4, 0)));
         });
 
-        Exception exception2 = assertThrows(IllegalArgumentException.class, ()->{
+        Exception exception2 = assertThrows(IllegalMoveException.class, ()->{
             gameService.makeMove(game.getId(), p1,  new Move(new Position(5 , 1), new Position(4, 0)));
         });
 

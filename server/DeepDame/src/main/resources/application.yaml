@@ -12,9 +12,9 @@ spring:
             enable: 'true'
             required: 'true'
           auth: 'true'
-    username: ${SMTP_USERNAME:deepdame.contact@gmail.com}
+    username: ${SMTP_USERNAME:email@email.com}
     host: ${SMTP_HOST:smtp.gmail.com}
-    password: ${SMTP_PASSWORD:moyp sifr jfch aouj}
+    password: ${SMTP_PASSWORD:password}
     port: ${SMTP_PORT:587}
 
   data:
