@@ -12,8 +12,8 @@ PID_PG=$!
 nohup kubectl port-forward --address 0.0.0.0 service/mongo 27017:27017 > logs/mongo.log 2>&1 &
 PID_MONGO=$!
 
-nohup kubectl port-forward --address 0.0.0.0 service/grafana 3000:3000 > logs/grafana.log 2>&1 &
-PID_GRAF=$!
+# nohup kubectl port-forward --address 0.0.0.0 service/grafana 3000:3000 > logs/grafana.log 2>&1 &
+# PID_GRAF=$!
 
 nohup kubectl port-forward --address 0.0.0.0 service/deepdame 8080:8080 > logs/deepdame.log 2>&1 &
 PID_APP=$!

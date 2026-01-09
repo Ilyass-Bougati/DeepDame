@@ -35,7 +35,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     long countByCreatedAtAfter(LocalDateTime date);
 
     @Query("SELECT COUNT(u) > 0 FROM User u JOIN u.friends f WHERE u.id = :userId AND f.id = :friendId")
-    boolean areFriends(@Param("userId") UUID userId, @Param("friendId") UUID friendId);
+    boolean areFriends(@Param("userId") UUID userId, @Param("receiverId") UUID friendId);
 
     @Modifying
     @Transactional

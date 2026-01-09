@@ -30,7 +30,7 @@ import java.time.Duration;
 @Configuration
 @EnableCaching
 @RequiredArgsConstructor
-public class RedisConfig {
+public class RedisCacheConfig {
     private final RedisProperties redisProperties;
 
     private ObjectMapper createObjectMapper() {
@@ -66,7 +66,7 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<String, GameDocument> gameRedisTemplate(RedisConnectionFactory connectionFactory){
+    public RedisTemplate<String, GameDocument> gameRedisTemplate(RedisConnectionFactory connectionFactory) {
 
         RedisTemplate<String, GameDocument> template = new RedisTemplate<>();
 

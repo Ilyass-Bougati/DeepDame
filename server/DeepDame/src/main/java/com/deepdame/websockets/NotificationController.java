@@ -2,6 +2,7 @@ package com.deepdame.websockets;
 
 import com.deepdame.exception.WsUnauthorized;
 import com.deepdame.security.CustomUserDetails;
+import com.deepdame.service.cache.RedisNotificationService;
 import com.deepdame.service.friendRequest.FriendRequestService;
 import com.deepdame.service.user.UserService;
 import com.deepdame.websockets.dto.FriendRequestDto;
@@ -26,10 +27,11 @@ public class NotificationController {
     private final SimpMessagingTemplate messagingTemplate;
     private final UserService userService;
     private final FriendRequestService friendRequestService;
+    private final RedisNotificationService redisNotificationService;
 
     /**
-     * As you'd notice this controller sends a message to the websocket `/topic/user/userId/notification`
-     * hence for a user to get a notification, they'll have to be subscribed to that topic
+     * As you'd notice this controller sends a message to the websocket `/topic/sender/userId/notification`
+     * hence for a sender to get a notification, they'll have to be subscribed to that topic
      * @param principal this will be inserted directly by Spring Security
      * @param request this project holds the details of the notification
      */
@@ -38,7 +40,7 @@ public class NotificationController {
             @AuthenticationPrincipal CustomUserDetails principal,
             @Valid @Payload GameInvitationDto request
     ) {
-        log.debug("Received game invitation for user {}", request.userId());
+        log.debug("Received game invitation for sender {}", request.userId());
 
         if (principal.getUser().getId().equals(request.userId())) {
             throw new WsUnauthorized("You can only invite yourself");
@@ -51,12 +53,12 @@ public class NotificationController {
 
         // Formulating a response
         GameNotificationDto notification = GameNotificationDto.builder()
-                .user(principal.getUser())
+                .sender(principal.getUser())
+                .receiverId(request.userId())
                 .gameId(request.gameId())
                 .build();
 
-        String destination = "/topic/user/" + request.userId() + "/game-notifications";
-        messagingTemplate.convertAndSend(destination, notification);
+        redisNotificationService.sendMessage(notification, "game-invitation");
     }
 
     @MessageMapping("/invite/friend/{userId}")
@@ -81,7 +83,6 @@ public class NotificationController {
 
         friendRequestService.addFriendRequest(principal.getUser().getId(), userId);
 
-        String destination = "/topic/user/" + userId + "/friend-request-notifications";
-        messagingTemplate.convertAndSend(destination, FriendRequestDto.builder().userId(userId).build());
+        redisNotificationService.sendMessage(FriendRequestDto.builder().receiverId(userId).senderId(principal.getUser().getId()).build(), "friend-invitation");
     }
 }

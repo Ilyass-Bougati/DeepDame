@@ -41,7 +41,7 @@ public class AdminChatController {
             UUID targetUserId = message.getUser().getId();
 
             if (!userSecurity.canManage(targetUserId, principal.getName())) {
-                log.warn("Permission denied for admin {} on user {}", principal.getName(), targetUserId);
+                log.warn("Permission denied for admin {} on sender {}", principal.getName(), targetUserId);
                 return ResponseEntity.status(403).body("Insufficient hierarchical rights.");
             }
 
@@ -64,7 +64,7 @@ public class AdminChatController {
             UUID targetUserId = message.getUser().getId();
 
             if (!userSecurity.canManage(targetUserId, principal.getName())) {
-                log.warn("Permission denied for admin {} on user {}", principal.getName(), targetUserId);
+                log.warn("Permission denied for admin {} on sender {}", principal.getName(), targetUserId);
                 return ResponseEntity.status(403).body("Insufficient hierarchical rights.");
             }
 

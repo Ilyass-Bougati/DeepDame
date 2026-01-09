@@ -41,7 +41,7 @@ public class MapperTest {
     public void userMapperTest() {
         User mockUser = User.builder()
                 .id(UUID.randomUUID())
-                .username("mock.user")
+                .username("mock.sender")
                 .email("mock.email@gmail.com")
                 .password("mock.password")
                 .bannedFromApp(true)
@@ -114,6 +114,6 @@ public class MapperTest {
         // Verify results
         Assertions.assertEquals(dto.getId(), entity.getId());
         Assertions.assertEquals(dto.getMessage(), entity.getMessage());
-        Assertions.assertEquals(mockUser, entity.getUser()); // Verify the service was called and user set
+        Assertions.assertEquals(mockUser, entity.getUser()); // Verify the service was called and sender set
     }
 }

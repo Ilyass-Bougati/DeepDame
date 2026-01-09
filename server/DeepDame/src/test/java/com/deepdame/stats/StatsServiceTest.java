@@ -96,7 +96,7 @@ class StatsServiceTest {
 
         deleteKeys("game:*");
         deleteKeys("lobby:*");
-        deleteKeys("user:*");
+        deleteKeys("sender:*");
     }
 
     private void deleteKeys(String pattern) {
