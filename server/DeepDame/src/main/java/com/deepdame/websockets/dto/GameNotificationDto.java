@@ -8,7 +8,8 @@ import java.util.UUID;
 
 @Builder
 public record GameNotificationDto(
-        @NotNull UserDto user,
+        @NotNull UserDto sender,
+        @NotNull UUID receiverId,
         @NotNull UUID gameId
 ) {
 }

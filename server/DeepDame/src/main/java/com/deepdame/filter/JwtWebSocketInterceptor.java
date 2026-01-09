@@ -46,7 +46,7 @@ public class JwtWebSocketInterceptor implements ChannelInterceptor {
 
                     AbstractAuthenticationToken authentication = jwtAuthConverter.convert(jwt);
 
-                    //Attach user to WebSocket session
+                    //Attach sender to WebSocket session
                     accessor.setUser(authentication);
 
                     log.info("WebSocket Authenticated User: {}", authentication.getName());

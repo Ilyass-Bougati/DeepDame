@@ -39,51 +39,46 @@ public class HuggingFaceBotService implements AiBotService {
                 "model", modelName,
                 "messages", List.of(
                         Map.of("role", "system", "content", systemPrompt),
-                        Map.of("role", "user", "content", userPrompt)
+                        Map.of("role", "sender", "content", userPrompt)
                 ),
                 "max_tokens", 500,
                 "temperature", 0.1,
                 "stream", false
         );
 
-        try {
-            String response = restClient.post()
+        String response = restClient.post()
                     .uri("/chat/completions")
                     .body(requestBody)
                     .retrieve()
                     .body(String.class);
 
-            return parseResponse(response, legalMoves);
-
-        } catch (Exception e) {
-            log.error("Hugging Face API Error: {}", e.getMessage());
-            Collections.shuffle(legalMoves);
-            return legalMoves.get(0);
-        }
+        return parseResponse(response, legalMoves);
     }
 
     private Move parseResponse(String jsonResponse, List<Move> moves) {
         try {
             JsonNode root = objectMapper.readTree(jsonResponse);
-
             JsonNode choices = root.get("choices");
-            if (choices != null && !choices.isEmpty()) {
-                String content = choices.get(0).get("message").get("content").asText();
 
-                content = cleanMarkdown(content);
-
-                JsonNode aiDecision = objectMapper.readTree(content);
-                int index = aiDecision.get("moveIndex").asInt();
-
-                if (index >= 0 && index < moves.size()) {
-                    return moves.get(index);
-                }
+            if (choices == null || choices.isEmpty()) {
+                throw new IllegalStateException("HF response missing 'choices'");
             }
+
+            String content = choices.get(0).get("message").get("content").asText();
+            content = cleanMarkdown(content);
+
+            JsonNode aiDecision = objectMapper.readTree(content);
+            int index = aiDecision.get("moveIndex").asInt();
+
+            if (index >= 0 && index < moves.size()) {
+                return moves.get(index);
+            } else {
+                throw new IllegalStateException("HF returned invalid move index: " + index);
+            }
+
         } catch (Exception e) {
-            log.error("Failed to parse HF response", e);
+            throw new IllegalStateException("Failed to parse HF response", e);
         }
-        Collections.shuffle(moves);
-        return moves.get(0);
     }
 
     private String cleanMarkdown(String text) {

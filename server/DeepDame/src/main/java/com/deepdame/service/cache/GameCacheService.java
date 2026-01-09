@@ -20,7 +20,7 @@ public class GameCacheService {
 
     private static final String KEY_GAME = "game:";
     private static final String KEY_LOBBY = "lobby:open_games";
-    private static final String KEY_USER_GAME = "user:%s:active_game";
+    private static final String KEY_USER_GAME = "sender:%s:active_game";
 
     @Value("${game.cache.ttl-in-millis}")
     private long gameTtlMillis;
@@ -81,7 +81,7 @@ public class GameCacheService {
     }
 
 
-    // user game stuff
+    // sender game stuff
     public void setUserCurrentGame(UUID userId, UUID gameId){
         String key = String.format(KEY_USER_GAME, userId);
         stringTemplate.opsForValue().set(key, gameId.toString(), gameTtlMillis, TimeUnit.MILLISECONDS);

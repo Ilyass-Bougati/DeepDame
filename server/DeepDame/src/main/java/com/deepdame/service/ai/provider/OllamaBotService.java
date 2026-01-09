@@ -63,9 +63,8 @@ public class OllamaBotService implements AiBotService {
                 return moves.get(index);
             }
         } catch (Exception e) {
-            log.trace("Failed to parse Ollama response. Response was: {}", jsonResponse);
+            throw new IllegalStateException("Failed to parse AI response: " + e.getMessage());
         }
-        Collections.shuffle(moves);
-        return moves.get(0);
+        throw new IllegalStateException("AI returned invalid move index");
     }
 }

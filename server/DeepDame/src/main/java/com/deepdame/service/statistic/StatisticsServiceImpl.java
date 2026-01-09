@@ -7,7 +7,7 @@ import com.deepdame.repository.mongo.GameRepository;
 import com.deepdame.repository.UserRepository;
 import com.deepdame.repository.mongo.PlayerStatisticsRepository;
 import com.deepdame.service.cache.GameCacheService;
-import com.deepdame.listeners.WebSocketPresenceEventListener;
+import com.deepdame.listener.WebSocketPresenceEventListener;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;

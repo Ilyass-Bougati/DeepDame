@@ -11,6 +11,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FriendRequestDto {
-    private UUID userId;
+    private UUID senderId;
+    private UUID receiverId;
     private LocalDateTime date = LocalDateTime.now();
 }

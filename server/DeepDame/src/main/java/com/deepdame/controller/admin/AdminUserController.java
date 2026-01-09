@@ -97,7 +97,7 @@ public class AdminUserController {
     public String unbanFromApp(@PathVariable UUID id, RedirectAttributes redirectAttributes) {
         log.info("Action: Unbanning User ID {} from the application", id);
         userService.unbanFromApp(id);
-        redirectAttributes.addFlashAttribute("info", "Application access restored for this user.");
+        redirectAttributes.addFlashAttribute("info", "Application access restored for this sender.");
         return "redirect:/admin/users";
     }
 
@@ -144,7 +144,7 @@ public class AdminUserController {
 
             userService.updateUserRoles(id, idsToProcess);
 
-            redirectAttributes.addFlashAttribute("success", "Permissions updated successfully for this user.");
+            redirectAttributes.addFlashAttribute("success", "Permissions updated successfully for this sender.");
             return "redirect:/admin/users";
 
         } catch (IllegalStateException e) {
