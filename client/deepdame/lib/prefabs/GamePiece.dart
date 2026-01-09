@@ -3,14 +3,10 @@ import 'package:flutter/material.dart';
 class Gamepiece extends StatelessWidget {
   final bool own;
   final bool isLight;
-  final VoidCallback? onTap; // 1. Add this callback
+  final bool isKing;
+  final VoidCallback? onTap;
 
-  const Gamepiece(
-    this.own,
-    this.isLight, {
-    this.onTap, // 2. Add to constructor
-    super.key,
-  });
+  const Gamepiece(this.own, this.isLight, this.isKing, {this.onTap, super.key});
 
   @override
   Widget build(BuildContext context) =>
@@ -18,7 +14,7 @@ class Gamepiece extends StatelessWidget {
 
   Widget _buildOwnPiece() {
     return GestureDetector(
-      onTap: onTap, // 3. Connect it here!
+      onTap: onTap,
       child: _buildAsset(isLight ? Color(0xFFD08C80) : Color(0xFF7D949E)),
     );
   }
@@ -52,7 +48,9 @@ class Gamepiece extends StatelessWidget {
           width: 30,
           decoration: BoxDecoration(
             border: Border.all(
-              color: const Color.fromARGB(49, 255, 255, 255),
+              color: !isKing
+                  ? const Color.fromARGB(47, 255, 255, 255)
+                  : const Color.fromARGB(200, 255, 219, 90),
               width: 2,
             ),
             borderRadius: BorderRadius.circular(30),

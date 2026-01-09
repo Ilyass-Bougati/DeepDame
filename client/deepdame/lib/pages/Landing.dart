@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:deepdame/dtos/UserDto.dart';
 import 'package:deepdame/pages/Connect.dart';
+import 'package:deepdame/pages/Game.dart';
 import 'package:deepdame/pages/General.dart';
 import 'package:deepdame/prefabs/SubmitButton.dart';
 import 'package:deepdame/static/Utils.dart';
@@ -10,7 +12,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:stomp_dart_client/stomp_dart_client.dart';
 
 class Landing extends StatelessWidget {
-  const Landing({super.key});
+  Landing({super.key});
 
   @override
   Widget build(BuildContext context) => Utils.userDetails == null
@@ -18,14 +20,23 @@ class Landing extends StatelessWidget {
       : build_onConnection(context);
 
   Future<void> initLandingPage(BuildContext context) async {
+    Utils.currentGame = ValueNotifier(null);
+
     bool connected = false;
     try {
       var resp = await Utils.api_getRequest("user/", Utils.API_URL).onError((
         e,
         stackTrace,
-      ) {
-        connected = false;
-        throw Exception();
+      ) async {
+        //Refresh the access token before retrying to fetch user data.
+        await Utils.refreshToken();
+        await Utils.api_getRequest("user/", Utils.API_URL).onError((
+          e,
+          StackTrace,
+        ) {
+          connected = false;
+          throw Exception();
+        });
       });
       connected = true;
       UserDTO dto = UserDTO.fromJson(resp);
@@ -35,24 +46,18 @@ class Landing extends StatelessWidget {
         Uri.parse('https://ilyass-server.taila311b0.ts.net'),
       );
 
-      Cookie? authCookie = cookies.firstWhere(
-        (c) => c.name == 'access_token',
-        orElse: () => Cookie('dummy', ''),
-      );
-
-      if (authCookie.name == 'dummy') {
-        print("No cookies !");
-      }
+      Cookie? accessToken = cookies.firstWhere((c) => c.name == 'access_token');
 
       Utils.client = StompClient(
         config: StompConfig.sockJS(
           url: 'https://ilyass-server.taila311b0.ts.net/ws',
           webSocketConnectHeaders: {
             'Host': 'ilyass-server.taila311b0.ts.net',
-            'Cookie': '${authCookie.name}=${authCookie.value}',
+            'Cookie': '${accessToken.name}=${accessToken.value}',
           },
 
           onConnect: (StompFrame frame) {
+            //Subscribing to general chat
             Utils.client.subscribe(
               destination: '/topic/general-chat',
               callback: (StompFrame frame) {
@@ -62,23 +67,45 @@ class Landing extends StatelessWidget {
                 }
               },
             );
-            //Subscribing to general-chat
+
+            //Subscribing to the "game created"
+            Utils.client.subscribe(
+              destination: '/user/queue/game/created',
+              callback: (StompFrame frame) {
+                if (frame.body != null) {
+                  print('GAME CREATED: ${frame.body!}');
+                  Game.currentGameId = jsonDecode(frame.body!)['gameId'];
+                  Utils.currentGame!.value = Game();
+                }
+              },
+            );
+
+            //Subscribing to the "game joined"
+            Utils.client.subscribe(
+              destination: '/user/queue/game/joined',
+              callback: (StompFrame frame) {
+                if (frame.body != null) {
+                  print('GAME JOINED: ${frame.body!}');
+
+                  Game.currentGameId = jsonDecode(frame.body!)['gameId'];
+                  Utils.currentGame!.value = Game();
+                }
+              },
+            );
+
+            //Subscribing to error queue
+            Utils.client.subscribe(
+              destination: '/queue/errors',
+              callback: (StompFrame frame) {
+                if (frame.body != null) {
+                  print('Server side error : ${frame.body!}');
+                }
+              },
+            );
           },
 
-          // onDebugMessage: (callback) => {
-          //   print('DEBUG ERROR: ${callback}')
-          // },
+          onWebSocketError: (dynamic error) async => await reloadWsConnection(),
 
-          // onStompError: (StompFrame frame) {
-          //   print('CRITICAL STOMP ERROR: ${frame.body}');
-          // },
-          // onWebSocketError: (dynamic error) {
-          //   print('WEBSOCKET ERROR: $error');
-          // },
-
-          // onUnhandledFrame: (StompFrame frame) {
-          //   print('UNHANDLED FRAME: ${frame.command}');
-          // },
           onDisconnect: (frame) => print('Disconnected'),
         ),
       );
@@ -90,13 +117,84 @@ class Landing extends StatelessWidget {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (context) => connected
+        PageRouteBuilder(
+          pageBuilder: (context, a1, a2) => connected
               ? build_onConnection(context)
               : build_offConnection(context),
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
         ),
       );
     });
+  }
+
+  Future<void> reloadWsConnection() async {
+    await Utils.refreshToken();
+
+    List<Cookie> cookies = await persistCookieJar!.loadForRequest(
+      Uri.parse('https://ilyass-server.taila311b0.ts.net'),
+    );
+
+    Cookie? accessToken = cookies.firstWhere((c) => c.name == 'access_token');
+
+    Utils.client = StompClient(
+      config: StompConfig.sockJS(
+        url: 'https://ilyass-server.taila311b0.ts.net/ws',
+        webSocketConnectHeaders: {
+          'Host': 'ilyass-server.taila311b0.ts.net',
+          'Cookie': '${accessToken.name}=${accessToken.value}',
+        },
+
+        onConnect: (StompFrame frame) {
+          //Subscribing to general chat
+          Utils.client.subscribe(
+            destination: '/topic/general-chat',
+            callback: (StompFrame frame) {
+              if (frame.body != null) {
+                print('Received: ${frame.body!}');
+                Utils.onGeneralChatMessage?.call(frame.body);
+              }
+            },
+          );
+
+          //Subscribing to the "game created"
+          Utils.client.subscribe(
+            destination: '/user/queue/game/created',
+            callback: (StompFrame frame) {
+              if (frame.body != null) {
+                print('GAME CREATED: ${frame.body!}');
+              }
+            },
+          );
+
+          //Subscribing to the "game joined"
+          Utils.client.subscribe(
+            destination: '/user/queue/game/joined',
+            callback: (StompFrame frame) {
+              if (frame.body != null) {
+                print('GAME JOINED: ${frame.body!}');
+              }
+            },
+          );
+
+          //Subscribing to error queue
+          Utils.client.subscribe(
+            destination: '/queue/errors',
+            callback: (StompFrame frame) {
+              if (frame.body != null) {
+                print('Server side error : ${frame.body!}');
+              }
+            },
+          );
+        },
+
+        onWebSocketError: (dynamic error) async => await reloadWsConnection(),
+
+        onDisconnect: (frame) => print('Disconnected'),
+      ),
+    );
+
+    Utils.client.activate();
   }
 
   Widget build_temporarly(BuildContext context) {
@@ -248,7 +346,9 @@ class Landing extends StatelessWidget {
                               ),
                             ),
                             Expanded(
-                              flex: 2,
+                              flex: Utils.userDetails!.username!.length > 10
+                                  ? 2
+                                  : 1,
                               child: Text(
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
@@ -273,14 +373,21 @@ class Landing extends StatelessWidget {
                 "Play Online",
                 Color.fromARGB(255, 232, 208, 153),
                 Color.fromARGB(255, 155, 138, 101),
-                () => print("Load Pvp"),
+                () {
+                  print(jsonEncode({"mode": 'PVP'}));
+                  createGame('PVP', context);
+                  print("Load Pvp");
+                },
               ),
               SizedBox(height: 10),
               Submitbutton(
                 "Play vs Ai",
                 Color.fromARGB(255, 216, 157, 143),
                 Color.fromARGB(255, 142, 102, 93),
-                () => print("Load Pve"),
+                () {
+                  createGame('PVE', context);
+                  print("Load Pve");
+                },
               ),
             ],
           ),
@@ -288,5 +395,23 @@ class Landing extends StatelessWidget {
       ),
       bottomNavigationBar: Utils.getNavbar(context, 0),
     );
+  }
+
+  void createGame(String mode, BuildContext context) {
+    Utils.client.send(
+      headers: {'content-type': 'application/json'},
+      destination: "/app/game/create",
+      body: jsonEncode(mode),
+    );
+    Utils.currentGame!.addListener(() {
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, a1, a2) => Utils.currentGame!.value!,
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+        ),
+      );
+    });
   }
 }
