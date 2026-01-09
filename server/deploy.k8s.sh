@@ -1,13 +1,15 @@
 #!/usr/bin/bash
 
-APP_DIR=/home/ilyass/DeepDame/server/
-cd $APP_DIR
+cd $HOME
+SERVER_DIR="$HOME/DeepDame/server"
 
-# pulling main
-git pull origin main
-
-# renaming logback-spring
-# mv ./DeepDame/src/main/resources/slogback-spring.xml ./DeepDame/src/main/resources/logback-spring.xml
+if [ -d "DeepDame" ]; then
+    cd $SERVER_DIR
+    git pull origin main
+else
+    git clone git@github.com:Ilyass-Bougati/DeepDame.git
+    cd $SERVER_DIR
+fi
 
 # building the image
 eval $(minikube docker-env)
