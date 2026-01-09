@@ -57,7 +57,7 @@
                     <div style="flex: 1;">
                         <div class="mb-1">
                             <span class="fw-bold" style="color: var(--sage-primary);" th:text="${msg.user.username}">User</span>
-                            <small class="text-muted ms-2" th:text="${#temporals.format(msg.createdAt, 'HH:mm')}">12:00</small>
+                            <small class="text-muted ms-2" th:text="${#temporals.format(msg.createdAt, 'dd/MM/yyyy HH:mm')}">09/01/2026 12:00</small>
                         </div>
                         <p class="mb-0 text-dark" th:text="${msg.message}">Message content...</p>
                     </div>
@@ -197,8 +197,8 @@
             showModerationModal(msg.id, 'app');
         });
 
-        chatWindow.appendChild(messageDiv);
-        chatWindow.scrollTop = chatWindow.scrollHeight;
+        chatWindow.prepend(messageDiv);
+        chatWindow.scrollTop = 0;
     }
 
     function handleBan(button) {
