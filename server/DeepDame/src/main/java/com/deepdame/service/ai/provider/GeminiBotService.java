@@ -23,14 +23,11 @@ import java.util.Map;
 public class GeminiBotService implements AiBotService {
 
     private final PromptBuilder promptBuilder;
-    private final RestClient restClient = RestClient.create();
+    private final RestClient restClient;
     private final ObjectMapper objectMapper;
 
-    @Value("${ai.gemini.api-key}")
+    @Value("${ai.gemini.api-key:}")
     private String apiKey;
-
-    @Value("${ai.gemini.url}")
-    private String GEMINI_URL;
 
     @Override
     public Move getAiMove(Board board, List<Move> legalMoves, AiDifficulty difficulty) {
@@ -45,16 +42,10 @@ public class GeminiBotService implements AiBotService {
                 "generationConfig", Map.of("responseMimeType", "application/json")
         );
 
-        try {
-            log.info("Sending Request to Gemini: {}", objectMapper.writeValueAsString(requestBody));
-        } catch (Exception e) {
-            log.warn("Failed to serialize request body for logging", e);
-        }
-
         String response;
         try {
             response = restClient.post()
-                    .uri(GEMINI_URL + apiKey)
+                    .uri(uriBuilder -> uriBuilder.queryParam("key", apiKey).build())
                     .body(requestBody)
                     .retrieve()
                     .body(String.class);

@@ -24,11 +24,8 @@ import java.util.Map;
 public class OllamaBotService implements AiBotService {
 
     private final PromptBuilder promptBuilder;
-    private final RestClient restClient = RestClient.create();
+    private final RestClient restClient;
     private final ObjectMapper objectMapper;
-
-    @Value("${ai.ollama.url}")
-    private String ollamaUrl;
 
     @Value("${ai.ollama.model}")
     private String modelName;
@@ -46,7 +43,6 @@ public class OllamaBotService implements AiBotService {
         );
 
         String response = restClient.post()
-                .uri(ollamaUrl)
                 .body(requestBody)
                 .retrieve()
                 .body(String.class);

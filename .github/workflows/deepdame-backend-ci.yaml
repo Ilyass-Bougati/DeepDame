@@ -2,11 +2,11 @@ name: DeepDame CI/CD
 
 on:
   push:
-    branches: [ "main"]
+    branches: [ "main", "staging"]
     paths:
       - 'server/**' 
   pull_request:
-    branches: [ "main"]
+    branches: [ "main", "staging"]
     paths:
       - 'server/**'
 
@@ -83,16 +83,16 @@ jobs:
         # Mongo Config
         SPRING_DATA_MONGODB_URI: mongodb://admin:password@localhost:27017/deepdame?authSource=admin
 
-  build-and-deploy:
+  deploy-k8s:
     needs: test-and-build
     runs-on: self-hosted
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Execute Deployment Script
+    - name: Deploying locally to K8s
       run: |
         # Adjust path to where you saved the script
-        /home/ilyass/DeepDame/server/DeepDame/deploy.sh
+        /home/ilyass/DeepDame/server/deploy.k8s.sh

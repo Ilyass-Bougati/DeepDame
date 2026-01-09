@@ -24,4 +24,5 @@ public interface UserService extends CrudDtoService<UUID, UserDto> {
     void changePassword(UUID userId, @NotEmpty String oldPassword, @NotEmpty String newPassword);
     void changePassword(String email, String newPassword);
     void updateUserRoles(UUID userId, List<UUID> roleIds);
+    UserDto changeUsername(UUID id, String newUsername);
 }

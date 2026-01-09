@@ -11,6 +11,9 @@ import com.deepdame.listeners.WebSocketPresenceEventListener;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -29,6 +32,8 @@ public class StatisticsServiceImpl implements StatisticsService {
     private final PlayerStatisticsRepository playerStatisticsRepository;
     private final GameCacheService gameCacheService;
     private final StringRedisTemplate stringRedisTemplate;
+
+    private final SimpMessagingTemplate messagingTemplate;
 
     public AdminDashboardStatsDto getAdminDashboardStats() {
 
@@ -82,6 +87,19 @@ public class StatisticsServiceImpl implements StatisticsService {
                 .build();
     }
 
+    @Scheduled(fixedRate = 5000) // 5 s
+    public void pushStatsToDashboard() {
+        try {
+
+            AdminDashboardStatsDto currentStats = getAdminDashboardStats();
+
+            messagingTemplate.convertAndSend("/topic/admin/stats", currentStats);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public PlayerStatsDto getPlayerStats(UUID userId) {
 
         PlayerStatistics stats = playerStatisticsRepository.findByUserId(userId)
@@ -98,6 +116,7 @@ public class StatisticsServiceImpl implements StatisticsService {
                 .build();
     }
 
+    @Async("taskExecutor")
     public void updateStatsAfterGame(UUID winnerId, UUID loserId) {
         if (winnerId != null) updateOneUser(winnerId, true, false, loserId);
         if (loserId != null) updateOneUser(loserId, false, true, winnerId);

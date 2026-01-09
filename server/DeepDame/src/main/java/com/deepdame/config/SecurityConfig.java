@@ -34,7 +34,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/logout").authenticated()
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
+                        // TODO : remove this later
                         .requestMatchers("/test/**").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/api/v1/user/forgotPassword/**").permitAll()
                         // swagger
                         .requestMatchers("/v3/**").permitAll()
