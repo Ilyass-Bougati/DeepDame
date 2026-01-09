@@ -29,6 +29,19 @@ public class WsExceptionHandler {
     @MessageExceptionHandler(Exception.class)
     @SendToUser("/queue/errors")
     public String handleGeneralException(Exception e) {
+        log.error("Unhandled WebSocket Exception: ", e);
         return "SERVER_ERROR: An internal error occurred.";
+    }
+
+    @MessageExceptionHandler(IllegalMoveException.class)
+    @SendToUser("/queue/errors")
+    public String handleIllegalMove(IllegalMoveException e) {
+        return "INVALID_MOVE: " + e.getMessage();
+    }
+
+    @MessageExceptionHandler(IllegalArgumentException.class)
+    @SendToUser("/queue/errors")
+    public String handleIllegalArgument(IllegalArgumentException e) {
+        return "BAD_REQUEST: " + e.getMessage();
     }
 }
