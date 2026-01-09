@@ -34,7 +34,7 @@ public class GameServiceImpl implements GameService{
     private final AiOrchestrator aiOrchestrator;
     private final StatisticsService statisticsService;
 
-    private final GameEngine gameEngine = new GameEngine();
+    private final GameEngine gameEngine;
 
     @Override
     public GameDto findById(UUID id){
