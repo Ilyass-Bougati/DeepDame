@@ -48,7 +48,7 @@ public class DefaultAdminRunner implements CommandLineRunner {
 
         authController.register(registerRequest);
 
-        // making the sender admin
+        // making the user admin
         User user =  userRepository.findByEmail(defaultAdminEmail)
                 .orElseThrow(() -> new RuntimeException("Error creating default admin"));
         Role role = roleRepository.findByName("SUPER-ADMIN")

@@ -21,6 +21,6 @@ public class GameInvitationListener implements MessageListener {
     public void onMessage(Message message, byte @Nullable [] pattern) {
         log.debug("Game invitation received: {}", message);
         GameNotificationDto gameInvitation = objectMapper.readValue(message.getBody(), GameNotificationDto.class);
-        messagingTemplate.convertAndSend("/topic/sender/" + gameInvitation.receiverId() + "/game-notifications", gameInvitation);
+        messagingTemplate.convertAndSend("/topic/user/" + gameInvitation.receiverId() + "/game-notifications", gameInvitation);
     }
 }
