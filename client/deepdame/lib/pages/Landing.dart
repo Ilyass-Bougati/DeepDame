@@ -70,7 +70,7 @@ class Landing extends StatelessWidget {
 
             //Subscribing to the "game created"
             Utils.client.subscribe(
-              destination: '/sender/queue/game/created',
+              destination: '/user/queue/game/created',
               callback: (StompFrame frame) {
                 if (frame.body != null) {
                   print('GAME CREATED: ${frame.body!}');
@@ -82,7 +82,7 @@ class Landing extends StatelessWidget {
 
             //Subscribing to the "game joined"
             Utils.client.subscribe(
-              destination: '/sender/queue/game/joined',
+              destination: '/user/queue/game/joined',
               callback: (StompFrame frame) {
                 if (frame.body != null) {
                   print('GAME JOINED: ${frame.body!}');
@@ -161,7 +161,7 @@ class Landing extends StatelessWidget {
 
           //Subscribing to the "game created"
           Utils.client.subscribe(
-            destination: '/sender/queue/game/created',
+            destination: '/user/queue/game/created',
             callback: (StompFrame frame) {
               if (frame.body != null) {
                 print('GAME CREATED: ${frame.body!}');
@@ -171,7 +171,7 @@ class Landing extends StatelessWidget {
 
           //Subscribing to the "game joined"
           Utils.client.subscribe(
-            destination: '/sender/queue/game/joined',
+            destination: '/user/queue/game/joined',
             callback: (StompFrame frame) {
               if (frame.body != null) {
                 print('GAME JOINED: ${frame.body!}');
