@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:deepdame/dtos/UserDto.dart';
+import 'package:deepdame/main.dart';
 import 'package:deepdame/pages/Connect.dart';
 import 'package:deepdame/pages/Game.dart';
 import 'package:deepdame/pages/General.dart';
+import 'package:deepdame/prefabs/Input.dart';
 import 'package:deepdame/prefabs/SubmitButton.dart';
 import 'package:deepdame/static/Utils.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +14,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:stomp_dart_client/stomp_dart_client.dart';
 
 class Landing extends StatelessWidget {
-  Landing({super.key});
+  const Landing({super.key});
 
   @override
   Widget build(BuildContext context) => Utils.userDetails == null
@@ -20,111 +22,177 @@ class Landing extends StatelessWidget {
       : build_onConnection(context);
 
   Future<void> initLandingPage(BuildContext context) async {
-    Utils.currentGame = ValueNotifier(null);
+    TextEditingController _controller = TextEditingController();
 
-    bool connected = false;
-    try {
-      var resp = await Utils.api_getRequest("user/", Utils.API_URL).onError((
-        e,
-        stackTrace,
-      ) async {
-        //Refresh the access token before retrying to fetch user data.
-        await Utils.refreshToken();
-        await Utils.api_getRequest("user/", Utils.API_URL).onError((
-          e,
-          StackTrace,
-        ) {
-          connected = false;
-          throw Exception();
-        });
-      });
-      connected = true;
-      UserDTO dto = UserDTO.fromJson(resp);
-      Utils.userDetails = dto.toUser();
-
-      List<Cookie> cookies = await persistCookieJar!.loadForRequest(
-        Uri.parse('https://ilyass-server.taila311b0.ts.net'),
-      );
-
-      Cookie? accessToken = cookies.firstWhere((c) => c.name == 'access_token');
-
-      Utils.client = StompClient(
-        config: StompConfig.sockJS(
-          url: 'https://ilyass-server.taila311b0.ts.net/ws',
-          webSocketConnectHeaders: {
-            'Host': 'ilyass-server.taila311b0.ts.net',
-            'Cookie': '${accessToken.name}=${accessToken.value}',
-          },
-
-          onConnect: (StompFrame frame) {
-            //Subscribing to general chat
-            Utils.client.subscribe(
-              destination: '/topic/general-chat',
-              callback: (StompFrame frame) {
-                if (frame.body != null) {
-                  print('Received: ${frame.body!}');
-                  Utils.onGeneralChatMessage?.call(frame.body);
-                }
-              },
-            );
-
-            //Subscribing to the "game created"
-            Utils.client.subscribe(
-              destination: '/user/queue/game/created',
-              callback: (StompFrame frame) {
-                if (frame.body != null) {
-                  print('GAME CREATED: ${frame.body!}');
-                  Game.currentGameId = jsonDecode(frame.body!)['gameId'];
-                  Utils.currentGame!.value = Game(true);
-                }
-              },
-            );
-
-            //Subscribing to the "game joined"
-            Utils.client.subscribe(
-              destination: '/user/queue/game/joined',
-              callback: (StompFrame frame) {
-                if (frame.body != null) {
-                  print('GAME JOINED: ${frame.body!}');
-
-                  Game.opponent = jsonDecode(frame.body!)['opponentName'];
-                  print(jsonDecode(frame.body!)['opponentName']);
-                  Game.currentGameId = jsonDecode(frame.body!)['gameId'];
-                  Utils.currentGame!.value = Game(false);
-                }
-              },
-            );
-
-            //Subscribing to error queue
-            Utils.client.subscribe(
-              destination: '/queue/errors',
-              callback: (StompFrame frame) {
-                if (frame.body != null) {
-                  print('Server side error : ${frame.body!}');
-                }
-              },
-            );
-          },
-
-          onWebSocketError: (dynamic error) async => await reloadWsConnection(),
-
-          onDisconnect: (frame) => print('Disconnected'),
-        ),
-      );
-
-      Utils.client.activate();
-      Utils.onGeneralChatMessage = General.initOnMessageFunction();
-    } catch (e) {}
-    Navigator.pop(context);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, a1, a2) => connected
-              ? build_onConnection(context)
-              : build_offConnection(context),
-          transitionDuration: Duration.zero,
-          reverseTransitionDuration: Duration.zero,
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          content: Column(
+            spacing: 30,
+            children: [
+              Input("Api", TextInputType.text, _controller, "", () => true),
+              Submitbutton(
+                "Submit",
+                Color.fromARGB(255, 170, 188, 180),
+                Color.fromARGB(255, 119, 133, 127),
+                () async {
+                  if (_controller.text != "") {
+                    Utils.API = _controller.text;
+                  }
+                  Utils.currentGame = ValueNotifier(null);
+
+                  bool isConnected = false;
+                  try {
+                    var resp =
+                        await Utils.api_getRequest(
+                          "user/",
+                          Utils.API_URL,
+                        ).onError((e, stackTrace) {
+                          isConnected = false;
+                          throw Exception();
+                        });
+                    isConnected = true;
+                    UserDTO dto = UserDTO.fromJson(resp);
+                    Utils.userDetails = dto.toUser();
+
+                    List<Cookie> cookies = await persistCookieJar!
+                        .loadForRequest(Uri.parse('https://${Utils.API}'));
+
+                    Cookie? accessToken = cookies.firstWhere(
+                      (c) => c.name == 'access_token',
+                      orElse: () => Cookie("access_token", ""),
+                    );
+
+                    if (accessToken.value.isEmpty) {
+                      Utils.userDetails = null;
+                      isConnected = false;
+                      throw Exception();
+                    }
+
+                    Utils.client = StompClient(
+                      config: StompConfig.sockJS(
+                        url: 'https://${Utils.API}/ws',
+                        webSocketConnectHeaders: {
+                          'Host': Utils.API,
+                          'Cookie': '${accessToken.name}=${accessToken.value}',
+                        },
+
+                        onConnect: (StompFrame frame) {
+                          //Subscribing to general chat
+                          Utils.client.subscribe(
+                            destination: '/topic/general-chat',
+                            callback: (StompFrame frame) {
+                              if (frame.body != null) {
+                                print('Received: ${frame.body!}');
+                                Utils.onGeneralChatMessage?.call(frame.body);
+                              }
+                            },
+                          );
+
+                          //Subscribing to the "game created"
+                          Utils.client.subscribe(
+                            destination: ws_gameCreated,
+                            callback: (StompFrame frame) {
+                              if (frame.body != null) {
+                                print('GAME CREATED: ${frame.body!}');
+                                Game.currentGameId = jsonDecode(
+                                  frame.body!,
+                                )['gameId'];
+                                Utils.currentGame!.value = Game(true);
+                              }
+                            },
+                          );
+
+                          //Subscribing to the "game joined"
+                          Utils.client.subscribe(
+                            destination: ws_gameJoined,
+                            callback: (StompFrame frame) {
+                              if (frame.body != null) {
+                                print('GAME JOINED: ${frame.body!}');
+
+                                Game.opponent = jsonDecode(
+                                  frame.body!,
+                                )['opponentName'];
+                                print(jsonDecode(frame.body!)['opponentName']);
+                                Game.currentGameId = jsonDecode(
+                                  frame.body!,
+                                )['gameId'];
+                                Utils.currentGame!.value = Game(false);
+                              }
+                            },
+                          );
+
+                          // Subscribing to error queue
+                          Utils.client.subscribe(
+                            destination: ws_serverSideError,
+                            callback: (StompFrame frame) {
+                              if (frame.body != null) {
+                                print('Server side error : ${frame.body!}');
+                              }
+                            },
+                          );
+                        },
+
+                        onDebugMessage: (String msg) {
+                          print('STOMP DEBUG: $msg');
+                        },
+                        onWebSocketError: (dynamic error) {
+                          print('WebSocket Error: $error');
+                        },
+                        onStompError: (StompFrame frame) {
+                          print('Stomp Error: ${frame.body}');
+                        },
+
+                        // onWebSocketError: (dynamic error) async => await reloadWsConnection(),
+                        onDisconnect: (frame) => print('Disconnected'),
+                      ),
+                    );
+                    Utils.client.activate();
+                    Utils.onGeneralChatMessage =
+                        General.initOnMessageFunction();
+                  } catch (e) {}
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    // FIXME: This is temporary for debugging purposes !
+                    // Navigator.pop(context);
+                    // Navigator.pushReplacement(
+                    //   context,
+                    //   PageRouteBuilder(
+                    //     pageBuilder: (context, a1, a2) => isConnected
+                    //         ? build_onConnection(context)
+                    //         : build_offConnection(context),
+                    //     transitionDuration: Duration.zero,
+                    //     reverseTransitionDuration: Duration.zero,
+                    //   ),
+                    // );
+                  });
+                },
+              ),
+
+              Submitbutton(
+                "Load landing",
+                Color.fromARGB(255, 170, 188, 180),
+                Color.fromARGB(255, 119, 133, 127),
+                () {
+                  Navigator.pop(context);
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    Navigator.pushReplacement(
+                      context,
+                      PageRouteBuilder(
+                        pageBuilder: (context, a1, a2) =>
+                            Utils.userDetails != null
+                            ? build_onConnection(context)
+                            : build_offConnection(context),
+                        transitionDuration: Duration.zero,
+                        reverseTransitionDuration: Duration.zero,
+                      ),
+                    );
+                  });
+                },
+              ),
+            ],
+          ),
         ),
       );
     });
@@ -134,16 +202,16 @@ class Landing extends StatelessWidget {
     await Utils.refreshToken();
 
     List<Cookie> cookies = await persistCookieJar!.loadForRequest(
-      Uri.parse('https://ilyass-server.taila311b0.ts.net'),
+      Uri.parse('https://${Utils.API}'),
     );
 
     Cookie? accessToken = cookies.firstWhere((c) => c.name == 'access_token');
 
     Utils.client = StompClient(
       config: StompConfig.sockJS(
-        url: 'https://ilyass-server.taila311b0.ts.net/ws',
+        url: 'https://${Utils.API}/ws',
         webSocketConnectHeaders: {
-          'Host': 'ilyass-server.taila311b0.ts.net',
+          'Host': Utils.API,
           'Cookie': '${accessToken.name}=${accessToken.value}',
         },
 
@@ -161,27 +229,34 @@ class Landing extends StatelessWidget {
 
           //Subscribing to the "game created"
           Utils.client.subscribe(
-            destination: '/user/queue/game/created',
+            destination: ws_gameCreated,
             callback: (StompFrame frame) {
               if (frame.body != null) {
                 print('GAME CREATED: ${frame.body!}');
+                Game.currentGameId = jsonDecode(frame.body!)['gameId'];
+                Utils.currentGame!.value = Game(true);
               }
             },
           );
 
           //Subscribing to the "game joined"
           Utils.client.subscribe(
-            destination: '/user/queue/game/joined',
+            destination: ws_gameJoined,
             callback: (StompFrame frame) {
               if (frame.body != null) {
                 print('GAME JOINED: ${frame.body!}');
+
+                Game.opponent = jsonDecode(frame.body!)['opponentName'];
+                print(jsonDecode(frame.body!)['opponentName']);
+                Game.currentGameId = jsonDecode(frame.body!)['gameId'];
+                Utils.currentGame!.value = Game(false);
               }
             },
           );
 
           //Subscribing to error queue
           Utils.client.subscribe(
-            destination: '/queue/errors',
+            destination: ws_serverSideError,
             callback: (StompFrame frame) {
               if (frame.body != null) {
                 print('Server side error : ${frame.body!}');
@@ -195,16 +270,15 @@ class Landing extends StatelessWidget {
         onDisconnect: (frame) => print('Disconnected'),
       ),
     );
-
     Utils.client.activate();
   }
 
   Widget build_temporarly(BuildContext context) {
     initLandingPage(context);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Utils.showLoadingDialog(context);
+      // FIXME: This is temporary for debugging purposes !
+      // Utils.showLoadingDialog(context);
     });
-
     return Scaffold(backgroundColor: Color.fromARGB(255, 253, 251, 247));
   }
 
