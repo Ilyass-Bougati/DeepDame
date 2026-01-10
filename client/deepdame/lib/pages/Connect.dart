@@ -47,8 +47,6 @@ class Connect extends StatelessWidget {
   }
 
   Widget _loginPage(BuildContext context) {
-    TextEditingController api_controller = TextEditingController();
-
     ValidationController email_controller = ValidationController();
     ValidationController password_controller = ValidationController();
     return Scaffold(
@@ -141,20 +139,6 @@ class Connect extends StatelessWidget {
                             ),
                           ),
                         ),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: SizedBox(
-                            child: Input(
-                              "Api",
-                              TextInputType.text,
-                              api_controller,
-                              "",
-                              () {
-                                return true;
-                              },
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                   ),
@@ -173,7 +157,7 @@ class Connect extends StatelessWidget {
                       await Utils.api_postRequest(
                         request,
                         "auth/login",
-                        api_controller.text == "" ? Utils.API_URL : api_controller.text,
+                        Utils.API_URL,
                       ).onError((e, stacktrace) {
                         if (context.mounted) {
                           Navigator.pop(context);
@@ -219,7 +203,6 @@ class Connect extends StatelessWidget {
   }
 
   Widget _registerPage(BuildContext context) {
-    TextEditingController api_controller = TextEditingController();
     Map<String, ValidationController> map = <String, ValidationController>{};
     String usernameErrorStr = "Invalid username";
 
@@ -302,7 +285,7 @@ class Connect extends StatelessWidget {
                               () async {
                                 return (await Utils.api_getRequest(
                                       "auth/checkUsername/${map['username']!.getController().text}",
-                                      api_controller.text == "" ? Utils.API_URL : api_controller.text,
+                                      Utils.API_URL,
                                     )
                                     as Map)['message'];
                               },
@@ -408,20 +391,6 @@ class Connect extends StatelessWidget {
                             ),
                           ),
                         ),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: SizedBox(
-                            child: Input(
-                              "Api",
-                              TextInputType.text,
-                              api_controller,
-                              "",
-                              () {
-                                return true;
-                              },
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                   ),
@@ -456,7 +425,7 @@ class Connect extends StatelessWidget {
                         await Utils.api_postRequest(
                           request,
                           "auth/register",
-                          api_controller.text == "" ? Utils.API_URL : api_controller.text,
+                          Utils.API_URL,
                         ).onError((e, stacktrace) {
                           if (context.mounted) {
                             Navigator.pop(context);
