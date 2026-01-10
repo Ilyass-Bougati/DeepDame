@@ -18,8 +18,12 @@ final Random random = Random();
 PersistCookieJar? persistCookieJar;
 final dio = Dio();
 
+final String ws_gameCreated = '/user/queue/game/created';
+final String ws_gameJoined = '/user/queue/game/joined';
+final String ws_serverSideError = '/user/queue/errors';
+
 class Utils {
-  static ValueNotifier<Game?>? currentGame ;
+  static ValueNotifier<Game?>? currentGame;
   static User? userDetails;
   static String API = "ilyass-server.taila311b0.ts.net";
   static String API_URL = "https://$API/api/v1";
@@ -200,9 +204,22 @@ class Utils {
 
       return resp.data;
     } on DioException catch (e) {
-      print("Error: ${e.response?.statusCode} - ${e.message}");
+      if (e.response?.statusCode == 403) {
+        await refreshToken();
+        try {
+          resp = await dio.post(
+            "$newApi/$route",
+            data: request.toJson(),
+            options: Options(contentType: Headers.jsonContentType),
+          );
 
-      throw Exception(errorStringGenerator(e));
+          return resp.data;
+        } on DioException catch (e) {
+          throw Exception(errorStringGenerator(e));
+        }
+      } else {
+        throw Exception(errorStringGenerator(e));
+      }
     }
   }
 
@@ -223,7 +240,7 @@ class Utils {
   }
 
   static Future<void> refreshToken() async {
-    await api_postRequest(EmptyRequest().toJson(), "/auth/refresh" , API_URL);
+    await api_postRequest(EmptyRequest().toJson(), "/auth/refresh", API_URL);
   }
 
   static Future<void> clearCookies(Function() fn) async {
