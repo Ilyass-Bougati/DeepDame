@@ -1,3 +1,4 @@
+import 'package:deepdame/main.dart';
 import 'package:deepdame/pages/General.dart';
 import 'package:deepdame/pages/Landing.dart';
 import 'package:deepdame/prefabs/SubmitButton.dart';
@@ -56,7 +57,15 @@ class _preferencesCreateState extends State<Preferences> {
                       color: Color.fromARGB(255, 123, 152, 166),
                       borderRadius: BorderRadius.circular(80),
                     ),
-                    child: SizedBox(height: 80, width: 80),
+                    child: SizedBox(
+                      height: 80,
+                      width: 80,
+                      child: Icon(
+                        Icons.person_rounded,
+                        color: Color.fromARGB(255, 64, 79, 87),
+                        size: 40
+                      ),
+                    ),
                   ),
                   SizedBox(width: 30),
                   Expanded(
@@ -175,14 +184,15 @@ class _preferencesCreateState extends State<Preferences> {
                       "Log out",
                       Color.fromARGB(255, 216, 157, 143),
                       Color.fromARGB(255, 142, 102, 93),
-                      () {
+                      () async {
                         Utils.api_postRequest(
                           EmptyRequest(),
                           "/auth/logout",
                           Utils.API_URL,
                         );
+                        connected = false;
                         Utils.userDetails = null;
-                        Utils.clearCookies(() {
+                        await Utils.clearCookies(() {
                           Utils.client.deactivate();
                           General.emptyChatData();
                           Navigator.of(
