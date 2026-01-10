@@ -84,6 +84,7 @@ public class AdminChatController {
     public String viewChat(Model model) {
         List<GeneralChatMessageDto> recentMessages = chatMessageService.getGeneralChatMessages(0L, 50L);
         List<GeneralChatMessageDto> chronologicalMessages = new ArrayList<>(recentMessages);
+        Collections.reverse(chronologicalMessages);
 
         model.addAttribute("messages", chronologicalMessages);
         return "admin/chat/general-chat";
