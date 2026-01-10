@@ -39,7 +39,7 @@ public class HuggingFaceBotService implements AiBotService {
                 "model", modelName,
                 "messages", List.of(
                         Map.of("role", "system", "content", systemPrompt),
-                        Map.of("role", "sender", "content", userPrompt)
+                        Map.of("role", "user", "content", userPrompt)
                 ),
                 "max_tokens", 500,
                 "temperature", 0.1,

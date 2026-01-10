@@ -21,6 +21,6 @@ public class FriendInvitationListener implements MessageListener {
     public void onMessage(Message message, byte @Nullable [] pattern) {
         log.debug("Friend invitation received: {}", message);
         FriendRequestDto friendInvitation = objectMapper.readValue(message.getBody(), FriendRequestDto.class);
-        messagingTemplate.convertAndSend("/topic/sender/" + friendInvitation.getReceiverId() + "/friend-request-notifications", friendInvitation);
+        messagingTemplate.convertAndSend("/topic/user/" + friendInvitation.getReceiverId() + "/friend-request-notifications", friendInvitation);
     }
 }

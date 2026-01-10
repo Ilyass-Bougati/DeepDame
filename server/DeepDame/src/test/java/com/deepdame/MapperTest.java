@@ -41,7 +41,7 @@ public class MapperTest {
     public void userMapperTest() {
         User mockUser = User.builder()
                 .id(UUID.randomUUID())
-                .username("mock.sender")
+                .username("mock.user")
                 .email("mock.email@gmail.com")
                 .password("mock.password")
                 .bannedFromApp(true)
