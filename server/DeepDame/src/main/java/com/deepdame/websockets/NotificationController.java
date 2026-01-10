@@ -30,8 +30,8 @@ public class NotificationController {
     private final RedisNotificationService redisNotificationService;
 
     /**
-     * As you'd notice this controller sends a message to the websocket `/topic/sender/userId/notification`
-     * hence for a sender to get a notification, they'll have to be subscribed to that topic
+     * As you'd notice this controller sends a message to the websocket `/topic/user/userId/notification`
+     * hence for a user to get a notification, they'll have to be subscribed to that topic
      * @param principal this will be inserted directly by Spring Security
      * @param request this project holds the details of the notification
      */
@@ -40,7 +40,7 @@ public class NotificationController {
             @AuthenticationPrincipal CustomUserDetails principal,
             @Valid @Payload GameInvitationDto request
     ) {
-        log.debug("Received game invitation for sender {}", request.userId());
+        log.debug("Received game invitation for user {}", request.userId());
 
         if (principal.getUser().getId().equals(request.userId())) {
             throw new WsUnauthorized("You can only invite yourself");
