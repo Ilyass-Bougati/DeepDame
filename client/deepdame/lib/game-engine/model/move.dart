@@ -6,6 +6,21 @@ class Move {
 
   const Move(this.from, this.to);
 
+  factory Move.fromJson(Map<String, dynamic> json) {
+    return Move(
+      Position.fromJson(json['from']),
+      Position.fromJson(json['to']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'from': from.toJson(),
+      'to': to.toJson(),
+      // 'jump' and 'jumpedPosition' are excluded here
+    };
+  }
+
   bool get isJump {
     return (from.row - to.row).abs() == 2;
   }

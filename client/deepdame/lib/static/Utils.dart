@@ -3,10 +3,12 @@ import 'dart:math';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:deepdame/models/User.dart';
 import 'package:deepdame/pages/Friends.dart';
+import 'package:deepdame/pages/Game.dart';
 import 'package:deepdame/pages/General.dart';
 import 'package:deepdame/pages/Landing.dart';
 import 'package:deepdame/pages/Preferences.dart';
 import 'package:deepdame/prefabs/NavbarButton.dart';
+import 'package:deepdame/requests/EmptyRequest.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -17,6 +19,7 @@ PersistCookieJar? persistCookieJar;
 final dio = Dio();
 
 class Utils {
+  static ValueNotifier<Game?>? currentGame ;
   static User? userDetails;
   static String API = "ilyass-server.taila311b0.ts.net";
   static String API_URL = "https://$API/api/v1";
@@ -219,7 +222,11 @@ class Utils {
     }
   }
 
-  static void clearCookies(Function() fn) async {
+  static Future<void> refreshToken() async {
+    await api_postRequest(EmptyRequest().toJson(), "/auth/refresh" , API_URL);
+  }
+
+  static Future<void> clearCookies(Function() fn) async {
     await persistCookieJar!.deleteAll();
     fn();
   }
