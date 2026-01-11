@@ -1,6 +1,7 @@
 package com.deepdame.controller.admin;
 
 import com.deepdame.dto.generalChatMessage.GeneralChatMessageDto;
+import com.deepdame.dto.notification.BanNotification;
 import com.deepdame.entity.User;
 import com.deepdame.security.UserSecurity;
 import com.deepdame.service.generalChatMessage.GeneralChatMessageService;
@@ -48,6 +49,7 @@ public class AdminChatController {
             userService.banFromChat(targetUserId);
             chatMessageService.delete(messageId);
             messagingTemplate.convertAndSend("/topic/general-chat-delete", messageId.toString());
+            messagingTemplate.convertAndSend("/topic/chat-ban/" + message.getUser().getId(), new BanNotification(true));
 
             return ResponseEntity.ok().build();
         } catch (Exception e) {
@@ -72,6 +74,10 @@ public class AdminChatController {
             chatMessageService.delete(messageId);
 
             messagingTemplate.convertAndSend("/topic/general-chat-delete", messageId.toString());
+            String topic = "/topic/application-ban/" + message.getUser().getId();
+            messagingTemplate.convertAndSend(topic, new BanNotification(true));
+            log.info("App ban signal sent to topic: {}", topic);
+
 
             return ResponseEntity.ok().build();
         } catch (Exception e) {

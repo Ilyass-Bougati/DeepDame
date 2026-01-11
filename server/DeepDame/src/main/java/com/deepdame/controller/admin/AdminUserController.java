@@ -1,5 +1,6 @@
 package com.deepdame.controller.admin;
 
+import com.deepdame.dto.notification.BanNotification;
 import com.deepdame.dto.role.RoleDto;
 import com.deepdame.dto.user.UserDto;
 import com.deepdame.entity.Role;
@@ -12,6 +13,7 @@ import com.deepdame.service.user.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -33,6 +35,7 @@ public class AdminUserController {
     private final UserService userService;
     private final RoleService roleService;
     private final StatisticsService statisticsService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @GetMapping
     public String listUsers(@RequestParam(name = "keyword", required = false) String keyword, Model model) {
@@ -88,6 +91,11 @@ public class AdminUserController {
     public String banFromApp(@PathVariable UUID id, RedirectAttributes redirectAttributes) {
         log.info("Action: Banning User ID {} from the application", id);
         userService.banFromApp(id);
+
+        String topic = "/topic/application-ban/" + id;
+        messagingTemplate.convertAndSend(topic, new BanNotification(true));
+        log.info("App ban signal sent to topic: {}", topic);
+
         redirectAttributes.addFlashAttribute("success", "User has been banned from the application.");
         return "redirect:/admin/users";
     }
@@ -97,6 +105,9 @@ public class AdminUserController {
     public String unbanFromApp(@PathVariable UUID id, RedirectAttributes redirectAttributes) {
         log.info("Action: Unbanning User ID {} from the application", id);
         userService.unbanFromApp(id);
+
+        messagingTemplate.convertAndSend("/topic/application-ban/" + id, new BanNotification(false));
+
         redirectAttributes.addFlashAttribute("info", "Application access restored for this sender.");
         return "redirect:/admin/users";
     }
@@ -106,6 +117,9 @@ public class AdminUserController {
     public String banFromChat(@PathVariable UUID id, RedirectAttributes redirectAttributes) {
         log.info("Action: Banning User ID {} from chat", id);
         userService.banFromChat(id);
+
+        messagingTemplate.convertAndSend("/topic/chat-ban/" + id, new BanNotification(true));
+
         redirectAttributes.addFlashAttribute("success", "User is now restricted from sending messages.");
         return "redirect:/admin/users";
     }
@@ -115,6 +129,9 @@ public class AdminUserController {
     public String unbanFromChat(@PathVariable UUID id, RedirectAttributes redirectAttributes) {
         log.info("Action: Restoring chat access for User ID {}", id);
         userService.unbanFromChat(id);
+
+        messagingTemplate.convertAndSend("/topic/chat-ban/" + id, new BanNotification(false));
+
         redirectAttributes.addFlashAttribute("info", "User can now use the chat again.");
         return "redirect:/admin/users";
     }
