@@ -22,7 +22,7 @@ if [[ " $* " == *" --ai "* ]]; then
     echo -e "${YELLOW}NOTICE: ${NC} this shit takes too much fucking resources"
 fi
 
-if [ -d "DeepDame" ]; then
+if [ -d "DeepDame" ] && [[ ! "$*" == *"--no-pull"* ]]; then
     echo -e "\n\nPulling ${BLUE}DeepDame${NC}"
     cd $SERVER_DIR
     git stash
