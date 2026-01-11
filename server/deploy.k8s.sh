@@ -34,13 +34,20 @@ if [[ ! " $* " == *" --no-pull "* ]]; then
         cd $SERVER_DIR
     fi
 fi
+
 # building the image
 echo -e "$\n\n${BLUE}Building docker image${NC}"
-eval $(minikube docker-env)
-docker build -t deepdame .
+
+# 1. Build locally using standard Docker
+docker build -t deepdame:latest .
+
+# 2. Import the image into K3s (containerd)
+echo -e "$\n\n${BLUE}Importing image to K3s...${NC}"
+docker save deepdame:latest | sudo k3s ctr images import -
 
 # applying the deployment
 echo -e "$\n\n${BLUE}Apply k8s deployment${NC}"
+
 kubectl apply -R -f k8s/app/
 kubectl apply -R -f k8s/cache/
 kubectl apply -R -f k8s/db/
