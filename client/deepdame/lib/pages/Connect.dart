@@ -1,10 +1,14 @@
+import 'dart:convert';
+
 import 'package:deepdame/pages/Landing.dart';
 import 'package:deepdame/prefabs/Input.dart';
 import 'package:deepdame/prefabs/SubmitButton.dart';
 import 'package:deepdame/prefabs/ValidationController.dart';
+import 'package:deepdame/requests/EmptyRequest.dart';
 import 'package:deepdame/requests/LoginRequest.dart';
 import 'package:deepdame/requests/RegisterRequest.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../static/Utils.dart';
@@ -22,7 +26,7 @@ class Connect extends StatelessWidget {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
   }
 
-  bool validator(TextEditingController controller, String type) {
+  static bool validator(TextEditingController controller, String type) {
     String content = controller.text;
     switch (type) {
       case "username":
@@ -51,7 +55,7 @@ class Connect extends StatelessWidget {
     ValidationController password_controller = ValidationController();
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 253, 251, 247),
-      resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomInset: false,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(110),
         child: Container(
@@ -77,122 +81,532 @@ class Connect extends StatelessWidget {
         slivers: [
           SliverFillRemaining(
             hasScrollBody: false,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            child: Stack(
               children: [
-                SingleChildScrollView(
-                  hitTestBehavior: HitTestBehavior.translucent,
-                  child: Container(
-                    padding: EdgeInsets.only(right: 30, left: 30),
-                    child: Column(
-                      children: [
-                        //Username
-                        Align(
-                          alignment: AlignmentGeometry.centerLeft,
-                          child: Text(
-                            "Email :",
-                            style: GoogleFonts.nunito(
-                              color: Color.fromARGB(255, 170, 188, 180),
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    SingleChildScrollView(
+                      hitTestBehavior: HitTestBehavior.translucent,
+                      child: Container(
+                        padding: EdgeInsets.only(right: 30, left: 30),
+                        child: Column(
+                          children: [
+                            SizedBox(height: 50),
+                            //Username
+                            Align(
+                              alignment: AlignmentGeometry.centerLeft,
+                              child: Text(
+                                "Email :",
+                                style: GoogleFonts.nunito(
+                                  color: Color.fromARGB(255, 170, 188, 180),
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: SizedBox(
-                            child: Input(
-                              "example@email.com",
-                              TextInputType.emailAddress,
-                              email_controller.getController(),
-                              "",
-                              () {
-                                return true;
-                              },
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: SizedBox(
+                                child: Input(
+                                  "example@email.com",
+                                  TextInputType.emailAddress,
+                                  email_controller.getController(),
+                                  "",
+                                  () {
+                                    return true;
+                                  },
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
 
-                        SizedBox(height: 50),
-                        Align(
-                          alignment: AlignmentGeometry.centerLeft,
-                          child: Text(
-                            "Password :",
-                            style: GoogleFonts.nunito(
-                              color: Color.fromARGB(255, 170, 188, 180),
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
+                            SizedBox(height: 50),
+                            Align(
+                              alignment: AlignmentGeometry.centerLeft,
+                              child: Text(
+                                "Password :",
+                                style: GoogleFonts.nunito(
+                                  color: Color.fromARGB(255, 170, 188, 180),
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: SizedBox(
-                            child: Input(
-                              "password",
-                              TextInputType.visiblePassword,
-                              password_controller.getController(),
-                              "",
-                              () {
-                                return true;
-                              },
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: SizedBox(
+                                child: Input(
+                                  "password",
+                                  TextInputType.visiblePassword,
+                                  password_controller.getController(),
+                                  "",
+                                  () {
+                                    return true;
+                                  },
+                                ),
+                              ),
                             ),
-                          ),
+                            SizedBox(height: 50),
+                          ],
                         ),
-                      ],
+                      ),
+                    ),
+                  ],
+                ),
+                Positioned(
+                  bottom: MediaQuery.of(context).viewInsets.bottom != 0
+                      ? MediaQuery.of(context).viewInsets.bottom
+                      : 100,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    alignment: Alignment.bottomCenter,
+                    child: Submitbutton(
+                      "Login",
+                      Color.fromARGB(255, 170, 188, 180),
+                      Color.fromARGB(255, 119, 133, 127),
+                      () {
+                        LoginRequest request = LoginRequest(
+                          email_controller.getController().text,
+                          password_controller.getController().text,
+                        );
+
+                        Future<void> login() async {
+                          await Utils.api_postRequest(
+                            request,
+                            "auth/login",
+                            Utils.API_URL,
+                          ).onError((e, stacktrace) {
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                            }
+                            showErrorDialog(context, e.toString());
+                            throw Exception();
+                          });
+                        }
+
+                        void _login() async {
+                          try {
+                            await login();
+                            FocusManager.instance.primaryFocus?.unfocus();
+                            Navigator.pop(context);
+
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              Navigator.pop(context);
+                              Navigator.pushReplacement(
+                                context,
+                                PageRouteBuilder(
+                                  pageBuilder:
+                                      (context, animation1, animation2) =>
+                                          Landing(),
+                                  transitionDuration: Duration.zero,
+                                  reverseTransitionDuration: Duration.zero,
+                                ),
+                              );
+                            });
+                          } catch (e) {
+                            return;
+                          }
+                        }
+
+                        _login();
+                        Utils.showLoadingDialog(context);
+                      },
                     ),
                   ),
                 ),
-                Submitbutton(
-                  "Login",
-                  Color.fromARGB(255, 170, 188, 180),
-                  Color.fromARGB(255, 119, 133, 127),
-                  () {
-                    LoginRequest request = LoginRequest(
-                      email_controller.getController().text,
-                      password_controller.getController().text,
-                    );
+                Container(
+                  margin: EdgeInsets.only(bottom: 30),
+                  child: GestureDetector(
+                    onTap: () {
+                      var _controller = TextEditingController();
 
-                    Future<void> login() async {
-                      await Utils.api_postRequest(
-                        request,
-                        "auth/login",
-                        Utils.API_URL,
-                      ).onError((e, stacktrace) {
-                        if (context.mounted) {
-                          Navigator.pop(context);
-                        }
-                        showErrorDialog(context, e.toString());
-                        throw Exception();
-                      });
-                    }
+                      showDialog(
+                        barrierDismissible: true,
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            contentPadding: EdgeInsets.all(25),
+                            backgroundColor: Color.fromARGB(255, 253, 251, 247),
+                            content: Column(
+                              spacing: 30,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  "Reset your password",
+                                  style: GoogleFonts.nunito(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20,
+                                    color: Color.fromARGB(111, 55, 62, 59),
+                                  ),
+                                ),
+                                Input(
+                                  "Email",
+                                  TextInputType.emailAddress,
+                                  _controller,
+                                  "",
+                                  () => true,
+                                ),
+                                Submitbutton(
+                                  "Send email",
+                                  Color.fromARGB(255, 170, 188, 180),
+                                  Color.fromARGB(255, 119, 133, 127),
+                                  () {
+                                    if (_controller.text != "") {
+                                      void sendConfirmationEmail() async {
+                                        bool status = true;
+                                        await Utils.api_postRequest(
+                                          EmptyRequest(),
+                                          "user/forgotPassword/?email=${_controller.text}",
+                                          Utils.API_URL,
+                                        ).onError((e, trace) {
+                                          print(
+                                            "failure to send Email !  $e , ${e.toString()}",
+                                          );
+                                          status = false;
+                                        });
 
-                    void _login() async {
-                      try {
-                        await login();
-                        FocusManager.instance.primaryFocus?.unfocus();
-                        Navigator.pop(context);
+                                        Navigator.pop(context);
+                                        WidgetsBinding.instance.addPostFrameCallback((
+                                          _,
+                                        ) {
+                                          late TextEditingController
+                                          _confCodeController;
+                                          if (status) {
+                                            Navigator.pop(context);
+                                            _confCodeController =
+                                                TextEditingController();
+                                          }
+                                          showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) => AlertDialog(
+                                              contentPadding: EdgeInsets.all(
+                                                25,
+                                              ),
+                                              backgroundColor: Color.fromARGB(
+                                                255,
+                                                253,
+                                                251,
+                                                247,
+                                              ),
+                                              content: Column(
+                                                spacing: 30,
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(
+                                                    status
+                                                        ? "Email sent !"
+                                                        : "Failed to send email",
+                                                    style: GoogleFonts.nunito(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 20,
+                                                      color: Color.fromARGB(
+                                                        111,
+                                                        55,
+                                                        62,
+                                                        59,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  status
+                                                      ? Column(
+                                                          children: [
+                                                            Text(
+                                                              "Check your inbox for the confirmation code",
+                                                              style: GoogleFonts.nunito(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                fontSize: 15,
+                                                                color:
+                                                                    Color.fromARGB(
+                                                                      111,
+                                                                      55,
+                                                                      62,
+                                                                      59,
+                                                                    ),
+                                                              ),
+                                                            ),
+                                                            Input(
+                                                              "Confirmation code",
+                                                              TextInputType
+                                                                  .number,
+                                                              _confCodeController,
+                                                              "",
+                                                              () => true,
+                                                            ),
+                                                            Submitbutton(
+                                                              "Confirm",
+                                                              Color.fromARGB(
+                                                                255,
+                                                                170,
+                                                                188,
+                                                                180,
+                                                              ),
+                                                              Color.fromARGB(
+                                                                255,
+                                                                119,
+                                                                133,
+                                                                127,
+                                                              ),
+                                                              () {
+                                                                Future<void>
+                                                                validateVerificationCode() async {
+                                                                  bool
+                                                                  verifStatus =
+                                                                      true;
+                                                                  false;
+                                                                  await Utils.api_postRequest(
+                                                                    EmptyRequest(),
+                                                                    "user/forgotPassword/validateEmail/?validationCode=${_confCodeController.text}",
+                                                                    Utils
+                                                                        .API_URL,
+                                                                  ).onError(
+                                                                    (
+                                                                      e,
+                                                                      trace,
+                                                                    ) => verifStatus =
+                                                                        false,
+                                                                  );
 
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          Navigator.pop(context);
-                          Navigator.pushReplacement(
-                            context,
-                            PageRouteBuilder(
-                              pageBuilder: (context, animation1, animation2) =>
-                                  Landing(),
-                              transitionDuration: Duration.zero,
-                              reverseTransitionDuration: Duration.zero,
+                                                                  Navigator.pop(
+                                                                    context,
+                                                                  );
+
+                                                                  WidgetsBinding.instance.addPostFrameCallback((
+                                                                    _,
+                                                                  ) {
+                                                                    late TextEditingController
+                                                                    _newPwdController;
+
+                                                                    late TextEditingController
+                                                                    _confirmedNewPwdController;
+
+                                                                    if (verifStatus) {
+                                                                      _newPwdController =
+                                                                          TextEditingController();
+
+                                                                      _confirmedNewPwdController =
+                                                                          TextEditingController();
+
+                                                                      Navigator.pop(
+                                                                        context,
+                                                                      );
+                                                                    }
+                                                                    showDialog(
+                                                                      context:
+                                                                          context,
+                                                                      builder:
+                                                                          (
+                                                                            BuildContext
+                                                                            context,
+                                                                          ) => AlertDialog(
+                                                                            contentPadding: EdgeInsets.all(
+                                                                              25,
+                                                                            ),
+                                                                            backgroundColor: Color.fromARGB(
+                                                                              255,
+                                                                              253,
+                                                                              251,
+                                                                              247,
+                                                                            ),
+                                                                            content: Column(
+                                                                              spacing: 10,
+                                                                              mainAxisSize: MainAxisSize.min,
+                                                                              children: [
+                                                                                Text(
+                                                                                  verifStatus
+                                                                                      ? "Input and confirm your new password "
+                                                                                      : "Wrong confirmation code !",
+                                                                                  style: GoogleFonts.nunito(
+                                                                                    fontWeight: FontWeight.bold,
+                                                                                    fontSize: 20,
+                                                                                    color: Color.fromARGB(
+                                                                                      111,
+                                                                                      55,
+                                                                                      62,
+                                                                                      59,
+                                                                                    ),
+                                                                                  ),
+                                                                                ),
+
+                                                                                !verifStatus
+                                                                                    ? Container()
+                                                                                    : Column(
+                                                                                        spacing: 10,
+                                                                                        children: [
+                                                                                          Input(
+                                                                                            "password",
+                                                                                            TextInputType.visiblePassword,
+                                                                                            _newPwdController,
+                                                                                            "",
+                                                                                            () => true,
+                                                                                          ),
+
+                                                                                          Input(
+                                                                                            "confirmed password",
+                                                                                            TextInputType.visiblePassword,
+                                                                                            _confirmedNewPwdController,
+                                                                                            "",
+                                                                                            () =>
+                                                                                                _confirmedNewPwdController.text ==
+                                                                                                _newPwdController.text,
+                                                                                          ),
+
+                                                                                          Submitbutton(
+                                                                                            "Submit",
+                                                                                            Color.fromARGB(
+                                                                                              255,
+                                                                                              170,
+                                                                                              188,
+                                                                                              180,
+                                                                                            ),
+                                                                                            Color.fromARGB(
+                                                                                              255,
+                                                                                              119,
+                                                                                              133,
+                                                                                              127,
+                                                                                            ),
+                                                                                            () async {
+                                                                                              Future<
+                                                                                                void
+                                                                                              >
+                                                                                              finalizePasswordReset() async {
+                                                                                                await Utils.api_postRequest(
+                                                                                                  EmptyRequest(),
+                                                                                                  "user/forgotPassword/changePassword/${_newPwdController.text}",
+                                                                                                  Utils.API_URL,
+                                                                                                );
+
+                                                                                                Navigator.pop(
+                                                                                                  context,
+                                                                                                );
+
+                                                                                                WidgetsBinding.instance.addPostFrameCallback(
+                                                                                                  (
+                                                                                                    _,
+                                                                                                  ) {
+                                                                                                    showDialog(
+                                                                                                      context: context,
+                                                                                                      builder:
+                                                                                                          (
+                                                                                                            BuildContext context,
+                                                                                                          ) => AlertDialog(
+                                                                                                            contentPadding: EdgeInsets.all(
+                                                                                                              25,
+                                                                                                            ),
+                                                                                                            backgroundColor: Color.fromARGB(
+                                                                                                              255,
+                                                                                                              253,
+                                                                                                              251,
+                                                                                                              247,
+                                                                                                            ),
+                                                                                                            content: Text(
+                                                                                                              "forgot password ?",
+                                                                                                              style: GoogleFonts.nunito(
+                                                                                                                fontWeight: FontWeight.bold,
+                                                                                                                fontSize: 15,
+                                                                                                                color: Color.fromARGB(
+                                                                                                                  255,
+                                                                                                                  130,
+                                                                                                                  145,
+                                                                                                                  138,
+                                                                                                                ),
+                                                                                                                decoration: TextDecoration.underline,
+                                                                                                                decorationColor: Color.fromARGB(
+                                                                                                                  255,
+                                                                                                                  130,
+                                                                                                                  145,
+                                                                                                                  138,
+                                                                                                                ),
+                                                                                                              ),
+                                                                                                            ),
+                                                                                                          ),
+                                                                                                    );
+                                                                                                  },
+                                                                                                );
+                                                                                              }
+
+                                                                                              if (_newPwdController.text !=
+                                                                                                      "" &&
+                                                                                                  _confirmedNewPwdController.text ==
+                                                                                                      _newPwdController.text) {
+                                                                                                Navigator.pop(
+                                                                                                  context,
+                                                                                                );
+                                                                                                WidgetsBinding.instance.addPostFrameCallback(
+                                                                                                  (
+                                                                                                    _,
+                                                                                                  ) async {
+                                                                                                    Utils.showLoadingDialog(
+                                                                                                      context,
+                                                                                                    );
+                                                                                                    await finalizePasswordReset();
+                                                                                                  },
+                                                                                                );
+                                                                                              }
+                                                                                            },
+                                                                                          ),
+                                                                                        ],
+                                                                                      ),
+                                                                              ],
+                                                                            ),
+                                                                          ),
+                                                                    );
+                                                                  });
+                                                                }
+
+                                                                Utils.showLoadingDialog(
+                                                                  context,
+                                                                );
+                                                                WidgetsBinding
+                                                                    .instance
+                                                                    .addPostFrameCallback((
+                                                                      _,
+                                                                    ) async {
+                                                                      await validateVerificationCode();
+                                                                    });
+                                                              },
+                                                            ),
+                                                          ],
+                                                        )
+                                                      : Container(),
+                                                ],
+                                              ),
+                                            ),
+                                          );
+                                        });
+                                      }
+
+                                      Utils.showLoadingDialog(context);
+                                      WidgetsBinding.instance
+                                          .addPostFrameCallback((_) {
+                                            sendConfirmationEmail();
+                                          });
+                                    }
+                                  },
+                                ),
+                              ],
                             ),
                           );
-                        });
-                      } catch (e) {
-                        return;
-                      }
-                    }
-
-                    _login();
-                    Utils.showLoadingDialog(context);
-                  },
+                        },
+                      );
+                    },
+                    child: Container(
+                      alignment: AlignmentGeometry.bottomCenter,
+                      child: Text(
+                        "forgot password ?",
+                        style: GoogleFonts.nunito(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: Color.fromARGB(255, 130, 145, 138),
+                          decoration: TextDecoration.underline,
+                          decorationColor: Color.fromARGB(255, 130, 145, 138),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),

@@ -1,7 +1,11 @@
 import 'package:deepdame/main.dart';
+import 'package:deepdame/pages/Connect.dart';
 import 'package:deepdame/pages/General.dart';
 import 'package:deepdame/pages/Landing.dart';
+import 'package:deepdame/prefabs/Input.dart';
 import 'package:deepdame/prefabs/SubmitButton.dart';
+import 'package:deepdame/prefabs/ValidationController.dart';
+import 'package:deepdame/requests/ChangePasswordRequest.dart';
 import 'package:deepdame/requests/EmptyRequest.dart';
 import 'package:deepdame/static/Utils.dart';
 import 'package:flutter/material.dart';
@@ -63,7 +67,7 @@ class _preferencesCreateState extends State<Preferences> {
                       child: Icon(
                         Icons.person_rounded,
                         color: Color.fromARGB(255, 64, 79, 87),
-                        size: 40
+                        size: 40,
                       ),
                     ),
                   ),
@@ -177,7 +181,131 @@ class _preferencesCreateState extends State<Preferences> {
                       Color.fromARGB(255, 216, 157, 143),
                       Color.fromARGB(255, 142, 102, 93),
                       () {
-                        print("button1 test");
+                        ValidationController old_password_controller =
+                            ValidationController();
+                        ValidationController new_password_controller =
+                            ValidationController();
+
+                        void sendPasswordChangeRequest() async {
+                          String status = "Success";
+                          try {
+                            await Utils.api_postRequest(
+                              ChangePasswordRequest(
+                                new_password_controller.getController().text,
+                                old_password_controller.getController().text,
+                              ),
+                              "user/changepw",
+                              Utils.API_URL,
+                            ).onError((e, trace) {
+                              status = "Failure";
+                              throw Exception();
+                            });
+                          } catch (e) {
+                            print("failed to change pwd");
+                          }
+                          Navigator.pop(context);
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (status == "Success") {
+                              Navigator.pop(context);
+                            }
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                content: Text(
+                                  status == "Success"
+                                      ? "Password changed successfully !"
+                                      : "Failure to change password !",
+
+                                  style: GoogleFonts.lora(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: status == "Success"
+                                        ? Color.fromARGB(255, 170, 188, 180)
+                                        : Color.fromARGB(255, 216, 157, 143),
+                                  ),
+                                ),
+                              ),
+                            );
+                          });
+                        }
+
+                        showDialog(
+                          context: context,
+                          barrierDismissible: true,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              contentPadding: EdgeInsets.all(25),
+                              backgroundColor: Color.fromARGB(
+                                255,
+                                253,
+                                251,
+                                247,
+                              ),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                spacing: 20,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    child: Input(
+                                      "Old password",
+                                      TextInputType.visiblePassword,
+                                      old_password_controller.getController(),
+                                      "",
+                                      () {
+                                        return true;
+                                      },
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    child: Input(
+                                      "password",
+                                      TextInputType.visiblePassword,
+                                      new_password_controller.getController(),
+                                      "8+ characters: 1+ Upper, 1+ Digit, 1+ Symbol",
+                                      () {
+                                        new_password_controller.setState(
+                                          Connect.validator(
+                                            new_password_controller
+                                                .getController(),
+                                            "password",
+                                          ),
+                                        );
+                                        return new_password_controller
+                                            .getState();
+                                      },
+                                    ),
+                                  ),
+
+                                  Submitbutton(
+                                    "Change password",
+                                    Color.fromARGB(255, 216, 157, 143),
+                                    Color.fromARGB(255, 142, 102, 93),
+                                    () {
+                                      if (new_password_controller.getState() &&
+                                          old_password_controller
+                                                  .getController()
+                                                  .text !=
+                                              "") {
+                                        Utils.showLoadingDialog(context);
+                                        WidgetsBinding.instance
+                                            .addPostFrameCallback((_) {
+                                              sendPasswordChangeRequest();
+                                            });
+                                      }
+                                    },
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+
+                        //Build request & Send it
+
+                        //Show loading dialog
+
+                        //On request done show status : OK : notOK
                       },
                     ),
                     Submitbutton(
