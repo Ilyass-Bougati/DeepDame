@@ -72,6 +72,7 @@ class _GameCreateState extends State<Game> {
             context: context,
             builder: (context) => AlertDialog.adaptive(
               content: Column(
+                mainAxisSize: MainAxisSize.min,
                 spacing: 20,
                 children: [
                   Text(
