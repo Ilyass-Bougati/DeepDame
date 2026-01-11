@@ -144,6 +144,19 @@
         stompClient.send("/app/message", {}, JSON.stringify(payload));
         log("SENT: " + JSON.stringify(payload), "info");
     }
+
+    function sendJsMessage(msg) {
+        // Construct DTO exactly as Java expects
+        const payload = {
+            id: uuidv4(),      // Placeholder (Backend will overwrite, but validator needs it)
+            userId: uuidv4(),  // Placeholder (Backend overrides from Principal)
+            message: msg,
+            createdAt: getJavaDate() // Matches @JsonFormat
+        };
+
+        stompClient.send("/app/message", {}, JSON.stringify(payload));
+        log("SENT: " + JSON.stringify(payload), "info");
+    }
 </script>
 </body>
 </html>

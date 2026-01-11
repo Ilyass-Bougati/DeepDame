@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ollama
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ollama
+  template:
+    metadata:
+      labels:
+        app: ollama
+    spec:
+      containers:
+        - name: ollama
+          image: ollama/ollama:latest
+          ports:
+            - containerPort: 11434
+          env:
+            - name: OLLAMA_HOST
+              value: "0.0.0.0"
+            - name: OLLAMA_NUM_PARALLEL
+              value: "4"
+            - name: OLLAMA_MAX_QUEUE
+              value: "8"
+            - name: OLLAMA_KEEP_ALIVE
+              value: "24h"
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              ollama serve &
+              pid=$!
+              echo "Waiting for Ollama to start..."
+              sleep 5
+              echo "Pulling model llama3.2..."
+              ollama pull llama3.2
+              echo "Model pulled! Ready for requests."
+              wait $pid
+
+          volumeMounts:
+            - mountPath: /root/.ollama
+              name: ollama-storage
+      volumes:
+        - name: ollama-storage
+          persistentVolumeClaim:
+            claimName: ollama-pvc
