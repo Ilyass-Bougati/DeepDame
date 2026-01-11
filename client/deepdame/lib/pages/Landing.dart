@@ -40,6 +40,7 @@ class Landing extends StatelessWidget {
                 () async {
                   if (_controller.text != "") {
                     Utils.API = _controller.text;
+										Utils.API_URL = "http://${Utils.API}/api/v1";
                   }
                   Utils.currentGame = ValueNotifier(null);
 
