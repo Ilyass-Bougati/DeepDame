@@ -26,4 +26,4 @@ To ensure performance and scalability, we utilized a polyglot persistence strate
 
 * **PostgreSQL:** Serves as the primary relational store for structured data like user profiles, relationships, and authentication.
 * **MongoDB:** Handles unstructured data, specifically for archiving game history and match logs. This allows for flexible storage of game moves without rigid schema constraints.
-* **Redis:** Employed for aggressive caching and session management. By offloading state from the application server's memory to Redis, we ensure the system is stateless, allowing for seamless **horizontal scaling** in the future.
+* **Redis:** Employed for aggressive caching and session management. By offloading state from the application server's memory to Redis, we ensure the system is stateless, allowing for seamless **horizontal scaling** in the future. And we're using Redis pub/sub to handle events on multiple instances of the application.
