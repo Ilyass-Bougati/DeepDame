@@ -18,6 +18,9 @@ final Random random = Random();
 PersistCookieJar? persistCookieJar;
 final dio = Dio();
 
+late String ws_appBanned ;
+late String ws_chatBanned ;
+
 final String ws_gameCreated = '/user/queue/game/created';
 final String ws_gameJoined = '/user/queue/game/joined';
 final String ws_serverSideError = '/user/queue/errors';
