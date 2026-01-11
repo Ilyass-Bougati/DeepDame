@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:deepdame/dtos/UserDto.dart';
-import 'package:deepdame/main.dart';
 import 'package:deepdame/pages/Connect.dart';
 import 'package:deepdame/pages/Game.dart';
 import 'package:deepdame/pages/General.dart';
@@ -30,6 +29,7 @@ class Landing extends StatelessWidget {
         barrierDismissible: false,
         builder: (context) => AlertDialog(
           content: Column(
+            mainAxisSize: MainAxisSize.min,
             spacing: 30,
             children: [
               Input("Api", TextInputType.text, _controller, "", () => true),
@@ -37,10 +37,19 @@ class Landing extends StatelessWidget {
                 "Submit",
                 Color.fromARGB(255, 170, 188, 180),
                 Color.fromARGB(255, 119, 133, 127),
-                () async {
+                () {
                   if (_controller.text != "") {
                     Utils.API = _controller.text;
+                    Utils.API_URL = "https://${Utils.API}/api/v1";
                   }
+                },
+              ),
+
+              Submitbutton(
+                "Load landing",
+                Color.fromARGB(255, 170, 188, 180),
+                Color.fromARGB(255, 119, 133, 127),
+                () async {
                   Utils.currentGame = ValueNotifier(null);
 
                   bool isConnected = false;
@@ -70,6 +79,10 @@ class Landing extends StatelessWidget {
                       isConnected = false;
                       throw Exception();
                     }
+
+                    ws_appBanned =
+                        '/topic/application-ban/${Utils.userDetails!.id}';
+                    ws_chatBanned = '/topic/chat-ban/${Utils.userDetails!.id}';
 
                     Utils.client = StompClient(
                       config: StompConfig.sockJS(
@@ -124,6 +137,28 @@ class Landing extends StatelessWidget {
                             },
                           );
 
+                          // Subscribing to chat ban
+                          Utils.client.subscribe(
+                            destination: ws_chatBanned,
+                            callback: (StompFrame frame) {
+                              if (frame.body != null) {
+                                Utils.client.deactivate();
+                                Utils.client.activate();
+                              }
+                            },
+                          );
+
+                          // Subscribing to app ban
+                          Utils.client.subscribe(
+                            destination: ws_appBanned,
+                            callback: (StompFrame frame) {
+                              if (frame.body != null) {
+                                Utils.client.deactivate();
+                                Utils.client.activate();
+                              }
+                            },
+                          );
+
                           // Subscribing to error queue
                           Utils.client.subscribe(
                             destination: ws_serverSideError,
@@ -138,7 +173,8 @@ class Landing extends StatelessWidget {
                         onDebugMessage: (String msg) {
                           print('STOMP DEBUG: $msg');
                         },
-                        onWebSocketError: (dynamic error) {
+                        onWebSocketError: (dynamic error) async {
+                          await reloadWsConnection();
                           print('WebSocket Error: $error');
                         },
                         onStompError: (StompFrame frame) {
@@ -167,14 +203,7 @@ class Landing extends StatelessWidget {
                     //   ),
                     // );
                   });
-                },
-              ),
 
-              Submitbutton(
-                "Load landing",
-                Color.fromARGB(255, 170, 188, 180),
-                Color.fromARGB(255, 119, 133, 127),
-                () {
                   Navigator.pop(context);
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     Navigator.pushReplacement(
@@ -200,76 +229,7 @@ class Landing extends StatelessWidget {
 
   Future<void> reloadWsConnection() async {
     await Utils.refreshToken();
-
-    List<Cookie> cookies = await persistCookieJar!.loadForRequest(
-      Uri.parse('https://${Utils.API}'),
-    );
-
-    Cookie? accessToken = cookies.firstWhere((c) => c.name == 'access_token');
-
-    Utils.client = StompClient(
-      config: StompConfig.sockJS(
-        url: 'https://${Utils.API}/ws',
-        webSocketConnectHeaders: {
-          'Host': Utils.API,
-          'Cookie': '${accessToken.name}=${accessToken.value}',
-        },
-
-        onConnect: (StompFrame frame) {
-          //Subscribing to general chat
-          Utils.client.subscribe(
-            destination: '/topic/general-chat',
-            callback: (StompFrame frame) {
-              if (frame.body != null) {
-                print('Received: ${frame.body!}');
-                Utils.onGeneralChatMessage?.call(frame.body);
-              }
-            },
-          );
-
-          //Subscribing to the "game created"
-          Utils.client.subscribe(
-            destination: ws_gameCreated,
-            callback: (StompFrame frame) {
-              if (frame.body != null) {
-                print('GAME CREATED: ${frame.body!}');
-                Game.currentGameId = jsonDecode(frame.body!)['gameId'];
-                Utils.currentGame!.value = Game(true);
-              }
-            },
-          );
-
-          //Subscribing to the "game joined"
-          Utils.client.subscribe(
-            destination: ws_gameJoined,
-            callback: (StompFrame frame) {
-              if (frame.body != null) {
-                print('GAME JOINED: ${frame.body!}');
-
-                Game.opponent = jsonDecode(frame.body!)['opponentName'];
-                print(jsonDecode(frame.body!)['opponentName']);
-                Game.currentGameId = jsonDecode(frame.body!)['gameId'];
-                Utils.currentGame!.value = Game(false);
-              }
-            },
-          );
-
-          //Subscribing to error queue
-          Utils.client.subscribe(
-            destination: ws_serverSideError,
-            callback: (StompFrame frame) {
-              if (frame.body != null) {
-                print('Server side error : ${frame.body!}');
-              }
-            },
-          );
-        },
-
-        onWebSocketError: (dynamic error) async => await reloadWsConnection(),
-
-        onDisconnect: (frame) => print('Disconnected'),
-      ),
-    );
+    Utils.client.deactivate();
     Utils.client.activate();
   }
 
