@@ -62,6 +62,16 @@ If the project looks red or classes are missing, IntelliJ might not recognize th
 For the **RESTful** APIs you can use Swagger to sift through the route, that's on `/swagger-ui/index.html`
 
 # K8s
+There are 2 method to deploy this backend, either mannualy or using the using the deployment script
+
+### Deployment script
+The deployment script was first meant to be using by the CD. However, I it can be used to deploy this application using minikube (it doesn't support any other tool currently)
+```bash
+# --observability : adds loki, grafana, and prometheus and integrates loki with the application
+# --ai : deploys llama3.2 model
+# --no-pull : make sure the application neither pulls nor clone the repo.
+./deploy.k8s.sh --observability --ai
+```
 before deploying the application using k8s. You'll need to build the docker image, while on the `/server` directory run the ccommand
 ```bash
 eval $(minikube docker-env)

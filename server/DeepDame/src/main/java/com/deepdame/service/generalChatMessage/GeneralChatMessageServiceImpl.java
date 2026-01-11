@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serial;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -51,9 +52,25 @@ public class GeneralChatMessageServiceImpl implements GeneralChatMessageService 
                 .orElseThrow(() -> new NotFoundException("GeneralChatMessage not found"));
     }
 
+    /**
+     * This function returns a page of messages, for example of we have 3 messages and the limit
+     * is 2, the 0th page will have the latest message, while the 1st page will have the 2 other.
+     * This logic was implemented to keep messaging consistent in the front end.
+     *
+     * @param pageNumber this is the number of the page
+     * @param limit this is the number of messages on each page
+     * @return a list of messages sorted from oldest to newest
+     */
     @Override
     public List<GeneralChatMessageDto> getGeneralChatMessages(Long pageNumber, Long limit) {
-        Pageable limitPage = PageRequest.of(pageNumber.intValue(), limit.intValue());
+        Long len = generalChatMessageRepository.count() / limit;
+        int page = len.intValue() - pageNumber.intValue();
+
+        if (page < 0) {
+            return Collections.emptyList();
+        }
+
+        Pageable limitPage = PageRequest.of(page, limit.intValue());
         return generalChatMessageRepository
                 .findByOrderByCreatedAt(limitPage).stream()
                 .map(generalChatMessageMapper::toDTO)

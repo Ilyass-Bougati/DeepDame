@@ -46,7 +46,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"email\": \"i.bougati12@gmail.com\",\r\n    \"password\": \"A@aa111\"\r\n}",
+							"raw": "{\r\n    \"email\": \"ilyass@gmail.com\",\r\n    \"password\": \"ilyass\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -181,6 +181,60 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "ValidateEmail",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/api/v1/user/forgotPassword/validateEmail?validationCode=549966",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"user",
+										"forgotPassword",
+										"validateEmail"
+									],
+									"query": [
+										{
+											"key": "validationCode",
+											"value": "549966"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "ChangePassword",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/api/v1/user/forgotPassword/changePassword?newPassword=A@aa111",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"user",
+										"forgotPassword",
+										"changePassword"
+									],
+									"query": [
+										{
+											"key": "newPassword",
+											"value": "A@aa111"
+										}
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				},
@@ -206,11 +260,37 @@
 				},
 				{
 					"name": "ChangePassword",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
 					"request": {
-						"method": "GET",
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"oldPassword\": \"ilyass123\",\r\n    \"newPassword\": \"ilyass\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/v1/user/changepw",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"user",
+								"changepw"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ChangePassword Copy",
+					"request": {
+						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
@@ -255,6 +335,31 @@
 								"api",
 								"v1",
 								"general-chat",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "FriendRequest",
+			"item": [
+				{
+					"name": "GetFriendRequests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/api/v1/friend-request/",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"friend-request",
 								""
 							]
 						}
