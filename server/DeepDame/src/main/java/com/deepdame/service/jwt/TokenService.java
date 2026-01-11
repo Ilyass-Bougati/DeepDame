@@ -80,6 +80,10 @@ public class TokenService {
             throw new Unauthorized("Invalid Credentials");
         }
 
+        if (user.getBannedFromApp()) {
+            throw new Unauthorized("You are banned from using this application");
+        }
+
         Authentication authentication = new UsernamePasswordAuthenticationToken(
                 loginRequest.getEmail(), null, userDetails.getAuthorities());
 
