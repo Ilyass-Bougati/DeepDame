@@ -223,15 +223,45 @@
         fetch(`/admin/chat/ban-user-from-${pendingBanType}/${pendingMessageId}`, {
             method: 'POST'
         }).then(res => {
-            if (res.status === 403) {
-                alert("Action Denied: You do not have the hierarchical rights.");
+            if (res.ok) {
+                const actionLabel = pendingBanType === 'chat' ? 'from chat' : 'from app';
+                showNotification(`User banned ${actionLabel} successfully!`);
+
+            } else if (res.status === 403) {
+                showNotification("Access Denied: Insufficient permissions.", true);
+            } else {
+                showNotification("An error occurred while processing the ban.", true);
             }
             moderationModal.hide();
         }).catch(err => {
             console.error("Fetch error:", err);
+            showNotification("Server connection error.", true);
             moderationModal.hide();
         });
     }
+
+    function showNotification(message, isError = false) {
+        const toastEl = document.getElementById('banToast');
+        const toastBody = document.getElementById('toastBody');
+        const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+
+        toastEl.classList.remove('bg-success', 'bg-danger');
+        toastEl.classList.add(isError ? 'bg-danger' : 'bg-success');
+
+        toastBody.innerText = message;
+        toast.show();
+    }
 </script>
+
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1060;">
+    <div id="banToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div id="toastBody" class="toast-body">
+                Action completed successfully.
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
