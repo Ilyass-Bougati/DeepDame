@@ -22,17 +22,18 @@ if [[ " $* " == *" --ai "* ]]; then
     echo -e "${YELLOW}NOTICE: ${NC} this shit takes too much fucking resources"
 fi
 
-if [ -d "DeepDame" ] && [[ ! "$*" == *"--no-pull"* ]]; then
-    echo -e "\n\nPulling ${BLUE}DeepDame${NC}"
-    cd $SERVER_DIR
-    git stash
-    git pull origin main
-else
-    echo -e "\n\nCloning ${BLUE}DeepDame${NC}"
-    git clone git@github.com:Ilyass-Bougati/DeepDame.git
-    cd $SERVER_DIR
+if [[ ! " $* " == *" --no-pull "* ]]; then
+    if [ -d "DeepDame" ]; then
+        echo -e "\n\nPulling ${BLUE}DeepDame${NC}"
+        cd $SERVER_DIR
+        git stash
+        git pull origin main
+    else
+        echo -e "\n\nCloning ${BLUE}DeepDame${NC}"
+        git clone git@github.com:Ilyass-Bougati/DeepDame.git
+        cd $SERVER_DIR
+    fi
 fi
-
 # building the image
 echo -e "$\n\n${BLUE}Building docker image${NC}"
 eval $(minikube docker-env)
