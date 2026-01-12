@@ -13,6 +13,9 @@ public interface GameService extends CrudDtoService<UUID, GameDto> {
     GameDto createGame(UUID playerId, GameMode mode);
     GameDto joinGame(UUID gameId, UUID playerId);
     GameDto makeMove(UUID gameId, UUID playerId, Move move);
+
+    GameDto makeAiMove(UUID gameId);
+
     GameDto surrenderGame(UUID gameId, UUID playerId);
 
     List<GameDto> getOpenGames();

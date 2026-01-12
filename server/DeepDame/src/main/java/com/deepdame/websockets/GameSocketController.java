@@ -24,6 +24,7 @@ import org.springframework.stereotype.Controller;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Controller
@@ -110,16 +111,43 @@ public class GameSocketController {
 
         UUID playerId = user.getUser().getId();
 
+        log.trace(" [MOVE_REQ] Game: {} | Player: {} ({}) | Move: {} -> {}",
+                gameId, user.getUser().getUsername(), playerId, move.from(), move.to());
+
         GameDto game = gameService.makeMove(gameId, playerId, move);
+
+        log.trace(" [MOVE_OK] Game: {} | Player: {} | Result: Move processed successfully",
+                gameId, user.getUser().getUsername());
 
         redisNotificationService.sendMessage(GameMoveMessageDto.builder().gameId(gameId).move(move).build(), "game-updates");
 
-        if (game.getMode() == GameMode.PVE){
-            broadcastAiMove(game, move);
+        if (game.getGameState().isGameOver()){
+            log.trace(" [GAME_OVER] Game: {} | Winner found after move by {}", gameId, user.getUser().getUsername());
+            notifyGameOver(game);
         }
 
-        if (game.getGameState().isGameOver()){
-            notifyGameOver(game);
+        if (game.getMode() == GameMode.PVE && !game.getGameState().isGameOver()){
+            CompletableFuture.runAsync(() -> {
+                try {
+                    GameDto updatedGame = gameService.makeAiMove(gameId);
+
+                    if (updatedGame != null) {
+                        List<Move> history = updatedGame.getHistory();
+                        Move aiMove = history.get(history.size() - 1);
+
+                        redisNotificationService.sendMessage(
+                                GameMoveMessageDto.builder().gameId(gameId).move(aiMove).build(),
+                                "game-updates"
+                        );
+
+                        if (updatedGame.getGameState().isGameOver()) {
+                            notifyGameOver(updatedGame);
+                        }
+                    }
+                } catch (Exception e) {
+                    log.trace("Error in AI move", e);
+                }
+            });
         }
     }
 
