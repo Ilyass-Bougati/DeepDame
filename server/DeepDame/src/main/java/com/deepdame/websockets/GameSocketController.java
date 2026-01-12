@@ -99,7 +99,7 @@ public class GameSocketController {
 
             UserDto me = userService.findById(playerId);
             messagingTemplate.convertAndSendToUser(
-                    hostUser.getUsername(),
+                    hostUser.getEmail(),
                     "/queue/game/joined",
                     new GameJoinedResponse(game.getId(), me.getUsername(), "BLACK")
             );
