@@ -13,15 +13,13 @@ import 'package:google_fonts/google_fonts.dart';
 
 class Preferences extends StatefulWidget {
   const Preferences({super.key});
-
+  static bool soundActive = false;
+  static bool vibrationActive = true;
   @override
   State<StatefulWidget> createState() => _preferencesCreateState();
 }
 
 class _preferencesCreateState extends State<Preferences> {
-  bool _soundActive = false;
-  bool _vibrationActive = false;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -122,10 +120,10 @@ class _preferencesCreateState extends State<Preferences> {
                           ),
                         ),
                         Switch(
-                          value: _soundActive,
+                          value: Preferences.soundActive,
                           onChanged: (bool newValue) {
                             setState(() {
-                              _soundActive = newValue;
+                              Preferences.soundActive = newValue;
                             });
                           },
                         ),
@@ -143,10 +141,10 @@ class _preferencesCreateState extends State<Preferences> {
                           ),
                         ),
                         Switch(
-                          value: _vibrationActive,
+                          value: Preferences.vibrationActive,
                           onChanged: (bool newValue) {
                             setState(() {
-                              _vibrationActive = newValue;
+                              Preferences.vibrationActive = newValue;
                             });
                           },
                         ),

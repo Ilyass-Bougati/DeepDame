@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:deepdame/models/User.dart';
 import 'package:deepdame/pages/Game.dart';
@@ -13,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:stomp_dart_client/stomp_dart_client.dart';
 
+final AudioPlayer player = AudioPlayer();
 final Random random = Random();
 PersistCookieJar? persistCookieJar;
 final dio = Dio();

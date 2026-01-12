@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:deepdame/game-engine/logic/game_engine.dart';
 import 'package:deepdame/game-engine/model/board.dart';
 import 'package:deepdame/game-engine/model/game_state.dart';
@@ -8,11 +9,13 @@ import 'package:deepdame/game-engine/model/piece.dart';
 import 'package:deepdame/game-engine/model/piece_type.dart';
 import 'package:deepdame/game-engine/model/position.dart';
 import 'package:deepdame/pages/Landing.dart';
+import 'package:deepdame/pages/Preferences.dart';
 import 'package:deepdame/prefabs/GameBoard.dart';
 import 'package:deepdame/prefabs/GamePiece.dart';
 import 'package:deepdame/prefabs/SubmitButton.dart';
 import 'package:deepdame/static/Utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:stomp_dart_client/stomp_dart_client.dart';
 
@@ -51,11 +54,17 @@ class _GameCreateState extends State<Game> {
       destination: '/topic/game/${Game.currentGameId}',
       callback: (StompFrame frame) {
         if (frame.body != null) {
-          setState(() {
+          setState(() async {
             engine.applyMove(
               currentState,
               Move.fromJson(jsonDecode(frame.body!)),
             );
+            if (Preferences.vibrationActive) {
+              await HapticFeedback.mediumImpact();
+            }
+            if (Preferences.soundActive) {
+              player.play(AssetSource('assets/sfx/sfx_1.mp3'));
+            }
           });
         }
       },

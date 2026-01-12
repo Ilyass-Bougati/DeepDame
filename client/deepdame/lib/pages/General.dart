@@ -11,7 +11,6 @@ import 'package:google_fonts/google_fonts.dart';
 class General extends StatefulWidget {
   const General({super.key});
 
-  // --- STATIC DATA & BRIDGE ---
   static List<Map<String, dynamic>> _globalMessageData = [];
   static VoidCallback? _onUiRefreshNeeded;
   static final Map<String, Color> _userColorMap = {};
@@ -19,8 +18,6 @@ class General extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() => _GeneralCreateState();
-
-  // --- RESTORED STATIC FUNCTIONS ---
 
   static void emptyChatData() {
     _globalMessageData.clear();
@@ -63,8 +60,6 @@ class _GeneralCreateState extends State<General> {
     General._onUiRefreshNeeded = () {
       if (mounted) {
         setState(() {});
-        // Only auto-scroll to bottom if we are already near the bottom
-        // This prevents snapping down when reading history
         if (_scrollController.hasClients &&
             _scrollController.position.pixels >=
                 _scrollController.position.maxScrollExtent - 200) {
@@ -102,7 +97,6 @@ class _GeneralCreateState extends State<General> {
     }
   }
 
-  // --- RESTORED: LOAD OLD MESSAGES ---
   void loadOldMessages() async {
     if (_isLoadingOld) return;
 
@@ -123,19 +117,9 @@ class _GeneralCreateState extends State<General> {
 
       if (response is List && response.isNotEmpty) {
         setState(() {
-          // --- THE FIX ---
-          // Cast the response to the correct type first
           final List<Map<String, dynamic>> newBatch =
               List<Map<String, dynamic>>.from(response);
-
-          // insertAll places the whole batch at the top (index 0)
-          // without flipping their internal order.
           General._globalMessageData.insertAll(0, newBatch);
-
-          // NOTE: If they are STILL backwards after this change,
-          // your API is sending them Newest->Oldest.
-          // If that happens, use this line instead:
-          // General._globalMessageData.insertAll(0, newBatch.reversed);
         });
       }
     } catch (e) {
@@ -176,14 +160,10 @@ class _GeneralCreateState extends State<General> {
         ),
       ),
 
-      // 2. CHANGED FROM STACK TO COLUMN
       body: Column(
-        children: [
-          // 3. EXPANDED: This makes the chat box take all available space
-          // above the input field.
+        children: [          // above the input field.
           Expanded(
             child: Container(
-              // Your original styling for the beige box
               margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(41),
@@ -201,7 +181,6 @@ class _GeneralCreateState extends State<General> {
                     controller: _scrollController,
                     itemCount: General._globalMessageData.length + 1,
                     itemBuilder: (context, index) {
-                      // ... (Keep your exact existing itemBuilder code here) ...
                       if (index == 0) {
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 20),
@@ -298,22 +277,16 @@ class _GeneralCreateState extends State<General> {
             ),
           ),
 
-          // 4. INPUT FIELD: Sits directly below the Expanded widget
-          // It will be pushed up by the keyboard automatically.
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-            // Optional: Add a background color here if you want the input area
-            // to look distinct from the scaffold background
             color: const Color.fromARGB(255, 253, 251, 247),
             child: SafeArea(
-              // Adds padding for iPhone home bar
               child: SizedBox(
                 width: double.infinity,
                 child: Row(
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
-                      // Adjusted width calculation slightly for padding
                       width: MediaQuery.of(context).size.width - 80,
                       decoration: BoxDecoration(
                         border: Border.all(
