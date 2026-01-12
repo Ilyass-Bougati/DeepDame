@@ -3,7 +3,7 @@ description: "An online checkers game"
 
 publish_to: 'none' 
 
-version: 0.0.8-alpha-custom
+version: 1.0.0
 
 environment:
   sdk: ^3.10.4
