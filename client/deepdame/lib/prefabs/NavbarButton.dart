@@ -27,7 +27,6 @@ class NavbarButton extends StatelessWidget {
         if (Preferences.vibrationActive) {
           await HapticFeedback.selectionClick();
         }
-        await player.play(AssetSource('assets/sfx/sfx_1.mp3'));
       },
       borderRadius: BorderRadius.circular(40),
       child: Padding(
