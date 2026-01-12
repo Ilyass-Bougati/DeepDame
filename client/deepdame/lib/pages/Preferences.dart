@@ -342,7 +342,7 @@ class _preferencesCreateState extends State<Preferences> {
           ),
         ),
       ),
-      bottomNavigationBar: Utils.getNavbar(context, 3),
+      bottomNavigationBar: Utils.getNavbar(context, 2),
     );
   }
 }

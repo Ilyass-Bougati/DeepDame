@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:deepdame/pages/Landing.dart';
 import 'package:deepdame/prefabs/Input.dart';
 import 'package:deepdame/prefabs/SubmitButton.dart';
@@ -8,7 +6,6 @@ import 'package:deepdame/requests/EmptyRequest.dart';
 import 'package:deepdame/requests/LoginRequest.dart';
 import 'package:deepdame/requests/RegisterRequest.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../static/Utils.dart';

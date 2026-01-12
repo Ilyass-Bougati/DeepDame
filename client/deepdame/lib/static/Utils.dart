@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:deepdame/models/User.dart';
-import 'package:deepdame/pages/Friends.dart';
 import 'package:deepdame/pages/Game.dart';
 import 'package:deepdame/pages/General.dart';
 import 'package:deepdame/pages/Landing.dart';
@@ -28,7 +27,7 @@ final String ws_serverSideError = '/user/queue/errors';
 class Utils {
   static ValueNotifier<Game?>? currentGame;
   static User? userDetails;
-  static String API = "ilyass-server.taila311b0.ts.net";
+  static String API = "ubuntu-server.tail2081a0.ts.net";
   static String API_URL = "https://$API/api/v1";
 
   static late StompClient client;
@@ -90,31 +89,12 @@ class Utils {
               }
             },
           ),
-
-          NavbarButton(
-            icon: Icons.person,
-            label: "Friends",
-            isSelected: currentIndex == 2,
-            onTap: () {
-              if (currentIndex != 2) {
-                Navigator.pushReplacement(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, a1, a2) => Friends(),
-                    transitionDuration: Duration.zero,
-                    reverseTransitionDuration: Duration.zero,
-                  ),
-                );
-              }
-            },
-          ),
-
           NavbarButton(
             icon: Icons.settings,
             label: "Settings",
-            isSelected: currentIndex == 3,
+            isSelected: currentIndex == 2,
             onTap: () {
-              if (currentIndex != 3) {
+              if (currentIndex != 2) {
                 Navigator.pushReplacement(
                   context,
                   PageRouteBuilder(
