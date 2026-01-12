@@ -1,4 +1,8 @@
+import 'package:audioplayers/audioplayers.dart';
+import 'package:deepdame/pages/Preferences.dart';
+import 'package:deepdame/static/Utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class NavbarButton extends StatelessWidget {
@@ -18,12 +22,17 @@ class NavbarButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(40), // Optional: rounded clicks
+      onTap: () async {
+        onTap();
+        if (Preferences.vibrationActive) {
+          await HapticFeedback.selectionClick();
+        }
+      },
+      borderRadius: BorderRadius.circular(40),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
         child: Column(
-          mainAxisSize: MainAxisSize.min, // Shrink to fit content
+          mainAxisSize: MainAxisSize.min,
           children: [
             SizedBox(
               height: 39,
@@ -40,7 +49,9 @@ class NavbarButton extends StatelessWidget {
               style: GoogleFonts.nunito(
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected ? Color.fromARGB(255, 170, 188, 180) : Colors.black,
+                color: isSelected
+                    ? Color.fromARGB(255, 170, 188, 180)
+                    : Colors.black,
               ),
             ),
           ],

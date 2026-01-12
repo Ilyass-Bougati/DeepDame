@@ -1,7 +1,7 @@
 name: deepdame
 description: "An online checkers game"
 
-publish_to: 'none' 
+publish_to: "none"
 
 version: 0.0.8-alpha-custom
 
@@ -9,16 +9,17 @@ environment:
   sdk: ^3.10.4
 
 flutter_launcher_icons:
-    android: "launcher_icon"
-    ios: true
-    image_path: "assets/icon/icon.png"
-    min_sdk_android: 21
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/icon.png"
+  min_sdk_android: 21
 
 dependencies:
+  audioplayers: ^6.0.0
   chat_bubbles: ^1.7.0
   stomp_dart_client: ^3.0.1
   flutter_svg: ^2.0.10
-  google_fonts: 6.3.3
+  google_fonts: ^7.0.0
   dio: ^5.8.0+1
   dio_cookie_manager: ^3.3.0
   cookie_jar: ^4.0.8
@@ -35,28 +36,32 @@ dev_dependencies:
 
   flutter_test:
     sdk: flutter
-    
+
   flutter_lints: ^6.0.0
 
 flutter:
-
   assets:
-  #Fonts:
-  #Lora font
+    #Fonts:
+    #Lora font
     - assets/fonts/Lora/static/Lora-Bold.ttf
     - assets/fonts/Lora/static/Lora-Medium.ttf
     - assets/fonts/Lora/static/Lora-Regular.ttf
 
-  #Nunito font
+    #Nunito font
     - assets/fonts/Nunito/static/Nunito-Bold.ttf
     - assets/fonts/Nunito/static/Nunito-Medium.ttf
     - assets/fonts/Nunito/static/Nunito-Regular.ttf
 
-  #Vectors:
-  #Cross-hatching 
+    #Vectors:
+    #Cross-hatching
     - assets/vectors/CrossHatchFade.svg
 
-  #Board
+    #Board
     - assets/vectors/Board.svg
+
+    #Sound effects
+    - assets/sfx/sfx_1.mp3
+    - assets/sfx/sfx_2.mp3
+    - assets/sfx/sfx_3.mp3
 
   uses-material-design: true
