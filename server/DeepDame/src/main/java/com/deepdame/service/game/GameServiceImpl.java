@@ -16,6 +16,7 @@ import com.deepdame.service.ai.AiOrchestrator;
 import com.deepdame.service.cache.GameCacheService;
 import com.deepdame.service.statistic.StatisticsService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -150,7 +152,11 @@ public class GameServiceImpl implements GameService{
 
         GameDocument gameDoc = gameCacheService.getGame(gameId);
         if (gameDoc == null) throw new NotFoundException("Game not found or expired");
+
         GameState currentState = gameDoc.getGameState();
+
+        log.trace(" [LOGIC_START] Game: {} | CurrentTurn: {} | Attempting Player: {} | Move :{}",
+                gameId, currentState.getCurrentTurn(), playerId, move);
 
         if (currentState.isGameOver()){
             throw new IllegalStateException("Game is Over");
@@ -162,7 +168,10 @@ public class GameServiceImpl implements GameService{
 
         try {
             newState = gameEngine.applyMove(currentState, move);
+            log.trace(" [ENGINE_SUCCESS] Move applied. New Board Hash/State generated.");
         } catch (IllegalArgumentException e) {
+            log.trace(" [ENGINE_REJECT] Game: {} | Move: {} -> {} | Reason: {}",
+                    gameId, move.from(), move.to(), e.getMessage());
             throw new IllegalMoveException(e.getMessage());
         }
 
@@ -175,11 +184,17 @@ public class GameServiceImpl implements GameService{
             gameCacheService.saveGame(gameDoc);
         }
 
-        if (!newState.isGameOver() && gameDoc.getMode() == GameMode.PVE) {
-            triggerAiMove(gameDoc);
-        }
+//        if (!newState.isGameOver() && gameDoc.getMode() == GameMode.PVE) {
+//            triggerAiMove(gameDoc);
+//        }
 
         return gameMapper.toDTO(gameDoc);
+    }
+
+    @Override
+    public GameDto makeAiMove(UUID gameId){
+        GameDocument gameDoc = gameCacheService.getGame(gameId);
+        return triggerAiMove(gameDoc);
     }
 
     @Override

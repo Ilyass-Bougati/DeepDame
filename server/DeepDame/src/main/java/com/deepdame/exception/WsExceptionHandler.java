@@ -36,6 +36,7 @@ public class WsExceptionHandler {
     @MessageExceptionHandler(IllegalMoveException.class)
     @SendToUser("/queue/errors")
     public String handleIllegalMove(IllegalMoveException e) {
+        log.trace(" [MOVE_ERROR]: {}", e.getMessage());
         return "INVALID_MOVE: " + e.getMessage();
     }
 
