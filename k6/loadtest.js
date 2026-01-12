@@ -4,8 +4,8 @@ import { check, sleep } from 'k6';
 import { randomString } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
 import { Counter, Trend } from 'k6/metrics';
 
-const BASE_URL = `https://ubuntu-server.tail2081a0.ts.net`;
-const WS_URL = `wss://ubuntu-server.tail2081a0.ts.net/ws/websocket`;
+const BASE_URL = `http://localhost:8080`;
+const WS_URL = `ws://localhost:8080/ws/websocket`;
 
 const registrationDuration = new Trend('auth_register_duration'); // Track time to register
 const loginDuration = new Trend('auth_login_duration');           // Track time to login
