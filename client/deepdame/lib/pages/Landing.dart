@@ -129,12 +129,10 @@ class Landing extends StatelessWidget {
                                   frame.body!,
                                 )['opponentName'];
                                 print(jsonDecode(frame.body!)['opponentName']);
-                                if (Game.currentGameId == null) {
-                                  Game.currentGameId = jsonDecode(
-                                    frame.body!,
-                                  )['gameId'];
-                                  Utils.currentGame!.value = Game(false);
-                                }
+                                Game.currentGameId = jsonDecode(
+                                  frame.body!,
+                                )['gameId'];
+                                Utils.currentGame!.value = Game(false);
                               }
                             },
                           );
