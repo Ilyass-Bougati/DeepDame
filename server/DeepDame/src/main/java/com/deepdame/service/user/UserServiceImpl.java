@@ -93,7 +93,7 @@ public class UserServiceImpl implements UserService {
 
         User savedUser = userRepository.save(user);
         usernameService.reserveUsername(savedUser.getUsername());
-        emailService.welcomeEmail(savedUser.getEmail(), savedUser.getUsername());
+        // emailService.welcomeEmail(savedUser.getEmail(), savedUser.getUsername());
         return userMapper.toDTO(savedUser);
     }
 
