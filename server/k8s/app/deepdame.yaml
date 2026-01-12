@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: deepdame
 spec:
-  type: LoadBalancer
+  type: NodePort
   selector:
     app: deepdame
   ports:

@@ -18,8 +18,8 @@ spec:
     spec:
       containers:
         - name: deepdame
-          image: deepdame
-          imagePullPolicy: Never
+          image: bougatiilyass/deepdame:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:
