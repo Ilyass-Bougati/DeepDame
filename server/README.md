@@ -72,6 +72,8 @@ The deployment script was first meant to be using by the CD. However, I it can b
 # --no-pull : make sure the application neither pulls nor clone the repo.
 ./deploy.k8s.sh --observability --ai
 ```
+
+### Manual deployment
 before deploying the application using k8s. You'll need to build the docker image, while on the `/server` directory run the ccommand
 ```bash
 eval $(minikube docker-env)
