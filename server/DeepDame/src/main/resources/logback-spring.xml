@@ -29,10 +29,17 @@
         </format>
     </appender>
 
-    <!-- Root Logger -->
-    <root level="INFO">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="LOKI"/>
-    </root>
+    <springProfile name="dev, local">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE" />
+        </root>
+    </springProfile>
+
+    <springProfile name="prod, staging">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE" />
+            <appender-ref ref="LOKI" />
+        </root>
+    </springProfile>
 
 </configuration>

@@ -28,7 +28,6 @@ spring:
       host: ${SPRING_DATA_REDIS_URI:localhost}
     mongodb:
       auto-index-creation: 'true'
-
   jpa:
     hibernate:
       ddl-auto: update
@@ -95,13 +94,8 @@ logging:
   pattern:
     level: "[${spring.application.name:},%X{traceId:-},%X{spanId:-}] "
   level:
-    org:
-      springframework:
-        web:
-          socket: DEBUG
-        messaging: DEBUG
-    com:
-      deepdame: DEBUG
+    com.deepdame.listener: debug
+
 
 rate-limiting:
   capacity: '10000000'
@@ -112,9 +106,9 @@ springdoc:
     enabled: 'true'
 
 default-admin:
-  email: admin@gmail.com
+  email: aadmin@gmail.com
   password: admin
-  username: super.admin
+  username: super.aadmin
 
 game:
   cache:

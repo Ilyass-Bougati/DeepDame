@@ -75,6 +75,16 @@ services:
       timeout: 3s
       retries: 5
 
+  redis-insight:
+    image: redis/redisinsight:latest
+    container_name: redis-insight
+    ports:
+      - "5540:5540"
+    volumes:
+      - redisinsight_data:/data
+    depends_on:
+      - redis
+
 #  ollama:
 #    image: ollama/ollama:latest
 #    container_name: deepdame-ai
@@ -102,4 +112,5 @@ services:
 volumes:
   postgres_data:
   mongo_data:
+  redisinsight_data:
 #  ollama_data:
