@@ -24,6 +24,9 @@ This application leverages **WebSockets** over the **STOMP protocol** to handle 
 
 To ensure performance and scalability, we utilized a polyglot persistence strategy:
 
-* **PostgreSQL:** Serves as the primary relational store for structured data like user profiles, relationships, and authentication.
-* **MongoDB:** Handles unstructured data, specifically for archiving game history and match logs. This allows for flexible storage of game moves without rigid schema constraints.
-* **Redis:** Employed for aggressive caching and session management. By offloading state from the application server's memory to Redis, we ensure the system is stateless, allowing for seamless **horizontal scaling** in the future. And we're using Redis pub/sub to handle events on multiple instances of the application.
+* [**PostgreSQL:**](https://www.postgresql.org/) Serves as the primary relational store for structured data like user profiles, relationships, and authentication.
+* [**MongoDB:**](https://www.mongodb.com/) Handles unstructured data, specifically for archiving game history and match logs. This allows for flexible storage of game moves without rigid schema constraints.
+* [**Redis:**](https://redis.io/) Employed for aggressive caching and session management. By offloading state from the application server's memory to Redis, we ensure the system is stateless, allowing for seamless **horizontal scaling** in the future. And we're using Redis pub/sub to handle events on multiple instances of the application.
+
+### Results
+From our analysis our application can hold way beyond **10,000+** users due to our agressive caching and the ability to scale verically. Our first point of failur will probably be *Redis Pub/Sub* which will fail around the point of **100,000+** users. We did deploy the application on EKS and we did test it with **5,000** concurrent users however we failed to get the metrics. For local testing, using *28GB of RAM* and *4 cores CPU* this application was able to support **3,000 concurrent users with ease**. Note that we used [k6](https://k6.io/) for these tests.
